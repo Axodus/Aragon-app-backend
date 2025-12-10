@@ -18,3 +18,5 @@ CLAUDE.md
 
 # Zed editor configuration (personal dev setup)
 .zed/
+.vercel
+.env*.local
