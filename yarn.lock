@@ -1194,7 +1194,7 @@
 
 "@pinata/sdk@^2.1.0":
   version "2.1.0"
-  resolved "https://registry.npmjs.org/@pinata/sdk/-/sdk-2.1.0.tgz"
+  resolved "https://registry.yarnpkg.com/@pinata/sdk/-/sdk-2.1.0.tgz#d61aa8f21ec1206e867f4b65996db52b70316945"
   integrity sha512-hkS0tcKtsjf9xhsEBs2Nbey5s+Db7x5rlOH9TaWHBXkJ7IwwOs2xnEDigNaxAHKjYAwcw+m2hzpO5QgOfeF7Zw==
   dependencies:
     axios "^0.21.1"
