@@ -1,3 +1,4 @@
+import 'dotenv/config'
 /* istanbul ignore file */
 import { TooBusyMonitor } from '@helpers/monitoring'
 import { type IService } from '@types'

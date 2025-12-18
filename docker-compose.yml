@@ -1,3 +1,4 @@
+version: "3.3"
 services:
   # --------------------------------------------------
   # RabbitMQ
@@ -6,8 +7,8 @@ services:
     image: rabbitmq:3.9-management-alpine
     container_name: rabbitmq-${ENV_SUFFIX}
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-guest}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-guest}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
     ports:
       - '${RABBITMQ_AMQP_PORT}:${RABBITMQ_AMQP_PORT}'               # AMQP port
       - '${RABBITMQ_MANAGEMENT_PORT}:${RABBITMQ_MANAGEMENT_PORT}'    # HTTP management UI
@@ -16,7 +17,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 10s
     restart: unless-stopped
     networks:
       - internal-net
@@ -33,8 +33,7 @@ services:
     env_file:
       - .env.aragon-indexer-${ENV_SUFFIX} # Use the same env file as the indexer
     depends_on:
-      rabbitmq:
-        condition: service_healthy
+      - rabbitmq
     command: bash -c "yarn wait:rabbitmq && yarn mig:run && echo 'Migration Service completed'"
     restart: "no"  # Don't restart after completion
     networks:
@@ -60,7 +59,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 10s
     restart: unless-stopped
     networks:
       - internal-net
@@ -83,7 +81,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 10s
     restart: unless-stopped
     networks:
       - internal-net
@@ -104,7 +101,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 10s
     restart: unless-stopped
     networks:
       - internal-net
@@ -125,7 +121,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 10s
     restart: unless-stopped
     networks:
       - internal-net
@@ -146,7 +141,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 10s
     restart: unless-stopped
     networks:
       - internal-net
@@ -167,7 +161,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 10s
     restart: unless-stopped
     networks:
       - internal-net
@@ -187,7 +180,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 10s
     restart: unless-stopped
     networks:
       - internal-net
@@ -210,7 +202,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 10s
     restart: unless-stopped
     networks:
       - internal-net
@@ -231,7 +222,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 10s
     restart: unless-stopped
     networks:
       - internal-net
@@ -240,7 +230,5 @@ services:
 networks:
   internal-net:
     external: true
-    name: internal-net
   public-net:
     external: true
-    name: public-net

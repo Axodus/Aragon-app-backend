@@ -94,18 +94,18 @@ stop_services() {
 
   # Show current status
   echo "📊 Current service status:"
-  docker compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" ps
+  docker-compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" ps
   echo ""
 
   # Stop all microservices
   echo "⏹️  Stopping microservices..."
-  docker compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" stop "${MICROSERVICES[@]}"
+  docker-compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" stop "${MICROSERVICES[@]}"
 
   echo ""
   echo "✅ All microservices stopped"
   echo ""
   echo "📊 Final status (dependencies remain running):"
-  docker compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" ps
+  docker-compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" ps
 
   # Show which services were stopped
   echo ""
@@ -117,7 +117,7 @@ stop_services() {
   echo ""
   echo "ℹ️  Note: Dependencies like RabbitMQ remain running"
   echo "   To stop ALL services including dependencies, use:"
-  echo "   docker compose -f $DOCKER_FILE -p $COMPOSE_PROJECT_NAME down"
+  echo "   docker-compose -f $DOCKER_FILE -p $COMPOSE_PROJECT_NAME down"
 }
 
 # Function to wait for migration to complete
@@ -218,15 +218,15 @@ run_migration() {
   docker rm -f "$container_name" 2>/dev/null || true
 
   # Also use docker-compose to ensure clean state
-  docker compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" stop migration 2>/dev/null || true
-  docker compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" rm -f migration 2>/dev/null || true
+  docker-compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" stop migration 2>/dev/null || true
+  docker-compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" rm -f migration 2>/dev/null || true
 
   # Small pause to ensure cleanup is complete
   sleep 1
 
   # Start migration service
   echo "📦 Starting fresh migration container..."
-  if ! docker compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" up -d --no-deps --force-recreate migration; then
+  if ! docker-compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" up -d --no-deps --force-recreate migration; then
     echo "❌ Failed to start migration container!"
     return 1
   fi
@@ -241,8 +241,8 @@ run_migration() {
 
   # Clean up migration container
   echo "🧹 Cleaning up migration container..."
-  docker compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" stop migration 2>/dev/null || true
-  docker compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" rm -f migration 2>/dev/null || true
+  docker-compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" stop migration 2>/dev/null || true
+  docker-compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" rm -f migration 2>/dev/null || true
 
   return 0
 }
@@ -264,18 +264,18 @@ deploy_services() {
     echo "✅ RabbitMQ is already running"
   else
     echo "🏗️  Starting RabbitMQ..."
-    docker compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" up -d rabbitmq
+    docker-compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" up -d rabbitmq
     echo "⏳ Waiting for RabbitMQ to be ready..."
     sleep 10
   fi
 
   # Step 2: Pre-build all images while services are running
   echo "🔨 Pre-building all Docker images (services still available)..."
-  docker compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" build --parallel migration "${MICROSERVICES[@]}"
+  docker-compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" build --parallel migration "${MICROSERVICES[@]}"
 
   ###service-aragon-api
-  docker compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" build service-aragon-api service-aragon-gateway
-  docker compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" up -d service-aragon-api service-aragon-gateway
+  docker-compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" build service-aragon-api service-aragon-gateway
+  docker-compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" up -d service-aragon-api service-aragon-gateway
 
 
   echo "✅ All images built and ready"
@@ -288,12 +288,12 @@ deploy_services() {
 
   # Step 3: Stop microservices (RabbitMQ stays running)
   echo "🛑 Stopping microservices for migration safety..."
-  docker compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" stop "${MICROSERVICES[@]}"
+  docker-compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" stop "${MICROSERVICES[@]}"
 
   # Step 4: Run migration
   echo "🔄 Running database migration..."
   # Clean up any existing migration container
-  docker compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" rm -f migration 2>/dev/null || true
+  docker-compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" rm -f migration 2>/dev/null || true
 
   # Run migration
   if ! run_migration; then
@@ -301,16 +301,16 @@ deploy_services() {
     echo "⚠️  Manual intervention required. Check migration logs and fix issues."
     echo ""
     echo "🔧 To restart services without migration:"
-    echo "   docker compose -f $DOCKER_FILE -p $COMPOSE_PROJECT_NAME up -d ${MICROSERVICES[*]}"
+    echo "   docker-compose -f $DOCKER_FILE -p $COMPOSE_PROJECT_NAME up -d ${MICROSERVICES[*]}"
     echo ""
     echo "🔧 To retry migration:"
-    echo "   docker compose -f $DOCKER_FILE -p $COMPOSE_PROJECT_NAME up migration"
+    echo "   docker-compose -f $DOCKER_FILE -p $COMPOSE_PROJECT_NAME up migration"
     exit 1
   fi
 
   # Step 5: Start all microservices with pre-built images
   echo "🚀 Starting all microservices..."
-  docker compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" up -d "${MICROSERVICES[@]}"
+  docker-compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" up -d "${MICROSERVICES[@]}"
 
   DOWNTIME_END=$(date +%s)
   DOWNTIME=$((DOWNTIME_END - DOWNTIME_START))
@@ -330,7 +330,7 @@ deploy_services() {
   echo "⏱️  Service downtime: ${DOWNTIME} seconds"
   echo ""
   echo "📊 Service status:"
-  docker compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" ps
+  docker-compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" ps
 
   # Wait a bit for services to fully start
   echo ""
@@ -360,7 +360,7 @@ deploy_services() {
   if [ "$healthy_count" -ne "$total_services" ]; then
     echo ""
     echo "⚠️  Warning: Not all services started successfully!"
-    echo "Check logs with: docker compose -f $DOCKER_FILE -p $COMPOSE_PROJECT_NAME logs [service-name]"
+    echo "Check logs with: docker-compose -f $DOCKER_FILE -p $COMPOSE_PROJECT_NAME logs [service-name]"
     echo ""
     echo "Failed services:"
     for service in "${MICROSERVICES[@]}"; do

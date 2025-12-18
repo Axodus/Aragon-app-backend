@@ -23,6 +23,8 @@ export enum NetworksEnum {
   ethereumMainnet = 'ethereum-mainnet',
   ethereumSepolia = 'ethereum-sepolia',
   polygonMainnet = 'polygon-mainnet',
+  harmonyMainnet = 'harmony-mainnet',
+  harmonyTestnet = 'harmony-testnet',
   baseMainnet = 'base-mainnet',
   arbitrumMainnet = 'arbitrum-mainnet',
   zksyncSepolia = 'zksync-sepolia',

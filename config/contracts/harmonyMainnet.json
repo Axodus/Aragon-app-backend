@@ -26,17 +26,17 @@
       "deploymentTx": "0x"
     },
     "DAOFactory": {
-      "address": "0xA6B240EF1A590522077148eF7AEd57d7D5F24a53",
+      "address": "0x90379b3db6ED502178467807E3827f513bFF4F79",
       "blockNumber": 0,
       "deploymentTx": "0x"
     },
     "DAORegistryProxy": {
-      "address": "0xB34073eB1fF2525bD5e58b7f08C1ad927EBCFa69",
+      "address": "0xA729988638EC58420f2E3a6B89773Cd4f2a03e45",
       "blockNumber": 0,
       "deploymentTx": "0x"
     },
     "DAORegistryImplementation": {
-      "address": "0x72722401803Fd937206705f82bF721cb57b38E26",
+      "address": "0x649c8735a9A2329239f04A2900A9C3b20B452A49",
       "blockNumber": 0,
       "deploymentTx": "0x"
     },
@@ -76,22 +76,22 @@
       "deploymentTx": "0x"
     },
     "PluginRepoFactory": {
-      "address": "0xDDA1A3eAfed7138659ae5B9fbb88D07Ce9787B9d",
+      "address": "0x171FD057Fbb60677edC4009a6c58b466224b80b2",
       "blockNumber": 0,
       "deploymentTx": "0x"
     },
     "PluginRepoRegistryProxy": {
-      "address": "0xEC4DB15db97AbCff05bB2f605C6d3582031630d4",
+      "address": "0x114F27Da85577d7e7CfB1f649A8763Bf457614DD",
       "blockNumber": 0,
       "deploymentTx": "0x"
     },
     "PluginRepoRegistryImplementation": {
-      "address": "0x541f359aA2Ff2F9C73D673012702c40A3bACe91d",
+      "address": "0xa7c196A1655084bade9855Ad2D4fdDE391AAFCC0",
       "blockNumber": 0,
       "deploymentTx": "0x"
     },
     "PluginSetupProcessor": {
-      "address": "0x178f0886547c5dF9B906FaA9AEC96126580948a0",
+      "address": "0xac1b0f953Ca517F4aB21Cc3E2cdb95b186DBF80D",
       "blockNumber": 0,
       "deploymentTx": "0x"
     },
@@ -146,12 +146,12 @@
       "deploymentTx": "0x"
     },
     "ManagementDAOProxy": {
-      "address": "0x53d062477A613a5D0c6e2757F3B14ACc743DfEc3",
+      "address": "0x700cBBB4881D286628ca9aD3d9DF390D9c0840a2",
       "blockNumber": 0,
       "deploymentTx": "0x"
     },
     "ManagementDAOImplementation": {
-      "address": "0xF2adeC7Ee107cB46f9ab834e071d14E421e3603B",
+      "address": "0x26F52f32DEe79c1708bbe5beDEF7e09cA468178e",
       "blockNumber": 0,
       "deploymentTx": "0x"
     },

@@ -71,6 +71,8 @@ export interface IConfig {
     ETHEREUM_MAINNET: IRawNodeConfig
     ETHEREUM_SEPOLIA: IRawNodeConfig
     POLYGON_MAINNET: IRawNodeConfig
+    HARMONY_MAINNET?: IRawNodeConfig
+    HARMONY_TESTNET?: IRawNodeConfig
     BASE_MAINNET: IRawNodeConfig
     ARBITRUM_MAINNET: IRawNodeConfig
     ZKSYNC_SEPOLIA: IRawNodeConfig

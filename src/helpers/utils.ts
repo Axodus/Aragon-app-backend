@@ -15,6 +15,8 @@ const Utils = {
     [NetworksEnum.ethereumMainnet]: 'ETHEREUM_MAINNET',
     [NetworksEnum.ethereumSepolia]: 'ETHEREUM_SEPOLIA',
     [NetworksEnum.polygonMainnet]: 'POLYGON_MAINNET',
+    [NetworksEnum.harmonyMainnet]: 'HARMONY_MAINNET',
+    [NetworksEnum.harmonyTestnet]: 'HARMONY_TESTNET',
     [NetworksEnum.baseMainnet]: 'BASE_MAINNET',
     [NetworksEnum.arbitrumMainnet]: 'ARBITRUM_MAINNET',
     [NetworksEnum.zksyncSepolia]: 'ZKSYNC_SEPOLIA',
