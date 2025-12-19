@@ -12,7 +12,51 @@ import { Models } from '@dbModels'
 import RabbitMQHelper from '@helpers/rabbitMQ'
 import ConfigIndexerHelper from '@helpers/configIndexer'
 
+import harmonyMainnetContracts from '../../../config/contracts/harmonyMainnet.json'
+import harmonyTestnetContracts from '../../../config/contracts/harmonyTestnet.json'
+
 const llo = logger.logMeta.bind(null, { service: 'service:IndexerService' })
+
+type ContractsConfig = Record<string, Record<string, { address: string; blockNumber?: number; deploymentTx?: string }>>
+
+const getIndexerCoreAddresses = (networkName: string): string[] | undefined => {
+  const configByNetwork: Partial<Record<string, ContractsConfig>> = {
+    'harmony-mainnet': harmonyMainnetContracts as unknown as ContractsConfig,
+    'harmony-testnet': harmonyTestnetContracts as unknown as ContractsConfig,
+  }
+
+  const cfg = configByNetwork[networkName]
+  if (!cfg) return undefined
+
+  const versionKey = Object.keys(cfg)[0]
+  const version = versionKey ? cfg[versionKey] : undefined
+  if (!version) return undefined
+
+  const candidates = [
+    version.DAORegistryProxy?.address,
+    version.PluginRepoRegistryProxy?.address,
+    version.PluginSetupProcessor?.address,
+  ]
+
+  const addresses = candidates
+    .filter((address): address is string => typeof address === 'string')
+    .map(address => address.toLowerCase())
+    .filter(address => address !== '0x0000000000000000000000000000000000000000')
+
+  return addresses.length > 0 ? addresses : undefined
+}
+
+const getHarmonyAdaptiveConfig = (networkName: string) => {
+  if (networkName !== 'harmony-mainnet' && networkName !== 'harmony-testnet') return undefined
+
+  // Harmony RPC costuma impor limites bem baixos em eth_getLogs (ex.: range <= 1024 blocos).
+  // Usamos um batch inicial pequeno e um mínimo mais baixo para evitar ficar preso no limite.
+  return {
+    initialBatchDays: 0.02,
+    minBatchDays: 0.001,
+    maxBatchDays: 1,
+  }
+}
 
 const AragonIndexerService: IService & { repeaters: any } = {
   name: EnumServiceName.ARAGON_INDEXER,
@@ -29,6 +73,16 @@ const AragonIndexerService: IService & { repeaters: any } = {
       networks.map(async ({ networkName }) => {
         const logService = ConfigIndexerHelper.builders.indexer(networkName)
 
+        if (
+          (networkName === 'harmony-mainnet' || networkName === 'harmony-testnet') &&
+          config.NODES[utils.networkToAragon(networkName)]?.FROM_BLOCK === 0
+        ) {
+          logger.warn(
+            'Harmony FROM_BLOCK is 0; historical sync can be extremely slow. Consider setting NODES_HARMONY_*_FROM_BLOCK near your deployment/first DAO block.',
+            llo({ networkName }),
+          )
+        }
+
         const existingConfig = await Models.ConfigIndexer.findExistingLog({
           network: networkName,
           service: logService,
@@ -37,10 +91,13 @@ const AragonIndexerService: IService & { repeaters: any } = {
         // sync historical data
         if (!existingConfig) {
           logger.info('HistoricalCrawler start', llo({ networkName }))
+          const address = getIndexerCoreAddresses(networkName)
           const historicalCrawler = new BlockchainLogCrawler({
             onlyHistorical: true,
             network: networkName,
+            address,
             events: utils.filterArrayByProperty(configIndexer, 'enableHistorical'),
+            adaptiveConfig: getHarmonyAdaptiveConfig(networkName),
             onError: async (error: any) => logger.error('Error Indexer', llo(error)),
             logService,
             stopOnError: true,

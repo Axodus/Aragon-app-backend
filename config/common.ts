@@ -612,7 +612,7 @@ const getConfigObject = (sourceConfig: Record<string, any>): IConfig => {
         sourceConfig,
         'string',
         'MONGO_DB_URI',
-        'mongodb://localhost:27017,localhost:27018,localhost:27019?replicaSet=rs&retryWrites=true',
+        'mongodb://localhost:27017,localhost:27018,localhost:27019/db-aragon?replicaSet=rs0&retryWrites=true&w=majority',
       ),
       DEBUGGER: utils.configParser(sourceConfig, 'bool', 'MONGO_DB_DEBUGGER', false),
       RETRY_CONCURRENT_INTERVAL: utils.configParser(sourceConfig, 'number', 'MONGO_DB_RETRY_CONCURRENT_INTERVAL', 50),
