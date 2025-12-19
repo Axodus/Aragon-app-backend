@@ -48,14 +48,15 @@ services:
     build:
       context: .
     ports:
-      - '${SERVICES_API_PORT}:${SERVICES_API_PORT}'
+      # Host port can be overridden via SERVICES_API_PORT; container listens on PORT from env_file (dev: 8080)
+      - '${SERVICES_API_PORT:-4000}:8080'
     env_file:
       - .env.aragon-api-${ENV_SUFFIX}
     depends_on:
       - rabbitmq
     command: bash -c "yarn wait:rabbitmq && yarn service:aragon-api"
     healthcheck:
-      test: ['CMD-SHELL', 'curl -f http://localhost:${SERVICES_API_PORT}/health || exit 1']
+      test: ['CMD-SHELL', 'curl -f http://localhost:8080/health || exit 1']
       interval: 10s
       timeout: 5s
       retries: 10
@@ -70,14 +71,15 @@ services:
     build:
       context: .
     ports:
-      - '${SERVICES_ADMIN_API_PORT}:${SERVICES_ADMIN_API_PORT}'
+      # Host port can be overridden via SERVICES_ADMIN_API_PORT; container listens on PORT from env_file (dev: 8081)
+      - '${SERVICES_ADMIN_API_PORT:-4001}:8081'
     env_file:
       - .env.aragon-admin-api-${ENV_SUFFIX}
     depends_on:
       - rabbitmq
     command: bash -c "yarn wait:rabbitmq && yarn service:aragon-admin-api"
     healthcheck:
-      test: ['CMD-SHELL', 'curl -f http://localhost:${SERVICES_ADMIN_API_PORT}/health || exit 1']
+      test: ['CMD-SHELL', 'curl -f http://localhost:8081/health || exit 1']
       interval: 10s
       timeout: 5s
       retries: 10
