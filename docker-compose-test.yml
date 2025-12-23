@@ -7,12 +7,12 @@ services:
     build:
       context: ./
     ports:
-      - ${SERVICE_API_PORT:-3000}:${SERVICE_API_PORT:-3000}
+      - ${SERVICE_API_PORT:-4000}:${SERVICE_API_PORT:-4000}
     environment:
-      PORT: ${SERVICE_API_PORT:-3000}
+      PORT: ${SERVICE_API_PORT:-4000}
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
-      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:3000
+      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
     depends_on:
       - mongo1
       - mongo2
@@ -26,7 +26,7 @@ services:
     environment:
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
-      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:3000
+      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
     depends_on:
       - mongo1
       - mongo2
@@ -40,7 +40,7 @@ services:
     environment:
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
-      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:3000
+      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
     depends_on:
       - mongo1
       - mongo2
@@ -54,7 +54,7 @@ services:
     environment:
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
-      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:3000
+      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
     depends_on:
       - mongo1
       - mongo2
@@ -68,7 +68,7 @@ services:
     environment:
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
-      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-gateway:3000
+      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-gateway:4000
     depends_on:
       - mongo1
       - mongo2
@@ -82,7 +82,7 @@ services:
     environment:
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
-      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:3000
+      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
     depends_on:
       - mongo1
       - mongo2
@@ -96,7 +96,7 @@ services:
     environment:
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
-      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:3000
+      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
     depends_on:
       - mongo1
       - mongo2
@@ -110,7 +110,7 @@ services:
     environment:
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
-      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:3000
+      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
     depends_on:
       - mongo1
       - mongo2
@@ -131,7 +131,7 @@ services:
     environment:
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
-      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:3000
+      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
     depends_on:
       - mongo1
       - mongo2
