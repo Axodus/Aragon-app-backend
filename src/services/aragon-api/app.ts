@@ -13,8 +13,11 @@ const API = async (): Promise<Koa> =>
 
     app.use(MainMiddleware(MainRouter.router()))
 
-    const server = app.listen(config.SERVICES.ARAGON_API.PORT)
-    logger.info('Listening', llo({ port: config.SERVICES.ARAGON_API.PORT }))
+    const portFromEnv = process.env.PORT ? Number(process.env.PORT) : undefined
+    const port = Number.isFinite(portFromEnv) && portFromEnv && portFromEnv > 0 ? portFromEnv : config.SERVICES.ARAGON_API.PORT
+
+    const server = app.listen(port, '0.0.0.0')
+    logger.info('Listening', llo({ port }))
     resolve(app)
 
     server.setTimeout(config.SERVICES.ARAGON_API.TIMEOUT * 1000)

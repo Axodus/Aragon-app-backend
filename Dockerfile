@@ -37,4 +37,4 @@ COPY --from=builder /usr/src/app/node_modules ./node_modules
 # Copy application source
 COPY --from=builder /usr/src/app ./
 
-# CMD ["yarn", "start"]
+CMD ["yarn", "start"]
