@@ -52,7 +52,9 @@ async function runApp(app: IService) {
 
     process.on('unhandledRejection', error => {
       logger.error('Unhandled Promise Rejection', llo({ error }))
-      stopApp(app, -1)
+      if (!app.START_BEFORE_CONNECTIONS) {
+        stopApp(app, -1)
+      }
     })
 
     process.on('uncaughtException', error => {
