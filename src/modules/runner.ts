@@ -5,6 +5,7 @@ import { type IService } from '@types'
 import logger from '@logger'
 import Connections from './connections'
 import { PrometheusStore } from '@modules/prometheusStore'
+import Utils from '@helpers/utils'
 
 const llo = logger.logMeta.bind(null, { service: 'runner' })
 
@@ -71,23 +72,69 @@ async function runApp(app: IService) {
       }),
     )
 
-    // Open connections with service-specific options
-    await Connections.open(neededConnections, app.options)
+    if (app.START_BEFORE_CONNECTIONS) {
+      await app.start()
 
-    // Start the service
-    await app.start()
+      if (app.name) {
+        prometheusStore = PrometheusStore.getInstance(app.name)
+        await prometheusStore.start()
+      }
 
-    if (app.name) {
-      prometheusStore = PrometheusStore.getInstance(app.name)
-      await prometheusStore.start()
+      logger.info(
+        'Service started successfully',
+        llo({
+          service: app.name,
+          note: 'Listening started before external connections',
+        }),
+      )
+
+      // Open connections in the background with retries; don't crash container startup.
+      void (async () => {
+        const retryDelayMs = 5000
+
+        while (true) {
+          try {
+            await Connections.open(neededConnections, app.options)
+            logger.info(
+              'All connections opened',
+              llo({
+                service: app.name,
+                connections: Connections.getOpenConnections(),
+              }),
+            )
+            break
+          } catch (error) {
+            logger.error(
+              'Unable to open connections (will retry)',
+              llo({
+                service: app.name,
+                retryDelayMs,
+                error,
+              }),
+            )
+            await Utils.wait(retryDelayMs)
+          }
+        }
+      })()
+    } else {
+      // Open connections with service-specific options
+      await Connections.open(neededConnections, app.options)
+
+      // Start the service
+      await app.start()
+
+      if (app.name) {
+        prometheusStore = PrometheusStore.getInstance(app.name)
+        await prometheusStore.start()
+      }
+
+      logger.info(
+        'Service started successfully',
+        llo({
+          service: app.name,
+        }),
+      )
     }
-
-    logger.info(
-      'Service started successfully',
-      llo({
-        service: app.name,
-      }),
-    )
   } catch (error) {
     logger.error('Unable to start application', llo({ error }))
     logger.purge()
