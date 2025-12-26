@@ -5,7 +5,6 @@ import { type IService } from '@types'
 import logger from '@logger'
 import Connections from './connections'
 import { PrometheusStore } from '@modules/prometheusStore'
-import Utils from '@helpers/utils'
 
 const llo = logger.logMeta.bind(null, { service: 'runner' })
 
@@ -52,9 +51,7 @@ async function runApp(app: IService) {
 
     process.on('unhandledRejection', error => {
       logger.error('Unhandled Promise Rejection', llo({ error }))
-      if (!app.START_BEFORE_CONNECTIONS) {
-        stopApp(app, -1)
-      }
+      stopApp(app, -1)
     })
 
     process.on('uncaughtException', error => {
@@ -90,34 +87,8 @@ async function runApp(app: IService) {
         }),
       )
 
-      // Open connections in the background with retries; don't crash container startup.
-      void (async () => {
-        const retryDelayMs = 5000
-
-        while (true) {
-          try {
-            await Connections.open(neededConnections, app.options)
-            logger.info(
-              'All connections opened',
-              llo({
-                service: app.name,
-                connections: Connections.getOpenConnections(),
-              }),
-            )
-            break
-          } catch (error) {
-            logger.error(
-              'Unable to open connections (will retry)',
-              llo({
-                service: app.name,
-                retryDelayMs,
-                error,
-              }),
-            )
-            await Utils.wait(retryDelayMs)
-          }
-        }
-      })()
+      // Open connections after service start.
+      await Connections.open(neededConnections, app.options)
     } else {
       // Open connections with service-specific options
       await Connections.open(neededConnections, app.options)
