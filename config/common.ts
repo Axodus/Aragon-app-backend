@@ -291,8 +291,8 @@ const getConfigObject = (sourceConfig: Record<string, any>): IConfig => {
           'NODES_HARMONY_MAINNET_ARAGON_RPC',
           'https://api.harmony.one',
         ),
-        FROM_BLOCK: utils.configParser(sourceConfig, 'number', 'NODES_HARMONY_MAINNET_FROM_BLOCK', 82187187),
-        OFFSET_TO_BLOCK: utils.configParser(sourceConfig, 'number', 'NODES_HARMONY_MAINNET_OFFSET_TO_BLOCK', 52100000),
+        FROM_BLOCK: utils.configParser(sourceConfig, 'number', 'NODES_HARMONY_MAINNET_FROM_BLOCK', 0),
+        OFFSET_TO_BLOCK: utils.configParser(sourceConfig, 'number', 'NODES_HARMONY_MAINNET_OFFSET_TO_BLOCK', 0),
         POOLING_INTERVAL: utils.configParser(
           sourceConfig,
           'number',
