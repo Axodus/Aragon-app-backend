@@ -27,6 +27,9 @@ services:
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
       SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
+      # IMPORTANT: usado apenas no primeiro start (se não existir checkpoint no Mongo)
+      NODES_HARMONY_MAINNET_FROM_BLOCK: ${NODES_HARMONY_MAINNET_FROM_BLOCK:-82187187}
+      NODES_HARMONY_TESTNET_FROM_BLOCK: ${NODES_HARMONY_TESTNET_FROM_BLOCK:-52100000}
     depends_on:
       - mongo1
       - mongo2
