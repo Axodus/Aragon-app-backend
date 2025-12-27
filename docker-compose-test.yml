@@ -9,7 +9,7 @@ services:
     ports:
       - ${SERVICE_API_PORT:-4000}:${SERVICE_API_PORT:-4000}
     environment:
-      PORT: ${SERVICE_API_PORT:-4000}
+      SERVICES_ARAGON_API_PORT: ${SERVICE_API_PORT:-4000}
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
       SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
@@ -93,7 +93,10 @@ services:
   service-aragon-admin-api:
     build:
       context: ./
+    ports:
+      - ${SERVICE_ADMIN_API_PORT:-4001}:${SERVICE_ADMIN_API_PORT:-4001}
     environment:
+      SERVICES_ARAGON_ADMIN_API_PORT: ${SERVICE_ADMIN_API_PORT:-4001}
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
       SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
