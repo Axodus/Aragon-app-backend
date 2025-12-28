@@ -8,6 +8,9 @@ export const RevertDbAtBlock: IService = {
   start: async () => {
     const config = {
       [NetworksEnum.ethereumSepolia]: 6876125,
+      // Harmony mainnet: set to just before the core plugin repo deployments.
+      // This allows the indexer to reprocess the PluginRepoRegistered events and related logs.
+      [NetworksEnum.harmonyMainnet]: 82991976,
       // add additional network block number configs as needed
     }
 
