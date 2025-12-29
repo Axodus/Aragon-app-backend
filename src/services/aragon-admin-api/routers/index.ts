@@ -20,6 +20,9 @@ const MainAdminRouter = {
     mainAdminRouter.use('/metrics', metricsAdminRouter.routes(), metricsAdminRouter.allowedMethods())
     mainAdminRouter.use('/queue', syncAdminRouter.routes(), syncAdminRouter.allowedMethods())
     mainAdminRouter.use('/dao', daoAdminRouter.routes(), daoAdminRouter.allowedMethods())
+    // Compat: alguns reverse-proxies (ex.: Apache ProxyPass "/dao/" -> "http://.../") removem o prefixo "/dao".
+    // Montar também na raiz evita 404 quando a requisição chega como "/set-status/...".
+    mainAdminRouter.use(daoAdminRouter.routes(), daoAdminRouter.allowedMethods())
     mainAdminRouter.use(
       '/capital-distributor',
       capitalDistributorAdminRouter.routes(),
