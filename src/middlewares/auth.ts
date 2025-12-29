@@ -7,8 +7,23 @@ import type { RouterContext } from '@koa/router'
 import type { Next } from 'koa'
 import TwoFaHelper from '@helpers/2fa'
 import type { SaveOptions } from 'mongoose'
+import config from '@config'
 
 const AuthMiddleware = {
+  _assertApiKey: (ctx: RouterContext): boolean => {
+    const configuredKey = config.SERVICES.ARAGON_ADMIN_API.API_KEY
+    if (!configuredKey) return false
+
+    const sentKey = ctx.get('x-api-key')
+    if (!sentKey) return false
+
+    if (sentKey !== configuredKey) {
+      assertExposable(false, ErrorKeyEnum.accessDenied)
+    }
+
+    return true
+  },
+
   _generateJWTLogin(tokenValue: string, userAgent: string | null, tokenType: IJwtTokenType, opts: SignOptions = {}) {
     return JwtHelper.generateJWT(
       {
@@ -45,6 +60,10 @@ const AuthMiddleware = {
   },
 
   authAssertAdmin: () => async (ctx: RouterContext, next: Next) => {
+    if (AuthMiddleware._assertApiKey(ctx)) {
+      return next()
+    }
+
     await AuthMiddleware._assertJwtTypes([IJwtTokenType.admin])(ctx)
 
     // const tokenExpired = moment(token.updatedAt).isBefore(moment().subtract({ days: CONFIG.SERVICES.API.SESSION_EXPIRATION_DAY }))
@@ -56,6 +75,10 @@ const AuthMiddleware = {
   },
 
   authAssertAdminOrRoot: () => async (ctx: RouterContext, next: Next) => {
+    if (AuthMiddleware._assertApiKey(ctx)) {
+      return next()
+    }
+
     await AuthMiddleware._assertJwtTypes([IJwtTokenType.admin, IJwtTokenType.root])(ctx)
     return next()
   },

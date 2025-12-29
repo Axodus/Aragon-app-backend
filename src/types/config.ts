@@ -226,6 +226,7 @@ export interface IConfig {
       NAME: string
       PORT: number
       TIMEOUT: number
+      API_KEY: string | null
       JWT_KEY: string
       JWT_SECRET: string
     }

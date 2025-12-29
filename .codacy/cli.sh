@@ -145,5 +145,12 @@ fi
 if [ "$#" -eq 1 ] && [ "$1" = "download" ]; then
     echo "Codacy cli v2 download succeeded"
 else
+    # Workaround for environments where the default system temp folder handling may fail
+    # (e.g., WSL + SARIF merge trying to write under /tmp with a missing temp dir).
+    # Force the CLI to use a temp directory under the Codacy cache folder.
+    codacy_tmp_dir="$CODACY_CLI_V2_TMP_FOLDER/tmp"
+    mkdir -p "$codacy_tmp_dir"
+    export TMPDIR="$codacy_tmp_dir"
+
     eval "$run_command $*"
 fi
