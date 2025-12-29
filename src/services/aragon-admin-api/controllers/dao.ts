@@ -1,7 +1,8 @@
-import { type IAVisibilityStatusParams } from '@src/types'
+import { type IAVisibilityStatusParams, type IDaoExtraParams, type IPaginatedResult, type IPaginationParams, type IDaoResponse } from '@src/types'
 import { Models } from '@dbModels'
 import { ErrorKeyEnum } from '@types'
 import { assertExposable } from '@errors'
+import PairDataModule from '@modules/pairData'
 
 const DaoAdminController = {
   setVisibilityStatus: async (params: IAVisibilityStatusParams): Promise<any> => {
@@ -12,6 +13,20 @@ const DaoAdminController = {
     await dao.save()
 
     return true
+  },
+
+  getArchivedDaosWithPagination: async (
+    paginationParams: IPaginationParams,
+    extraParams: IDaoExtraParams,
+  ): Promise<IPaginatedResult<IDaoResponse>> => {
+    paginationParams = await PairDataModule.pairFromPaginationParams(paginationParams)
+    const extraQueryData = await PairDataModule.pairExtraQueryData(extraParams)
+
+    return await Models.Dao.findWithPagination({
+      extraParams,
+      paginationParams,
+      extraQueryData: { ...extraQueryData, onlyHidden: true },
+    })
   },
 }
 

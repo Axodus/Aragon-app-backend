@@ -20,6 +20,24 @@ const AuthMiddleware = {
     )
   },
 
+  _assertJwtTypes: (allowedTypes: IJwtTokenType[]) => async (ctx: RouterContext) => {
+    const jwtState = ctx.state[JwtHelper.JWT_KEY]
+    const tokenValue = jwtState ? jwtState.token : null
+    const auth = jwtState ? jwtState.auth : null
+
+    assertExposable(!!tokenValue, ErrorKeyEnum.accessDenied)
+    assertExposable(typeof auth === 'string', ErrorKeyEnum.accessDenied)
+
+    const allowedAuthValues = allowedTypes.map(type => `aragon-${type}`)
+    assertExposable(allowedAuthValues.includes(auth), ErrorKeyEnum.accessDenied)
+
+    const token = ctx.state.token || (await Models.Jwt.findByValue(tokenValue))
+    assertExposable(!!token && token.type === IJwtAuthType.auth, ErrorKeyEnum.accessDenied)
+
+    await token.updateOnly()
+    ctx.state.token = token
+  },
+
   async generateJwtAuth(type: IJwtTokenType, tOpts?: SaveOptions): Promise<string> {
     const secret = TwoFaHelper.generateSecret(20)
     const token = await Models.Jwt.create({ value: secret.base32, type: IJwtAuthType.auth }, tOpts)
@@ -27,11 +45,7 @@ const AuthMiddleware = {
   },
 
   authAssertAdmin: () => async (ctx: RouterContext, next: Next) => {
-    const tokenValue = ctx.state[JwtHelper.JWT_KEY] ? ctx.state[JwtHelper.JWT_KEY].token : null
-    assertExposable(!!tokenValue, ErrorKeyEnum.accessDenied)
-
-    const token = ctx.state.token || (await Models.Jwt.findByValue(tokenValue))
-    assertExposable(!!token || token?.type !== IJwtTokenType.admin, ErrorKeyEnum.accessDenied)
+    await AuthMiddleware._assertJwtTypes([IJwtTokenType.admin])(ctx)
 
     // const tokenExpired = moment(token.updatedAt).isBefore(moment().subtract({ days: CONFIG.SERVICES.API.SESSION_EXPIRATION_DAY }))
     // if (tokenExpired) {
@@ -41,6 +55,11 @@ const AuthMiddleware = {
     await token.updateOnly()
     ctx.state.token = token
 
+    return next()
+  },
+
+  authAssertAdminOrRoot: () => async (ctx: RouterContext, next: Next) => {
+    await AuthMiddleware._assertJwtTypes([IJwtTokenType.admin, IJwtTokenType.root])(ctx)
     return next()
   },
 }

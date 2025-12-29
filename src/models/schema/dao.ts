@@ -207,7 +207,7 @@ export default class Dao extends Model {
       ...dynamicFilter,
     }
 
-    filter.isHidden = { $ne: true }
+    filter.isHidden = extraQueryData.onlyHidden ? { $eq: true } : { $ne: true }
     filter.isActive = { $eq: true }
 
     if (extraQueryData.daoAddresses && extraQueryData.daoAddresses.length > 0) {
