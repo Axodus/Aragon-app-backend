@@ -24,6 +24,16 @@ const DaoAdminRouter = {
     )
   },
 
+  getVisibilityStatus: async function (ctx: RouterContext) {
+    const params = {
+      address: ctx.params.daoAddress,
+      network: ctx.params.network,
+    }
+
+    const formattedValues = await ValidationSchema.validateParams(GenericSchema.defaultParams, params)
+    ctx.body = await DaoAdminController.getVisibilityStatus(formattedValues)
+  },
+
   setVisibilityStatus: async function (ctx: RouterContext) {
     const params = {
       address: ctx.params.daoAddress,
@@ -41,6 +51,7 @@ const DaoAdminRouter = {
     const authedAdminOrRoot = AuthMiddleware.authAssertAdminOrRoot()
 
     router.get('/archived', authedAdminOrRoot, DaoAdminRouter.getArchivedWithPagination)
+    router.get('/status/:daoAddress/:network', authedAdminOrRoot, DaoAdminRouter.getVisibilityStatus)
     router.post('/set-status/:daoAddress/:network/:status', authedAdminOrRoot, DaoAdminRouter.setVisibilityStatus)
 
     return router

@@ -15,6 +15,14 @@ const DaoAdminController = {
     return true
   },
 
+  getVisibilityStatus: async (params: Pick<IAVisibilityStatusParams, 'address' | 'network'>): Promise<{ status: boolean }> => {
+    const dao = await Models.Dao.findByAddress(params.address, params.network)
+    assertExposable(dao, ErrorKeyEnum.notFound)
+
+    // `status` represents visibility: true = visible, false = hidden
+    return { status: !dao.isHidden }
+  },
+
   getArchivedDaosWithPagination: async (
     paginationParams: IPaginationParams,
     extraParams: IDaoExtraParams,
