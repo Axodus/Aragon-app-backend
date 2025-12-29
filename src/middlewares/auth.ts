@@ -14,14 +14,12 @@ const AuthMiddleware = {
     const configuredKey = config.SERVICES.ARAGON_ADMIN_API.API_KEY
     if (!configuredKey) return false
 
-    const sentKey = ctx.get('x-api-key')
+    const sentKey = (ctx.get('x-api-key') || '').trim()
     if (!sentKey) return false
 
-    if (sentKey !== configuredKey) {
-      assertExposable(false, ErrorKeyEnum.accessDenied)
-    }
-
-    return true
+    // Autenticação por "OU": só aceita API key quando bater; se vier uma key errada,
+    // não bloqueia a possibilidade de autenticar via JWT.
+    return sentKey === configuredKey
   },
 
   _generateJWTLogin(tokenValue: string, userAgent: string | null, tokenType: IJwtTokenType, opts: SignOptions = {}) {
