@@ -197,14 +197,23 @@ export class AdaptiveBatchSizeManager {
       this.state.isInHighActivityZone = true
     }
 
-    // Reduce batch size with exponential backoff based on consecutive errors
-    // First error: divide by 2, Second: divide by 4, Third+: divide by 6
-    // This allows quick recovery while preventing repeated failures
-    const minBatchSize = this.calculateBatchSizeInBlocks(this.config.minBatchDays)
+    // Reduce batch size with exponential backoff based on consecutive errors.
+    // First error: divide by 2, Second: divide by 4, Third+: divide by 6.
+    //
+    // IMPORTANT: some RPC providers can still fail even at the configured minimum batch (minBatchDays).
+    // If we are already at the soft minimum and still getting batch size errors, allow reducing below it
+    // down to a hard minimum of 1 block, otherwise the crawler can get stuck in an endless loop.
+    const softMinBatchSize = Math.max(1, this.calculateBatchSizeInBlocks(this.config.minBatchDays))
+    const hardMinBatchSize = 1
     const reductionFactor = this.config.reductionFactor * Math.min(this.state.consecutiveErrors, 3)
-    const newBatchSize = Math.max(Math.floor(this.state.currentBatchSize / reductionFactor), minBatchSize)
 
     const oldBatchSize = this.state.currentBatchSize
+    const reduced = Math.floor(oldBatchSize / reductionFactor)
+    const newBatchSize =
+      oldBatchSize <= softMinBatchSize
+        ? Math.max(reduced, hardMinBatchSize)
+        : Math.max(reduced, softMinBatchSize)
+
     this.state.currentBatchSize = newBatchSize
 
     logger.verbose(
@@ -213,7 +222,9 @@ export class AdaptiveBatchSizeManager {
         oldBatchSize,
         newBatchSize,
         reductionCount: this.state.reductionCount,
-        isAtMinimum: newBatchSize === minBatchSize,
+        isAtMinimum: newBatchSize === softMinBatchSize,
+        softMinBatchSize,
+        hardMinBatchSize,
       }),
     )
 
