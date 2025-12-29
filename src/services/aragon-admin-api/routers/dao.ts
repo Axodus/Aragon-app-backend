@@ -35,10 +35,13 @@ const DaoAdminRouter = {
   },
 
   setVisibilityStatus: async function (ctx: RouterContext) {
+    const statusRaw = ctx.params.status
+    const status = statusRaw === 'true' ? true : statusRaw === 'false' ? false : statusRaw
+
     const params = {
       address: ctx.params.daoAddress,
       network: ctx.params.network,
-      status: ctx.params.status,
+      status,
     }
 
     const formattedValues = await ValidationSchema.validateParams(GenericSchema.setDaoVisibilityStatusParams, params)
