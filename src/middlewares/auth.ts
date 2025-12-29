@@ -52,9 +52,6 @@ const AuthMiddleware = {
     //   await token.deleteOne()
     //   assertExposable(!tokenExpired, ErrorKeyEnum.tokenExpired)
     // }
-    await token.updateOnly()
-    ctx.state.token = token
-
     return next()
   },
 
