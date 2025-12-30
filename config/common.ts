@@ -641,6 +641,24 @@ const getConfigObject = (sourceConfig: Record<string, any>): IConfig => {
       API_KEY: utils.configParser(sourceConfig, 'string', 'COINGECKO_API_KEY', null),
     },
 
+    BAND: {
+      MAX_STALENESS_SECONDS: utils.configParser(sourceConfig, 'number', 'BAND_MAX_STALENESS_SECONDS', 4 * 60 * 60),
+      HARMONY_MAINNET: {
+        ORACLE_ADDRESS: utils.configParser(
+          sourceConfig,
+          'string',
+          'BAND_HARMONY_MAINNET_ORACLE_ADDRESS',
+          '0xA55d9ef16Af921b70Fed1421C1D298Ca5A3a18F1',
+        ),
+        ADAPTER_ADDRESS: utils.configParser(
+          sourceConfig,
+          'string',
+          'BAND_HARMONY_MAINNET_ADAPTER_ADDRESS',
+          '0x0A87139b65399102f5F9B9B245531CF1A04ec86d',
+        ),
+      },
+    },
+
     FOUR_BYTE: {
       URI: utils.configParser(sourceConfig, 'string', 'FOUR_BYTE_URI', 'https://www.4byte.directory/api/v1'),
     },

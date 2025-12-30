@@ -154,6 +154,14 @@ export interface IConfig {
     API_KEY: string
   }
 
+  BAND: {
+    MAX_STALENESS_SECONDS: number
+    HARMONY_MAINNET: {
+      ORACLE_ADDRESS: string | null
+      ADAPTER_ADDRESS: string | null
+    }
+  }
+
   FOUR_BYTE: {
     URI: string
   }

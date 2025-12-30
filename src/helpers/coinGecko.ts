@@ -121,6 +121,24 @@ const CoinGeckoHelper = {
       }
     }
 
+    // Fallback for networks not supported by CoinGecko (e.g., Harmony).
+    if (network === NetworksEnum.harmonyMainnet || network === NetworksEnum.harmonyTestnet) {
+      return {
+        address: utils.zeroAddress,
+        network,
+        type: ITokenType.native,
+        name: 'Harmony',
+        symbol: 'ONE',
+        decimals: 18,
+        logo: '',
+        priceUsd: '0',
+        lastUpdatedAt: dayjs().toISOString(),
+        createdAt: dayjs().toISOString(),
+        totalSupply: '0',
+        holders: 0,
+      }
+    }
+
     const coinId = CoinGeckoHelper.networkToNativeTokenId(network)
     if (!coinId) {
       return false

@@ -10,6 +10,7 @@ import TokenUtils from '@helpers/tokenUtils'
 import RabbitMQHelper from '@helpers/rabbitMQ'
 import Web3Helper from '@helpers/web3'
 import CoinGeckoHelper from '@helpers/coinGecko'
+import BandOracle from '@helpers/bandOracle'
 
 const llo = logger.logMeta.bind(null, { service: 'rates:FetchRates' })
 
@@ -185,17 +186,27 @@ export const FetchRates = {
   async onMainnetDocument(token: Token) {
     try {
       const isNativeToken = token.type === ITokenType.native
+      const isHarmonyNativeToken = isNativeToken && token.network === NetworksEnum.harmonyMainnet
       const totalSupply =
         !isNativeToken && token.hasTotalSupply
           ? await Web3Helper.getTokenTotalSupply(token.address, token.network)
           : null
 
-      const coingeckoInfo = await CoinGeckoHelper.getToken(token.address, token.network)
+      const coingeckoInfo = !isHarmonyNativeToken ? await CoinGeckoHelper.getToken(token.address, token.network) : null
+      const bandPriceUsd = isHarmonyNativeToken
+        ? await BandOracle.getSpotPriceUsd({ network: token.network, baseSymbol: 'ONE' })
+        : null
 
       const rawTokenUpdate: Partial<Token> = {
         totalSupply: (totalSupply ?? token.totalSupply ?? '0').toString(),
-        priceUsd: coingeckoInfo ? coingeckoInfo.priceUsd : token.priceUsd,
+        priceUsd: isHarmonyNativeToken ? bandPriceUsd ?? token.priceUsd : coingeckoInfo ? coingeckoInfo.priceUsd : token.priceUsd,
         logo: coingeckoInfo ? coingeckoInfo.logo : token.logo,
+      }
+
+      if (isHarmonyNativeToken) {
+        if (!token.name) rawTokenUpdate.name = 'Harmony'
+        if (!token.symbol) rawTokenUpdate.symbol = 'ONE'
+        if (!token.decimals) rawTokenUpdate.decimals = 18
       }
 
       if (
