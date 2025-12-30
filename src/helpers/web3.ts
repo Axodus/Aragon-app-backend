@@ -16,6 +16,7 @@ import { Multisig } from '@artifacts/Multisig'
 import { VotingEscrow } from '@artifacts/VotingEscrow'
 import { GaugeVoter } from '@artifacts/GaugeVoter'
 import { TokenVoting } from '@artifacts/TokenVoting'
+import { AdminV2 } from '@artifacts/AdminV2'
 import { type BlockTag } from 'ethers/src.ts/providers/provider'
 import Web3Utils from '@helpers/web3Utils'
 import { ERC721 } from '@artifacts/ERC721'
@@ -586,6 +587,20 @@ const Web3Helper = {
       return Boolean(isMember)
     } catch (error) {
       logger.error('Error isTokenVotingMember', llo({ pluginAddress, memberAddress, network, error }))
+      return false
+    }
+  },
+
+  async isAdminMember(pluginAddress: HexAddress, memberAddress: HexAddress, network: NetworksEnum) {
+    try {
+      const provider = ProviderModule.getAnyRpcProvider(network)
+      const pluginInstance = new Contract(pluginAddress, AdminV2.abi, provider)
+      const isMember = await retryRequest(async () =>
+        BottleneckModule.getNodeLimiter(network).schedule(async () => pluginInstance.isMember(memberAddress)),
+      )
+      return Boolean(isMember)
+    } catch (error) {
+      logger.error('Error isAdminMember', llo({ pluginAddress, memberAddress, network, error }))
       return false
     }
   },
