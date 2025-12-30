@@ -651,7 +651,7 @@ const getConfigObject = (sourceConfig: Record<string, any>): IConfig => {
         sourceConfig,
         'string',
         'PINATA_GATEWAY_URI',
-        'https://aragon-1.mypinata.cloud/ipfs',
+        'https://amethyst-blank-puma-863.mypinata.cloud/ipfs',
       ),
     },
 
