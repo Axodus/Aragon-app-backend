@@ -204,8 +204,14 @@ export const FetchRates = {
       }
 
       if (isHarmonyNativeToken) {
-        if (!token.name) rawTokenUpdate.name = 'Harmony'
-        if (!token.symbol) rawTokenUpdate.symbol = 'ONE'
+        const normalizedName = (token.name || '').trim()
+        const normalizedSymbol = (token.symbol || '').trim()
+
+        const isUnknownName = normalizedName.toLowerCase() === 'unknown'
+        const isUnknownSymbol = normalizedSymbol.toUpperCase() === 'UNKNOWN'
+
+        if (!normalizedName || isUnknownName) rawTokenUpdate.name = 'Harmony'
+        if (!normalizedSymbol || isUnknownSymbol) rawTokenUpdate.symbol = 'ONE'
         if (!token.decimals) rawTokenUpdate.decimals = 18
       }
 
