@@ -1,5 +1,6 @@
 import logger from '@logger'
 import { type IWeb3Provider, type IWeb3TokenBalance, NetworksEnum } from '@types'
+import { Models } from '@dbModels'
 import { ProxyToken } from '@modules/proxyToken'
 import utils from '@helpers/utils'
 import Alchemy from '@helpers/alchemy'
@@ -7,6 +8,8 @@ import Web3Utils from '@helpers/web3Utils'
 import BlockScoutHelper from '@helpers/blockScout'
 import Web3Helper from '@helpers/web3'
 import { evmExplorerClient, EvmExplorerEnum } from '@helpers/evmExplorerClient'
+import { ITransactionType } from '@src/types/transfer'
+import { formatUnits } from 'ethers'
 
 const llo = logger.logMeta.bind(null, { service: 'helpers:ProxyWeb3' })
 
@@ -31,6 +34,69 @@ const Web3Provider: IWeb3Provider = {
 
   getTokenBalances: async ({ address, network }) => {
     const tokensBalance = await Web3Helper.getTokenBalances(address, network)
+
+    // Harmony (e outras redes sem Alchemy) não suportam `alchemy_getTokenBalances`.
+    // Como fallback, usamos os tokens ERC20 já vistos no indexador de transfers/transactions
+    // e consultamos `balanceOf` via RPC padrão.
+    if (tokensBalance.length === 0 && network === NetworksEnum.harmonyMainnet) {
+      try {
+        const tokenAddressRows = (await Models.Transaction.aggregate([
+          {
+            $match: {
+              network,
+              daoAddress: address,
+              type: ITransactionType.erc20,
+              tokenAddress: { $ne: null },
+            },
+          },
+          {
+            $group: {
+              _id: '$tokenAddress',
+              lastBlock: { $max: '$blockNumber' },
+            },
+          },
+          { $sort: { lastBlock: -1 } },
+          { $limit: 200 },
+        ])) as Array<{ _id: string }>
+
+        const candidateTokenAddresses = tokenAddressRows
+          .map(row => row._id)
+          .filter(Boolean)
+          .filter(tokenAddress => tokenAddress !== utils.zeroAddress)
+
+        const results: IWeb3TokenBalance[] = []
+        const concurrency = 10
+
+        for (let i = 0; i < candidateTokenAddresses.length; i += concurrency) {
+          const batch = candidateTokenAddresses.slice(i, i + concurrency)
+
+          const batchResults = await Promise.all(
+            batch.map(async tokenAddress => {
+              const parsedTokenAddress = Web3Utils.parseAddress(tokenAddress) || tokenAddress
+
+              const token = await ProxyToken.saveAndGetToken(parsedTokenAddress, network)
+              if (!token) return null
+
+              const rawBalance = await Web3Helper.getERC20Balance(address, parsedTokenAddress, network)
+              if (rawBalance <= 0n) return null
+
+              return {
+                contractAddress: parsedTokenAddress,
+                tokenBalance: formatUnits(rawBalance, token.decimals ?? 18),
+                originalBalance: rawBalance.toString(),
+              } satisfies IWeb3TokenBalance
+            }),
+          )
+
+          results.push(...(batchResults.filter(Boolean) as IWeb3TokenBalance[]))
+        }
+
+        return results
+      } catch (error) {
+        logger.warn('Harmony fallback getTokenBalances failed', llo({ address, network, error }))
+        return []
+      }
+    }
 
     return (
       await Promise.all(
