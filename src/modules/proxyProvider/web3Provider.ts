@@ -40,6 +40,24 @@ const Web3Provider: IWeb3Provider = {
     // e consultamos `balanceOf` via RPC padrão.
     if (tokensBalance.length === 0 && network === NetworksEnum.harmonyMainnet) {
       try {
+        const pluginTokenRows = (await Models.Plugin.aggregate([
+          {
+            $match: {
+              network,
+              daoAddress: address,
+              tokenAddress: { $ne: null },
+            },
+          },
+          {
+            $group: {
+              _id: '$tokenAddress',
+              lastBlock: { $max: '$blockNumber' },
+            },
+          },
+          { $sort: { lastBlock: -1 } },
+          { $limit: 200 },
+        ])) as Array<{ _id: string }>
+
         const tokenAddressRows = (await Models.Transaction.aggregate([
           {
             $match: {
@@ -59,10 +77,11 @@ const Web3Provider: IWeb3Provider = {
           { $limit: 200 },
         ])) as Array<{ _id: string }>
 
-        const candidateTokenAddresses = tokenAddressRows
+        const candidateTokenAddresses = [...pluginTokenRows, ...tokenAddressRows]
           .map(row => row._id)
           .filter(Boolean)
           .filter(tokenAddress => tokenAddress !== utils.zeroAddress)
+          .filter((tokenAddress, index, array) => array.indexOf(tokenAddress) === index)
 
         const results: IWeb3TokenBalance[] = []
         const concurrency = 10
@@ -80,11 +99,13 @@ const Web3Provider: IWeb3Provider = {
               const rawBalance = await Web3Helper.getERC20Balance(address, parsedTokenAddress, network)
               if (rawBalance <= 0n) return null
 
-              return {
+              const balance: IWeb3TokenBalance = {
                 contractAddress: parsedTokenAddress,
                 tokenBalance: formatUnits(rawBalance, token.decimals ?? 18),
                 originalBalance: rawBalance.toString(),
-              } satisfies IWeb3TokenBalance
+              }
+
+              return balance
             }),
           )
 
