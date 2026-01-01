@@ -1,8 +1,9 @@
 import logger from '@logger'
-import { type ILogInfo, ITransactionSide, ITransactionType } from '@types'
+import { EnumQueueName, type ILogInfo, ITransactionSide, ITransactionType } from '@types'
 import { type LogDescription } from 'ethers'
 import { ProxyToken } from '@modules/proxyToken'
 import { TransferProcessorFactory } from '@transfers'
+import RabbitMQHelper from '@helpers/rabbitMQ'
 
 const llo = logger.logMeta.bind(null, { service: 'handlers:DaoTransferHandler' })
 
@@ -35,6 +36,11 @@ export const DaoTransferHandler = {
 
       const transferData = processor.prepareTransferData(parsedEvent, info)
       await processor.save(transferData)
+
+      await RabbitMQHelper.sendMessage(EnumQueueName.daoAssets, {
+        id: daoAddress,
+        params: { address: daoAddress, network: info.network },
+      })
     }
   },
 
@@ -91,6 +97,11 @@ export const DaoTransferHandler = {
 
       const transferData = processor.prepareTransferData(parsedEvent, info)
       await processor.save(transferData)
+
+      await RabbitMQHelper.sendMessage(EnumQueueName.daoAssets, {
+        id: daoAddress,
+        params: { address: daoAddress, network: info.network },
+      })
     }
   },
 
