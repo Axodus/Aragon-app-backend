@@ -4,6 +4,7 @@ import SyncAdminRouter from './queue'
 import DaoAdminRouter from './dao'
 import CapitalDistributorAdminRouter from './capitalDistributor'
 import MetricsAdminRouter from './metrics'
+import HarmonyVotingAdminRouter from './harmonyVoting'
 
 const MainAdminRouter = {
   router(): Router {
@@ -12,6 +13,7 @@ const MainAdminRouter = {
     const daoAdminRouter = DaoAdminRouter.router()
     const capitalDistributorAdminRouter = CapitalDistributorAdminRouter.router()
     const metricsAdminRouter = MetricsAdminRouter.router()
+    const harmonyVotingAdminRouter = HarmonyVotingAdminRouter.router()
 
     const mainAdminRouter = new Router()
 
@@ -28,6 +30,7 @@ const MainAdminRouter = {
       capitalDistributorAdminRouter.routes(),
       capitalDistributorAdminRouter.allowedMethods(),
     )
+    mainAdminRouter.use('/harmony-voting', harmonyVotingAdminRouter.routes(), harmonyVotingAdminRouter.allowedMethods())
 
     return mainAdminRouter
   },
