@@ -3,14 +3,28 @@ export const HarmonyVotingPlugin = {
   abi: [
     {
       inputs: [
-        { internalType: 'bytes', name: 'metadata', type: 'bytes' },
+        { internalType: 'bytes32', name: 'metadata', type: 'bytes32' },
         { internalType: 'uint64', name: 'startDate', type: 'uint64' },
         { internalType: 'uint64', name: 'endDate', type: 'uint64' },
-        { internalType: 'uint256', name: 'snapshotBlock', type: 'uint256' },
+        { internalType: 'uint64', name: 'snapshotBlock', type: 'uint64' },
       ],
       name: 'createProposal',
       outputs: [{ internalType: 'uint256', name: 'proposalId', type: 'uint256' }],
       stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [],
+      name: 'proposalCount',
+      outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+      stateMutability: 'view',
+      type: 'function',
+    },
+    {
+      inputs: [],
+      name: 'FINALIZATION_PERIOD',
+      outputs: [{ internalType: 'uint64', name: '', type: 'uint64' }],
+      stateMutability: 'view',
       type: 'function',
     },
     {
@@ -34,6 +48,72 @@ export const HarmonyVotingPlugin = {
       outputs: [],
       stateMutability: 'nonpayable',
       type: 'function',
+    },
+    {
+      inputs: [{ internalType: 'uint256', name: 'proposalId', type: 'uint256' }],
+      name: 'closeProposal',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [{ internalType: 'uint256', name: 'proposalId', type: 'uint256' }],
+      name: 'getProposal',
+      outputs: [
+        {
+          components: [
+            { internalType: 'bytes32', name: 'metadata', type: 'bytes32' },
+            { internalType: 'uint64', name: 'startDate', type: 'uint64' },
+            { internalType: 'uint64', name: 'endDate', type: 'uint64' },
+            { internalType: 'uint64', name: 'snapshotBlock', type: 'uint64' },
+            { internalType: 'bytes32', name: 'merkleRoot', type: 'bytes32' },
+            { internalType: 'bool', name: 'closed', type: 'bool' },
+            { internalType: 'uint256', name: 'yes', type: 'uint256' },
+            { internalType: 'uint256', name: 'no', type: 'uint256' },
+            { internalType: 'uint256', name: 'abstain', type: 'uint256' },
+          ],
+          internalType: 'struct HarmonyVotingBase.ProposalData',
+          name: '',
+          type: 'tuple',
+        },
+      ],
+      stateMutability: 'view',
+      type: 'function',
+    },
+    {
+      inputs: [
+        { internalType: 'uint256', name: 'proposalId', type: 'uint256' },
+        { internalType: 'address', name: 'voter', type: 'address' },
+      ],
+      name: 'getVote',
+      outputs: [
+        { internalType: 'uint8', name: 'option', type: 'uint8' },
+        { internalType: 'bool', name: 'powerSubmitted', type: 'bool' },
+      ],
+      stateMutability: 'view',
+      type: 'function',
+    },
+    {
+      anonymous: false,
+      inputs: [
+        { indexed: true, internalType: 'uint256', name: 'proposalId', type: 'uint256' },
+        { indexed: true, internalType: 'bytes32', name: 'metadata', type: 'bytes32' },
+        { indexed: false, internalType: 'uint64', name: 'startDate', type: 'uint64' },
+        { indexed: false, internalType: 'uint64', name: 'endDate', type: 'uint64' },
+        { indexed: false, internalType: 'uint64', name: 'snapshotBlock', type: 'uint64' },
+      ],
+      name: 'ProposalCreated',
+      type: 'event',
+    },
+    {
+      anonymous: false,
+      inputs: [
+        { indexed: true, internalType: 'uint256', name: 'proposalId', type: 'uint256' },
+        { indexed: true, internalType: 'address', name: 'voter', type: 'address' },
+        { indexed: false, internalType: 'uint8', name: 'option', type: 'uint8' },
+      ],
+      name: 'VoteCast',
+      type: 'event',
     },
   ],
 } as const

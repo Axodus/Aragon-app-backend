@@ -243,6 +243,14 @@ export interface IConfig {
       DAO_INTERVAL: number
       PLUGIN_INTERVAL: number
       SYNC_ALL: boolean
+      HARMONY_VOTING_FINALIZER: {
+        ENABLED: boolean
+        INTERVAL: number
+        CHECK_INTERVAL: number
+        PRIVATE_KEY: string | null
+        TARGETS_JSON: string
+        LOGS_CHUNK_SIZE: number
+      }
     }
     ARAGON_RATES: {
       NAME: string

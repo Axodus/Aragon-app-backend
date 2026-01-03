@@ -754,6 +754,44 @@ const getConfigObject = (sourceConfig: Record<string, any>): IConfig => {
           6 * 60 * 60 * 1000,
         ), // 6 hours
         SYNC_ALL: utils.configParser(sourceConfig, 'bool', 'SERVICES_ARAGON_INDEXER_SYNC_ALL', false),
+        HARMONY_VOTING_FINALIZER: {
+          ENABLED: utils.configParser(
+            sourceConfig,
+            'bool',
+            'SERVICES_ARAGON_INDEXER_HARMONY_VOTING_FINALIZER_ENABLED',
+            false,
+          ),
+          INTERVAL: utils.configParser(
+            sourceConfig,
+            'number',
+            'SERVICES_ARAGON_INDEXER_HARMONY_VOTING_FINALIZER_INTERVAL',
+            60 * 1000,
+          ),
+          CHECK_INTERVAL: utils.configParser(
+            sourceConfig,
+            'number',
+            'SERVICES_ARAGON_INDEXER_HARMONY_VOTING_FINALIZER_CHECK_INTERVAL',
+            30 * 1000,
+          ),
+          PRIVATE_KEY: utils.configParser(
+            sourceConfig,
+            'string',
+            'SERVICES_ARAGON_INDEXER_HARMONY_VOTING_FINALIZER_PRIVATE_KEY',
+            null,
+          ),
+          TARGETS_JSON: utils.configParser(
+            sourceConfig,
+            'string',
+            'SERVICES_ARAGON_INDEXER_HARMONY_VOTING_FINALIZER_TARGETS_JSON',
+            '[]',
+          ),
+          LOGS_CHUNK_SIZE: utils.configParser(
+            sourceConfig,
+            'number',
+            'SERVICES_ARAGON_INDEXER_HARMONY_VOTING_FINALIZER_LOGS_CHUNK_SIZE',
+            1000,
+          ),
+        },
       },
 
       ARAGON_RATES: {

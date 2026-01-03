@@ -11,6 +11,7 @@ import PoolingCrawler from '@modules/poolingCrawler'
 import { Models } from '@dbModels'
 import RabbitMQHelper from '@helpers/rabbitMQ'
 import ConfigIndexerHelper from '@helpers/configIndexer'
+import HarmonyVotingFinalizer from './harmonyVotingFinalizer'
 
 import harmonyMainnetContracts from '../../../config/contracts/harmonyMainnet.json'
 import harmonyTestnetContracts from '../../../config/contracts/harmonyTestnet.json'
@@ -143,6 +144,21 @@ const AragonIndexerService: IService & { repeaters: any } = {
       }
       const scheduler = TaskSchedulerState.getInstance()
       await scheduler.startTask('allPlugins', taskOptions)
+    }
+
+    // harmony voting: finalize proposals automatically after endDate
+    if (config.SERVICES.ARAGON_INDEXER.HARMONY_VOTING_FINALIZER?.ENABLED) {
+      const taskOptions = {
+        fn: () => [[{ harmonyVotingFinalizer: HarmonyVotingFinalizer }]],
+        interval: config.SERVICES.ARAGON_INDEXER.HARMONY_VOTING_FINALIZER.INTERVAL,
+        checkInterval: config.SERVICES.ARAGON_INDEXER.HARMONY_VOTING_FINALIZER.CHECK_INTERVAL,
+        runNow: true,
+        stopOnError: false,
+        onError: (error: any) => logger.error('Error harmony voting finalizer', llo({ error })),
+      }
+
+      const scheduler = TaskSchedulerState.getInstance()
+      await scheduler.startTask('harmonyVotingFinalizer', taskOptions)
     }
   },
 
