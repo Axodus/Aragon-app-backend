@@ -176,17 +176,17 @@
       "deploymentTx": "0x"
     },
     "HarmonyHIPVotingSetup": {
-      "address": "0xa8990a3Cb9aba819Bf7fAE388966B6217acB077c",
+      "address": "0x13401A7533331f821ea3f0b2E567D326ca6A906B",
       "blockNumber": 0,
       "deploymentTx": "0x"
     },
     "HarmonyDelegationVotingSetup": {
-      "address": "0xb1F07C3Be7386553D7B1ADEfaE29b81610cADB8A",
+      "address": "0x53184FAE84eb5A6871Da0d4647983676620DAF86",
       "blockNumber": 0,
       "deploymentTx": "0x"
     },
     "HarmonyHIPVotingRepoProxy": {
-      "address": "0xB63fC0a5747a96F643B9f43156D8D041df48eC30",
+      "address": "0x83EED0be2584230D9fD5974fF61FA97376D8bA52",
       "blockNumber": 0,
       "deploymentTx": "0x"
     },
@@ -196,7 +196,7 @@
       "deploymentTx": "0x"
     },
     "HarmonyDelegationVotingRepoProxy": {
-      "address": "0xACcA531400E43ABF8d4dD778D4e63465d27b0D47",
+      "address": "0x30f5BA51C79070725FfbB24C4D0AbdbBA10479fF",
       "blockNumber": 0,
       "deploymentTx": "0x"
     },
