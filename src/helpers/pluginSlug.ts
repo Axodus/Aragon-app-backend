@@ -31,6 +31,10 @@ export const PluginSlug = {
         return IPluginSlug.capitalDistributor
       case IPluginInterfaceType.harmonyVoting:
         return IPluginSlug.harmonyVoting
+      case IPluginInterfaceType.harmonyHipVoting:
+        return IPluginSlug.harmonyHipVoting
+      case IPluginInterfaceType.harmonyDelegationVoting:
+        return IPluginSlug.harmonyDelegationVoting
       default:
         return null
     }
