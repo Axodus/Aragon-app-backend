@@ -174,6 +174,36 @@
       "address": "0xC6213428CE42d03140a39EEC62F4Bb18DEe543bA",
       "blockNumber": 0,
       "deploymentTx": "0x"
+    },
+    "HarmonyHIPVotingSetup": {
+      "address": "0xa8990a3Cb9aba819Bf7fAE388966B6217acB077c",
+      "blockNumber": 0,
+      "deploymentTx": "0x"
+    },
+    "HarmonyDelegationVotingSetup": {
+      "address": "0xb1F07C3Be7386553D7B1ADEfaE29b81610cADB8A",
+      "blockNumber": 0,
+      "deploymentTx": "0x"
+    },
+    "HarmonyHIPVotingRepoProxy": {
+      "address": "0xB63fC0a5747a96F643B9f43156D8D041df48eC30",
+      "blockNumber": 0,
+      "deploymentTx": "0x"
+    },
+    "HarmonyHIPVotingRepoImplementation": {
+      "address": "0xC6213428CE42d03140a39EEC62F4Bb18DEe543bA",
+      "blockNumber": 0,
+      "deploymentTx": "0x"
+    },
+    "HarmonyDelegationVotingRepoProxy": {
+      "address": "0xACcA531400E43ABF8d4dD778D4e63465d27b0D47",
+      "blockNumber": 0,
+      "deploymentTx": "0x"
+    },
+    "HarmonyDelegationVotingRepoImplementation": {
+      "address": "0xC6213428CE42d03140a39EEC62F4Bb18DEe543bA",
+      "blockNumber": 0,
+      "deploymentTx": "0x"
     }
   }
 }
