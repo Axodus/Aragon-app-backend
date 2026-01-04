@@ -164,6 +164,12 @@ describe('Helpers:PluginSlug', () => {
       expect(result).to.equal(IPluginSlug.capitalDistributor)
     })
 
+    it('should return correct IPluginSlug for harmonyVoting interface type', () => {
+      const plugin = { interfaceType: IPluginInterfaceType.harmonyVoting } as any
+      const result = PluginSlug._defaultSlug(plugin)
+      expect(result).to.equal(IPluginSlug.harmonyVoting)
+    })
+
     it('should return null for unrecognized interface type', () => {
       const plugin = { interfaceType: IPluginInterfaceType.unknown } as any
       const result = PluginSlug._defaultSlug(plugin)

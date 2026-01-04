@@ -29,6 +29,8 @@ export const PluginSlug = {
         return IPluginSlug.gauge
       case IPluginInterfaceType.capitalDistributor:
         return IPluginSlug.capitalDistributor
+      case IPluginInterfaceType.harmonyVoting:
+        return IPluginSlug.harmonyVoting
       default:
         return null
     }
