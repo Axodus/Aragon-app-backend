@@ -28,6 +28,8 @@ type FinalizerTarget = {
   electedOnly?: boolean
   validatorAddress?: HexAddress
   fromBlock?: number
+  optInRegistryAddress?: HexAddress
+  optInFromBlock?: number
 }
 
 function safeJsonParseTargets(value: string): FinalizerTarget[] {
@@ -100,15 +102,92 @@ async function computeEligibleEntries(params: {
 }): Promise<{ entries: { address: HexAddress; amount: string }[] }> {
   const { target, snapshotBlock } = params
 
+  async function getOptedInVotingAddressesAtSnapshot(): Promise<Map<string, HexAddress>> {
+    if (!target.optInRegistryAddress) return new Map()
+
+    const optInIface = new Interface([
+      'event OptedIn(address indexed operator, address indexed votingAddress)',
+      'event OptedOut(address indexed operator)',
+    ])
+
+    const optedInTopic = optInIface.getEvent('OptedIn')?.topicHash
+    const optedOutTopic = optInIface.getEvent('OptedOut')?.topicHash
+    if (!optedInTopic || !optedOutTopic) return new Map()
+
+    const provider = ProviderModule.getAnyRpcProvider(target.network)
+    if (!provider) throw new Error(`No RPC provider configured for network ${target.network}`)
+    const latestBlock = await provider.getBlockNumber()
+
+    const fromBlock = Math.max(0, Number(target.optInFromBlock ?? target.fromBlock ?? 0))
+    const toBlock = Math.min(Number(snapshotBlock), Number(latestBlock))
+
+    const logsChunkSize = Number(config.SERVICES.ARAGON_INDEXER.HARMONY_VOTING_FINALIZER.LOGS_CHUNK_SIZE || 1000)
+
+    // `fetchLogsChunked` expects explicit topics; do 2 passes to keep it simple and predictable.
+    const inLogs = await fetchLogsChunked({
+      network: target.network,
+      address: target.optInRegistryAddress,
+      topics: [optedInTopic],
+      fromBlock,
+      toBlock,
+      chunkSize: logsChunkSize,
+    })
+
+    const outLogs = await fetchLogsChunked({
+      network: target.network,
+      address: target.optInRegistryAddress,
+      topics: [optedOutTopic],
+      fromBlock,
+      toBlock,
+      chunkSize: logsChunkSize,
+    })
+
+    // Merge and sort by blockNumber/logIndex to replay deterministically.
+    const merged = [...inLogs, ...outLogs].sort((a, b) => {
+      const ab = Number(a.blockNumber ?? 0)
+      const bb = Number(b.blockNumber ?? 0)
+      if (ab !== bb) return ab - bb
+      const ai = Number((a as any).logIndex ?? 0)
+      const bi = Number((b as any).logIndex ?? 0)
+      return ai - bi
+    })
+
+    const state = new Map<string, HexAddress>()
+
+    for (const log of merged) {
+      try {
+        const decoded = optInIface.parseLog({ topics: log.topics as string[], data: log.data })
+        if (decoded.name === 'OptedIn') {
+          const operator = normalizeAddress(decoded.args.operator as string)
+          const votingAddress = ethers.getAddress(decoded.args.votingAddress as string) as HexAddress
+          state.set(operator, votingAddress)
+        } else if (decoded.name === 'OptedOut') {
+          const operator = normalizeAddress(decoded.args.operator as string)
+          state.delete(operator)
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    return state
+  }
+
   if (target.mode === 'validators') {
-    const validatorAddresses = target.electedOnly
-      ? await HarmonyRpc.getElectedValidatorAddresses(target.network)
-      : await HarmonyRpc.getAllValidatorAddresses(target.network)
+    const optIn = await getOptedInVotingAddressesAtSnapshot()
 
-    const entries: { address: HexAddress; amount: string }[] = []
+    // If opt-in registry is configured, use only opted-in operators.
+    // Otherwise fall back to elected/all validators.
+    const operatorAddresses: HexAddress[] = optIn.size
+      ? [...optIn.keys()].map(a => ethers.getAddress(a) as HexAddress)
+      : (target.electedOnly
+          ? await HarmonyRpc.getElectedValidatorAddresses(target.network)
+          : await HarmonyRpc.getAllValidatorAddresses(target.network))
 
-    for (const validatorAddress of validatorAddresses) {
-      const info = await HarmonyRpc.getValidatorInformationByBlockNumber(validatorAddress, snapshotBlock, target.network)
+    const byVotingAddress = new Map<string, bigint>()
+
+    for (const operatorAddress of operatorAddresses) {
+      const info = await HarmonyRpc.getValidatorInformationByBlockNumber(operatorAddress, snapshotBlock, target.network)
       const raw =
         info?.['total-delegation'] ??
         info?.totalDelegation ??
@@ -116,9 +195,23 @@ async function computeEligibleEntries(params: {
         info?.['totalDelegation'] ??
         '0'
 
-      const amount = String(raw ?? '0')
-      entries.push({ address: validatorAddress, amount })
+      const amountStr = String(raw ?? '0')
+      let amount = 0n
+      try {
+        amount = BigInt(amountStr)
+      } catch {
+        amount = 0n
+      }
+
+      const votingAddress = optIn.size ? (optIn.get(normalizeAddress(operatorAddress)) ?? operatorAddress) : operatorAddress
+      const key = normalizeAddress(votingAddress)
+      byVotingAddress.set(key, (byVotingAddress.get(key) ?? 0n) + amount)
     }
+
+    const entries: { address: HexAddress; amount: string }[] = [...byVotingAddress.entries()].map(([addr, amt]) => ({
+      address: ethers.getAddress(addr) as HexAddress,
+      amount: amt.toString(),
+    }))
 
     return { entries }
   }

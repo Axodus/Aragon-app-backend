@@ -55,6 +55,7 @@ const HarmonyVotingAdminRouter = {
     const params = {
       proposalId: body?.proposalId,
       merkleRoot: body?.merkleRoot,
+      totalEligiblePower: body?.totalEligiblePower,
     }
 
     const formattedValues = await ValidationSchema.validateParams(HarmonyVotingSchema.calldataSetRootParams, params)
