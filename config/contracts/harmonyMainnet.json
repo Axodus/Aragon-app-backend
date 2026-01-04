@@ -26,9 +26,9 @@
       "deploymentTx": "0x"
     },
     "DAOFactory": {
-      "address": "0x2447Cf5F171b378BE17Ff5425b163beb23862039",
-      "blockNumber": 0,
-      "deploymentTx": "0x"
+      "address": "0x83EED0be2584230D9fD5974fF61FA97376D8bA52",
+      "blockNumber": 83313552,
+      "deploymentTx": "0xb5e7bc25b338642b49fa0de93a56003bdde4ba1b2e889a58d90cb4dd4348fb30"
     },
     "DAORegistryProxy": {
       "address": "0xA729988638EC58420f2E3a6B89773Cd4f2a03e45",
