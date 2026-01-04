@@ -11,7 +11,7 @@ const PluginDetector = {
   SPP_FUNCTIONS: ['getStages(uint256)'],
   TOKEN_VOTING_FUNCTIONS: ['getVotingToken()', 'totalVotingPower(uint256)'],
   HARMONY_VOTING_FUNCTIONS: [
-    'setMerkleRoot(uint256,bytes32)',
+    'setMerkleRoot(uint256,bytes32,uint256)',
     'submitVotingPower(uint256,address,uint256,bytes32[])',
     'getProposal(uint256)',
   ],

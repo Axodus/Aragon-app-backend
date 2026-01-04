@@ -84,9 +84,17 @@ const HarmonyVotingAdminController = {
     return await MerkleTreeHelper.generateTreeWithProofs(params.entries)
   },
 
-  encodeSetMerkleRootCalldata: async (params: { proposalId: number; merkleRoot: string }) => {
+  encodeSetMerkleRootCalldata: async (params: {
+    proposalId: number
+    merkleRoot: string
+    totalEligiblePower: string
+  }) => {
     const iface = new Interface(HarmonyVotingPlugin.abi as any)
-    const data = iface.encodeFunctionData('setMerkleRoot', [params.proposalId, params.merkleRoot])
+    const data = iface.encodeFunctionData('setMerkleRoot', [
+      params.proposalId,
+      params.merkleRoot,
+      params.totalEligiblePower,
+    ])
     return { data }
   },
 

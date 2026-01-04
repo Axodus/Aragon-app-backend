@@ -45,6 +45,7 @@ const HarmonyVotingSchema = {
     merkleRoot: Joi.string()
       .pattern(/^0x[0-9a-fA-F]{64}$/)
       .required(),
+    totalEligiblePower: Joi.string().pattern(/^\d+$/).required(),
   }),
 
   calldataSubmitPowerParams: Joi.object({
