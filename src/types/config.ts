@@ -250,6 +250,8 @@ export interface IConfig {
         PRIVATE_KEY: string | null
         TARGETS_JSON: string
         LOGS_CHUNK_SIZE: number
+        BLOCK_ON_MERKLE_MISMATCH: boolean
+        REVALIDATE_BLOCKED: boolean
       }
     }
     ARAGON_RATES: {

@@ -31,6 +31,7 @@ export const HarmonyVotingPlugin = {
       inputs: [
         { internalType: 'uint256', name: 'proposalId', type: 'uint256' },
         { internalType: 'bytes32', name: 'merkleRoot', type: 'bytes32' },
+        { internalType: 'uint256', name: 'totalEligiblePower', type: 'uint256' },
       ],
       name: 'setMerkleRoot',
       outputs: [],
@@ -58,6 +59,13 @@ export const HarmonyVotingPlugin = {
     },
     {
       inputs: [{ internalType: 'uint256', name: 'proposalId', type: 'uint256' }],
+      name: 'oracleCloseProposal',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [{ internalType: 'uint256', name: 'proposalId', type: 'uint256' }],
       name: 'getProposal',
       outputs: [
         {
@@ -68,6 +76,8 @@ export const HarmonyVotingPlugin = {
             { internalType: 'uint64', name: 'snapshotBlock', type: 'uint64' },
             { internalType: 'bytes32', name: 'merkleRoot', type: 'bytes32' },
             { internalType: 'bool', name: 'closed', type: 'bool' },
+            { internalType: 'bool', name: 'passed', type: 'bool' },
+            { internalType: 'uint256', name: 'totalEligiblePower', type: 'uint256' },
             { internalType: 'uint256', name: 'yes', type: 'uint256' },
             { internalType: 'uint256', name: 'no', type: 'uint256' },
             { internalType: 'uint256', name: 'abstain', type: 'uint256' },

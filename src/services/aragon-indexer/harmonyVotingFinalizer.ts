@@ -10,6 +10,15 @@ import { HarmonyVotingPlugin } from '@artifacts/HarmonyVotingPlugin'
 
 const llo = logger.logMeta.bind(null, { service: 'service:indexer:HarmonyVotingFinalizer' })
 
+const blockedByKey = new Map<
+  string,
+  {
+    firstSeenAt: number
+    onchainRoot: string
+    computedRoot: string
+  }
+>()
+
 type FinalizerMode = 'validators' | 'delegators'
 
 type FinalizerTarget = {
@@ -222,6 +231,9 @@ export const HarmonyVotingFinalizer = {
         const finalizationPeriod = Number((await contract.FINALIZATION_PERIOD()) as bigint)
         const logsChunkSize = Number(cfg.LOGS_CHUNK_SIZE || 1000)
 
+        const blockOnMerkleMismatch = cfg.BLOCK_ON_MERKLE_MISMATCH !== false
+        const revalidateBlocked = cfg.REVALIDATE_BLOCKED === true
+
         for (let proposalId = 1n; proposalId <= proposalCount; proposalId++) {
           const p = await contract.getProposal(proposalId)
 
@@ -258,22 +270,76 @@ export const HarmonyVotingFinalizer = {
             continue
           }
 
+          const blockKey = `${target.network}:${normalizeAddress(target.pluginAddress)}:${proposalId.toString()}`
+          const blocked = blockedByKey.get(blockKey)
+          if (blocked && !revalidateBlocked) {
+            logger.debug('Proposal is blocked; skipping', llo({
+              target,
+              proposalId: proposalId.toString(),
+              onchainRoot: blocked.onchainRoot,
+              computedRoot: blocked.computedRoot,
+            }))
+            continue
+          }
+
           const { entries } = await computeEligibleEntries({ target, snapshotBlock })
           const { merkleRoot: computedRoot, members } = await MerkleTreeHelper.generateTreeWithProofs(entries)
 
+          const totalEligiblePower = entries.reduce((acc, e) => {
+            try {
+              return acc + BigInt(e.amount || '0')
+            } catch {
+              return acc
+            }
+          }, 0n)
+
           if (merkleRoot && merkleRoot !== ethers.ZeroHash) {
             if (merkleRoot.toLowerCase() !== computedRoot.toLowerCase()) {
-              logger.warn('Merkle root mismatch; skipping submissions', llo({
+              if (blockOnMerkleMismatch) {
+                if (!blocked) {
+                  blockedByKey.set(blockKey, {
+                    firstSeenAt: Date.now(),
+                    onchainRoot: merkleRoot,
+                    computedRoot,
+                  })
+                  logger.error('Merkle root mismatch; proposal BLOCKED (use REVALIDATE_BLOCKED to retry)', llo({
+                    target,
+                    proposalId: proposalId.toString(),
+                    onchainRoot: merkleRoot,
+                    computedRoot,
+                  }))
+                } else {
+                  logger.debug('Merkle root mismatch; still blocked', llo({
+                    target,
+                    proposalId: proposalId.toString(),
+                    onchainRoot: merkleRoot,
+                    computedRoot,
+                  }))
+                }
+              } else {
+                logger.warn('Merkle root mismatch; skipping submissions', llo({
+                  target,
+                  proposalId: proposalId.toString(),
+                  onchainRoot: merkleRoot,
+                  computedRoot,
+                }))
+              }
+              continue
+            }
+
+            // Root matches: if it was blocked before, unblock.
+            if (blocked) {
+              blockedByKey.delete(blockKey)
+              logger.info('Merkle root revalidated; proposal UNBLOCKED', llo({
                 target,
                 proposalId: proposalId.toString(),
                 onchainRoot: merkleRoot,
                 computedRoot,
               }))
-              continue
             }
           } else {
             try {
-              const tx = await contract.setMerkleRoot(proposalId, computedRoot)
+              const tx = await contract.setMerkleRoot(proposalId, computedRoot, totalEligiblePower)
               await tx.wait()
               logger.info('Set merkle root', llo({ target, proposalId: proposalId.toString(), tx: tx.hash }))
             } catch (error: any) {
@@ -324,6 +390,15 @@ export const HarmonyVotingFinalizer = {
                 error: error?.message || error,
               }))
             }
+          }
+
+          // Try to close early as oracle once voting ended and root is set.
+          try {
+            const tx = await contract.oracleCloseProposal(proposalId)
+            await tx.wait()
+            logger.info('Closed proposal (oracle)', llo({ target, proposalId: proposalId.toString(), tx: tx.hash }))
+          } catch (error: any) {
+            logger.debug('Oracle close skipped/failed', llo({ target, proposalId: proposalId.toString(), error }))
           }
         }
       } catch (error: any) {

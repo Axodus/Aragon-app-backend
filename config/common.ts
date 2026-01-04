@@ -791,6 +791,18 @@ const getConfigObject = (sourceConfig: Record<string, any>): IConfig => {
             'SERVICES_ARAGON_INDEXER_HARMONY_VOTING_FINALIZER_LOGS_CHUNK_SIZE',
             1000,
           ),
+          BLOCK_ON_MERKLE_MISMATCH: utils.configParser(
+            sourceConfig,
+            'bool',
+            'SERVICES_ARAGON_INDEXER_HARMONY_VOTING_FINALIZER_BLOCK_ON_MERKLE_MISMATCH',
+            true,
+          ),
+          REVALIDATE_BLOCKED: utils.configParser(
+            sourceConfig,
+            'bool',
+            'SERVICES_ARAGON_INDEXER_HARMONY_VOTING_FINALIZER_REVALIDATE_BLOCKED',
+            false,
+          ),
         },
       },
 
