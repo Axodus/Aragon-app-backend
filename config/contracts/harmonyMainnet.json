@@ -177,13 +177,13 @@
     },
     "HarmonyHIPVotingSetup": {
       "address": "0xa8990a3Cb9aba819Bf7fAE388966B6217acB077c",
-      "blockNumber": 0,
-      "deploymentTx": "0x"
+      "blockNumber": 83274484,
+      "deploymentTx": "0x2498d70ba64ccbda02f04e809fd7e8843b14e8aa52d315bd94f7e0327e38de12"
     },
     "HarmonyDelegationVotingSetup": {
       "address": "0xb1F07C3Be7386553D7B1ADEfaE29b81610cADB8A",
-      "blockNumber": 0,
-      "deploymentTx": "0x"
+      "blockNumber": 83274558,
+      "deploymentTx": "0x0e87931af642565ddb2da04393f40d95b2de2204c4c741013967c4d7dab4bd8f"
     },
     "HarmonyHIPVotingRepoProxy": {
       "address": "0xB63fC0a5747a96F643B9f43156D8D041df48eC30",
