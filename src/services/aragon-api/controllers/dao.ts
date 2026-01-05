@@ -47,7 +47,7 @@ const DaoController = {
     const resolvedAddress = await NameResolver.resolveNameToAddress(ens, network)
     assertExposable(!!resolvedAddress, ErrorKeyEnum.notFound)
 
-    const daoByAddress = await Models.Dao.findByAddress(resolvedAddress as HexAddress, network)
+    const daoByAddress = await Models.Dao.findByAddress(resolvedAddress!, network)
     assertExposable(daoByAddress, ErrorKeyEnum.notFound)
     return await Models.Dao.getDaoDetails(daoByAddress.address, daoByAddress.network)
   },

@@ -96,7 +96,7 @@ const PairDataModule = {
       const networkForCountry = pickCountryNetwork()
       const resolvedAddress = await NameResolver.resolveNameToAddress(searchStr, networkForCountry)
       if (resolvedAddress) {
-        return resolvedAddress as HexAddress
+        return resolvedAddress
       }
     }
 
@@ -144,7 +144,7 @@ const PairDataModule = {
         const networkForCountry = pickCountryNetwork(extraParams.network)
         const resolvedAddress = await NameResolver.resolveNameToAddress(pairParams.ens, networkForCountry)
         if (resolvedAddress) {
-          extraParams.memberAddress = resolvedAddress as HexAddress
+          extraParams.memberAddress = resolvedAddress
         }
       }
     }

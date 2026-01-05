@@ -157,6 +157,9 @@ async function computeEligibleEntries(params: {
     for (const log of merged) {
       try {
         const decoded = optInIface.parseLog({ topics: log.topics as string[], data: log.data })
+        if (decoded == null) {
+          continue
+        }
         if (decoded.name === 'OptedIn') {
           const operator = normalizeAddress(decoded.args.operator as string)
           const votingAddress = ethers.getAddress(decoded.args.votingAddress as string) as HexAddress
