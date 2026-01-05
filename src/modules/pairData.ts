@@ -9,10 +9,19 @@ import {
   NetworksEnum,
 } from '@types'
 import NameResolver from '@helpers/nameResolver'
+import config from '@config'
 
 const pickCountryNetwork = (networks?: NetworksEnum | NetworksEnum[]): NetworksEnum => {
-  // Decisão explícita: quando o request não traz network, `.country` resolve via Harmony Mainnet.
-  if (!networks) return NetworksEnum.harmonyMainnet
+  // Backend roda apenas em Harmony: quando o request não traz network, escolhemos pela config.
+  // Preferência: Harmony Mainnet; se a única suportada for Testnet, usa Testnet.
+  if (!networks) {
+    const supported = (config.SUPPORTED_NETWORKS ?? []) as NetworksEnum[]
+    const hasMainnet = supported.includes(NetworksEnum.harmonyMainnet)
+    const hasTestnet = supported.includes(NetworksEnum.harmonyTestnet)
+
+    if (!hasMainnet && hasTestnet) return NetworksEnum.harmonyTestnet
+    return NetworksEnum.harmonyMainnet
+  }
 
   if (Array.isArray(networks)) {
     if (networks.includes(NetworksEnum.harmonyMainnet)) return NetworksEnum.harmonyMainnet
