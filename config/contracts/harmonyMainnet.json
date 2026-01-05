@@ -187,8 +187,8 @@
     },
     "HarmonyHIPVotingRepoProxy": {
       "address": "0xB63fC0a5747a96F643B9f43156D8D041df48eC30",
-      "blockNumber": 0,
-      "deploymentTx": "0x"
+      "blockNumber": 83274739,
+      "deploymentTx": "0xcbd1f8cdf03b814d8846e9c0db67be7bc6d367a851a4e22c835f01d7140f11a6"
     },
     "HarmonyHIPVotingRepoImplementation": {
       "address": "0xC6213428CE42d03140a39EEC62F4Bb18DEe543bA",
@@ -197,8 +197,8 @@
     },
     "HarmonyDelegationVotingRepoProxy": {
       "address": "0xACcA531400E43aBF8d4DD778D4e63465d27b0D47",
-      "blockNumber": 0,
-      "deploymentTx": "0x"
+      "blockNumber": 83274761,
+      "deploymentTx": "0x1cd800254f2ae688409707d72471b7a6c342df84391ad778bb47b2eb1c1d5529"
     },
     "HarmonyDelegationVotingRepoImplementation": {
       "address": "0xC6213428CE42d03140a39EEC62F4Bb18DEe543bA",
