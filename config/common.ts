@@ -691,6 +691,14 @@ const getConfigObject = (sourceConfig: Record<string, any>): IConfig => {
         'CONTRACTS_ENS_REGISTRY',
         '0x00000000000c2e074ec69a0dfb2997ba6c7d2e1e',
       ),
+      COUNTRY_REGISTRY: {
+        HARMONY_MAINNET:
+          utils.configParser(sourceConfig, 'string', 'HARMONY_MAINNET_COUNTRY_REGISTRY', null) ||
+          utils.configParser(sourceConfig, 'string', 'HARMONY_COUNTRY_REGISTRY', null),
+        HARMONY_TESTNET:
+          utils.configParser(sourceConfig, 'string', 'HARMONY_TESTNET_COUNTRY_REGISTRY', null) ||
+          utils.configParser(sourceConfig, 'string', 'HARMONYTESTNET_COUNTRY_REGISTRY', null),
+      },
     },
 
     IPFS: {

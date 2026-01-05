@@ -14,6 +14,7 @@ import {
 } from '@types'
 import { assertExposable } from '@errors'
 import PairDataModule from '@modules/pairData'
+import NameResolver from '@helpers/nameResolver'
 
 const DaoController = {
   getDaosWithPagination: async (
@@ -39,8 +40,16 @@ const DaoController = {
 
   getDaoByEns: async (ens: string, network: NetworksEnum): Promise<IDaoResponse> => {
     const dao = await Models.Dao.findOne({ ens, network, isHidden: { $ne: true }, isActive: { $eq: true } })
-    assertExposable(dao, ErrorKeyEnum.notFound)
-    return await Models.Dao.getDaoDetails(dao.address, dao.network)
+    if (dao) {
+      return await Models.Dao.getDaoDetails(dao.address, dao.network)
+    }
+
+    const resolvedAddress = await NameResolver.resolveNameToAddress(ens, network)
+    assertExposable(!!resolvedAddress, ErrorKeyEnum.notFound)
+
+    const daoByAddress = await Models.Dao.findByAddress(resolvedAddress as HexAddress, network)
+    assertExposable(daoByAddress, ErrorKeyEnum.notFound)
+    return await Models.Dao.getDaoDetails(daoByAddress.address, daoByAddress.network)
   },
 
   getDaosByMember: async (

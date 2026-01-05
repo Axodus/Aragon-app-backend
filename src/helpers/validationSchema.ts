@@ -69,7 +69,7 @@ const ValidationSchema = {
     }),
   joiEns: Joi.string()
     .custom((value, helpers) => {
-      const ensRegex = /^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.eth$/
+      const ensRegex = /^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.(eth|country)$/
       if (!ensRegex.test(value)) {
         return helpers.error('string.invalid', { value })
       }

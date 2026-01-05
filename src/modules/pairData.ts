@@ -6,8 +6,21 @@ import {
   type IPaginationParams,
   type IPairParams,
   IPluginStatus,
-  type NetworksEnum,
+  NetworksEnum,
 } from '@types'
+import NameResolver from '@helpers/nameResolver'
+
+const pickCountryNetwork = (networks?: NetworksEnum | NetworksEnum[]): NetworksEnum => {
+  // Decisão explícita: quando o request não traz network, `.country` resolve via Harmony Mainnet.
+  if (!networks) return NetworksEnum.harmonyMainnet
+
+  if (Array.isArray(networks)) {
+    if (networks.includes(NetworksEnum.harmonyMainnet)) return NetworksEnum.harmonyMainnet
+    return networks[0] ?? NetworksEnum.harmonyMainnet
+  }
+
+  return networks
+}
 
 const PairDataModule = {
   pairExtraQueryData: async <
@@ -31,13 +44,19 @@ const PairDataModule = {
     // resolve ens from search
     if (paginationParams?.search && paginationParams?.search?.length > 0) {
       const searchStr = paginationParams.search
-      const ethRegex = /\.eth$/
+      const ensLikeRegex = /\.(eth|country)$/
 
-      if (ethRegex.test(searchStr)) {
+      if (ensLikeRegex.test(searchStr)) {
         const member = await Models.Member.findByEns(searchStr as any)
 
         if (member) {
           paginationParams.search = member.address
+        } else {
+          const networkForCountry = pickCountryNetwork()
+          const resolvedAddress = await NameResolver.resolveNameToAddress(searchStr, networkForCountry)
+          if (resolvedAddress) {
+            paginationParams.search = resolvedAddress
+          }
         }
         // else {
         //   const address = await Web3Helper.getAddressFromEns(searchStr, NetworksEnum.ethereumMainnet)
@@ -58,11 +77,17 @@ const PairDataModule = {
   },
 
   checkIFEns: async (searchStr: string): Promise<HexAddress> => {
-    const ifEns = searchStr.match(/\.eth$/)
+    const ifEns = searchStr.match(/\.(eth|country)$/)
     if (ifEns) {
       const member = await Models.Member.findByEns(searchStr as any)
       if (member) {
         return member.address
+      }
+
+      const networkForCountry = pickCountryNetwork()
+      const resolvedAddress = await NameResolver.resolveNameToAddress(searchStr, networkForCountry)
+      if (resolvedAddress) {
+        return resolvedAddress as HexAddress
       }
     }
 
@@ -106,6 +131,12 @@ const PairDataModule = {
       const memberDb = await Models.Member.findByEns(pairParams.ens as any)
       if (memberDb) {
         extraParams.memberAddress = memberDb.address
+      } else {
+        const networkForCountry = pickCountryNetwork(extraParams.network)
+        const resolvedAddress = await NameResolver.resolveNameToAddress(pairParams.ens, networkForCountry)
+        if (resolvedAddress) {
+          extraParams.memberAddress = resolvedAddress as HexAddress
+        }
       }
     }
 

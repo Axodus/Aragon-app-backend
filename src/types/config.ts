@@ -184,6 +184,10 @@ export interface IConfig {
 
   CONTRACTS: {
     ENS_REGISTRY: string
+    COUNTRY_REGISTRY: {
+      HARMONY_MAINNET: string | null
+      HARMONY_TESTNET: string | null
+    }
   }
 
   IPFS: {
