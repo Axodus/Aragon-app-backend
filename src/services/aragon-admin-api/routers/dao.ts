@@ -49,6 +49,18 @@ const DaoAdminRouter = {
     ctx.body = await DaoAdminController.setVisibilityStatus(formattedValues)
   },
 
+  setEns: async function (ctx: RouterContext) {
+    const body = ctx.request.body as any
+    const params = {
+      address: body?.address,
+      network: body?.network,
+      ens: body?.ens,
+    }
+
+    const formattedValues = await ValidationSchema.validateParams(GenericSchema.setDaoEnsParams, params)
+    ctx.body = await DaoAdminController.setEns(formattedValues)
+  },
+
   router(): Router {
     const router = new Router()
     const authedAdminOrRoot = AuthMiddleware.authAssertAdminOrRoot()
@@ -56,6 +68,7 @@ const DaoAdminRouter = {
     router.get('/archived', authedAdminOrRoot, DaoAdminRouter.getArchivedWithPagination)
     router.get('/status/:daoAddress/:network', authedAdminOrRoot, DaoAdminRouter.getVisibilityStatus)
     router.post('/set-status/:daoAddress/:network/:status', authedAdminOrRoot, DaoAdminRouter.setVisibilityStatus)
+    router.post('/set-ens', authedAdminOrRoot, DaoAdminRouter.setEns)
 
     return router
   },

@@ -1,8 +1,15 @@
-import { type IAVisibilityStatusParams, type IDaoExtraParams, type IPaginatedResult, type IPaginationParams, type IDaoResponse } from '@src/types'
+import {
+  type IAVisibilityStatusParams,
+  type IDaoExtraParams,
+  type IDaoResponse,
+  type IPaginatedResult,
+  type IPaginationParams,
+  ErrorKeyEnum,
+} from '@src/types'
 import { Models } from '@dbModels'
-import { ErrorKeyEnum } from '@types'
 import { assertExposable } from '@errors'
 import PairDataModule from '@modules/pairData'
+import DaoEnsHelper from '@helpers/daoEns'
 
 const DaoAdminController = {
   setVisibilityStatus: async (params: IAVisibilityStatusParams): Promise<any> => {
@@ -34,6 +41,14 @@ const DaoAdminController = {
       extraParams,
       paginationParams,
       extraQueryData: { ...extraQueryData, onlyHidden: true },
+    })
+  },
+
+  setEns: async (params: { address: string; network: any; ens?: string | null }): Promise<{ ens: string | null }> => {
+    return await DaoEnsHelper.setDaoEnsValidated({
+      address: params.address,
+      network: params.network,
+      ens: params.ens ?? null,
     })
   },
 }

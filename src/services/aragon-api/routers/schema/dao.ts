@@ -41,6 +41,20 @@ const DaoSchema = {
       .required(),
     ens: ValidationSchema.joiEns.required(),
   }),
+
+  setDaoEnsByDaoAdmin: Joi.object({
+    network: Joi.string()
+      .valid(...Object.values(NetworksEnum))
+      .required(),
+    address: ValidationSchema.joiAddress.required(),
+    ens: Joi.alternatives().try(ValidationSchema.joiEns, Joi.allow(null, '')),
+    signer: ValidationSchema.joiAddress.required(),
+    signature: Joi.string()
+      .trim()
+      .pattern(/^0x([0-9a-fA-F]{128}|[0-9a-fA-F]{130})$/)
+      .required(),
+    issuedAt: Joi.number().integer().min(0).required(),
+  }),
 }
 
 export default DaoSchema

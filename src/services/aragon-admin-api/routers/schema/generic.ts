@@ -26,6 +26,14 @@ const GenericSchema = {
     status: Joi.boolean().required(),
   }),
 
+  setDaoEnsParams: Joi.object({
+    network: Joi.string()
+      .valid(...Object.values(NetworksEnum))
+      .required(),
+    address: ValidationSchema.joiAddress.required(),
+    ens: ValidationSchema.joiEns.allow(null, '').optional(),
+  }),
+
   queueProposalMetrics: Joi.object({
     network: Joi.string()
       .valid(...Object.values(NetworksEnum))
