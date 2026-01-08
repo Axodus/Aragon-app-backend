@@ -316,7 +316,8 @@ export const PluginHandler = {
     }
 
     const pluginInfo = await PluginDetector.detectPluginType(plugin.address, plugin.network)
-    document.interfaceType = getHarmonyVotingInterfaceType(plugin.pluginSetupRepoAddress, plugin.network) ?? pluginInfo?.type
+    document.interfaceType =
+      getHarmonyVotingInterfaceType(plugin.pluginSetupRepoAddress, plugin.network) ?? pluginInfo?.type
 
     if (document.interfaceType === IPluginInterfaceType.tokenVoting) {
       // maybe the token is not a erc20 governance

@@ -44,10 +44,7 @@ async function findLastBlockAtOrBeforeTimestamp(targetUnixSeconds: number, netwo
   return low
 }
 
-export async function computeHarmonySnapshot(params: {
-  endDate: number
-  network: NetworksEnum
-}): Promise<{
+export async function computeHarmonySnapshot(params: { endDate: number; network: NetworksEnum }): Promise<{
   endDate: number
   endBlock: number
   endEpoch: number

@@ -53,7 +53,11 @@ const HarmonyVotingSchema = {
     voter: ValidationSchema.joiAddress.required(),
     votingPower: Joi.string().pattern(/^\d+$/).required(),
     proof: Joi.array()
-      .items(Joi.string().pattern(/^0x[0-9a-fA-F]{64}$/).required())
+      .items(
+        Joi.string()
+          .pattern(/^0x[0-9a-fA-F]{64}$/)
+          .required(),
+      )
       .required(),
   }),
 }

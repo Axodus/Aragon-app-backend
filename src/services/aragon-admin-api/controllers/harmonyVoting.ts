@@ -1,4 +1,4 @@
-import { type HexAddress, NetworksEnum } from '@types'
+import { type HexAddress, type NetworksEnum } from '@types'
 import HarmonyRpc from '@helpers/harmonyRpc'
 import { computeHarmonySnapshot } from '@helpers/harmonySnapshot'
 import MerkleTreeHelper from '@helpers/merkleTree'
@@ -21,8 +21,11 @@ function pickDelegations(validatorInfo: any): any[] {
 
 function pickDelegatorAddress(delegation: any): HexAddress | null {
   const addr =
-    delegation?.delegator_address ?? delegation?.delegatorAddress ?? delegation?.['delegator-address'] ?? delegation?.delegator
-  return addr ? (String(addr) as HexAddress) : null
+    delegation?.delegator_address ??
+    delegation?.delegatorAddress ??
+    delegation?.['delegator-address'] ??
+    delegation?.delegator
+  return addr ? String(addr) : null
 }
 
 function pickDelegationAmount(delegation: any): string {

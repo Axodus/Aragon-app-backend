@@ -3,7 +3,7 @@ import { assertExposable } from '@errors'
 import { ErrorKeyEnum, type NetworksEnum } from '@types'
 import NameResolver from '@helpers/nameResolver'
 
-export type SetDaoEnsParams = {
+export interface SetDaoEnsParams {
   address: string
   network: NetworksEnum
   ens?: string | null

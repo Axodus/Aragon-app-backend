@@ -210,9 +210,7 @@ export class AdaptiveBatchSizeManager {
     const oldBatchSize = this.state.currentBatchSize
     const reduced = Math.floor(oldBatchSize / reductionFactor)
     const newBatchSize =
-      oldBatchSize <= softMinBatchSize
-        ? Math.max(reduced, hardMinBatchSize)
-        : Math.max(reduced, softMinBatchSize)
+      oldBatchSize <= softMinBatchSize ? Math.max(reduced, hardMinBatchSize) : Math.max(reduced, softMinBatchSize)
 
     this.state.currentBatchSize = newBatchSize
 

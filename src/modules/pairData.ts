@@ -15,7 +15,7 @@ const pickCountryNetwork = (networks?: NetworksEnum | NetworksEnum[]): NetworksE
   // Backend roda apenas em Harmony: quando o request não traz network, escolhemos pela config.
   // Preferência: Harmony Mainnet; se a única suportada for Testnet, usa Testnet.
   if (!networks) {
-    const supported = (config.SUPPORTED_NETWORKS ?? []) as NetworksEnum[]
+    const supported = config.SUPPORTED_NETWORKS ?? []
     const hasMainnet = supported.includes(NetworksEnum.harmonyMainnet)
     const hasTestnet = supported.includes(NetworksEnum.harmonyTestnet)
 

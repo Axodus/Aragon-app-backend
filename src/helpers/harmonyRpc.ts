@@ -2,25 +2,25 @@ import logger from '@logger'
 import BottleneckModule from '@modules/bottleneck'
 import ProviderModule from '@modules/provider'
 import { retryRequest } from '@helpers/retryRequest'
-import { type HexAddress, NetworksEnum } from '@types'
+import { type HexAddress, type NetworksEnum } from '@types'
 
 const llo = logger.logMeta.bind(null, { service: 'helpers:HarmonyRpc' })
 
-type HarmonyHeader = {
+interface HarmonyHeader {
   blockNumber?: number
   unixtime?: number
   epoch?: number
   [key: string]: any
 }
 
-type HarmonyBlock = {
+interface HarmonyBlock {
   number?: number
   timestamp?: number
   epoch?: number
   [key: string]: any
 }
 
-type ValidatorInformationByBlock = {
+interface ValidatorInformationByBlock {
   validator?: {
     delegations?: any[]
     [key: string]: any
@@ -127,10 +127,7 @@ const HarmonyRpc = {
         network,
       )
     } catch (error) {
-      logger.error(
-        'Error getValidatorInformationByBlockNumber',
-        llo({ network, validatorAddress, blockNumber, error }),
-      )
+      logger.error('Error getValidatorInformationByBlockNumber', llo({ network, validatorAddress, blockNumber, error }))
       throw error
     }
   },

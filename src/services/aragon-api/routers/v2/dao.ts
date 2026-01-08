@@ -96,7 +96,7 @@ const DaoRouter = {
     }
 
     const formattedValues = await ValidationSchema.validateParams(DaoSchema.setDaoEnsByDaoAdmin, params)
-    ctx.body = await DaoController.setDaoEnsByDaoAdminSignature(formattedValues as any)
+    ctx.body = await DaoController.setDaoEnsByDaoAdminSignature(formattedValues)
   },
 
   router(): Router {

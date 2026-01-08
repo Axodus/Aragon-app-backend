@@ -21,7 +21,7 @@ const blockedByKey = new Map<
 
 type FinalizerMode = 'validators' | 'delegators'
 
-type FinalizerTarget = {
+interface FinalizerTarget {
   network: NetworksEnum
   pluginAddress: HexAddress
   mode: FinalizerMode
@@ -162,7 +162,7 @@ async function computeEligibleEntries(params: {
         }
         if (decoded.name === 'OptedIn') {
           const operator = normalizeAddress(decoded.args.operator as string)
-          const votingAddress = ethers.getAddress(decoded.args.votingAddress as string) as HexAddress
+          const votingAddress = ethers.getAddress(decoded.args.votingAddress as string)
           state.set(operator, votingAddress)
         } else if (decoded.name === 'OptedOut') {
           const operator = normalizeAddress(decoded.args.operator as string)
@@ -182,10 +182,10 @@ async function computeEligibleEntries(params: {
     // If opt-in registry is configured, use only opted-in operators.
     // Otherwise fall back to elected/all validators.
     const operatorAddresses: HexAddress[] = optIn.size
-      ? [...optIn.keys()].map(a => ethers.getAddress(a) as HexAddress)
-      : (target.electedOnly
-          ? await HarmonyRpc.getElectedValidatorAddresses(target.network)
-          : await HarmonyRpc.getAllValidatorAddresses(target.network))
+      ? [...optIn.keys()].map(a => ethers.getAddress(a))
+      : target.electedOnly
+        ? await HarmonyRpc.getElectedValidatorAddresses(target.network)
+        : await HarmonyRpc.getAllValidatorAddresses(target.network)
 
     const byVotingAddress = new Map<string, bigint>()
 
@@ -206,13 +206,15 @@ async function computeEligibleEntries(params: {
         amount = 0n
       }
 
-      const votingAddress = optIn.size ? (optIn.get(normalizeAddress(operatorAddress)) ?? operatorAddress) : operatorAddress
+      const votingAddress = optIn.size
+        ? (optIn.get(normalizeAddress(operatorAddress)) ?? operatorAddress)
+        : operatorAddress
       const key = normalizeAddress(votingAddress)
       byVotingAddress.set(key, (byVotingAddress.get(key) ?? 0n) + amount)
     }
 
     const entries: { address: HexAddress; amount: string }[] = [...byVotingAddress.entries()].map(([addr, amt]) => ({
-      address: ethers.getAddress(addr) as HexAddress,
+      address: ethers.getAddress(addr),
       amount: amt.toString(),
     }))
 
@@ -223,7 +225,11 @@ async function computeEligibleEntries(params: {
     throw new Error('Delegators mode requires validatorAddress in target config')
   }
 
-  const info = await HarmonyRpc.getValidatorInformationByBlockNumber(target.validatorAddress, snapshotBlock, target.network)
+  const info = await HarmonyRpc.getValidatorInformationByBlockNumber(
+    target.validatorAddress,
+    snapshotBlock,
+    target.network,
+  )
   const delegations = Array.isArray(info?.validator?.delegations) ? info.validator.delegations : []
 
   const entries: { address: HexAddress; amount: string }[] = []
@@ -238,7 +244,7 @@ async function computeEligibleEntries(params: {
     if (!delegator) continue
 
     const amount = String(delegation?.amount ?? delegation?.delegatedAmount ?? delegation?.['delegated-amount'] ?? '0')
-    entries.push({ address: String(delegator) as HexAddress, amount })
+    entries.push({ address: String(delegator), amount })
   }
 
   return { entries }
@@ -281,7 +287,7 @@ async function getVotersForProposal(params: {
     }
   }
 
-  return [...voters].map(a => ethers.getAddress(a) as HexAddress)
+  return [...voters].map(a => ethers.getAddress(a))
 }
 
 export const HarmonyVotingFinalizer = {
@@ -327,8 +333,8 @@ export const HarmonyVotingFinalizer = {
         const finalizationPeriod = Number((await contract.FINALIZATION_PERIOD()) as bigint)
         const logsChunkSize = Number(cfg.LOGS_CHUNK_SIZE || 1000)
 
-        const blockOnMerkleMismatch = cfg.BLOCK_ON_MERKLE_MISMATCH !== false
-        const revalidateBlocked = cfg.REVALIDATE_BLOCKED === true
+        const blockOnMerkleMismatch = cfg.BLOCK_ON_MERKLE_MISMATCH
+        const revalidateBlocked = cfg.REVALIDATE_BLOCKED
 
         for (let proposalId = 1n; proposalId <= proposalCount; proposalId++) {
           const p = await contract.getProposal(proposalId)
@@ -369,12 +375,15 @@ export const HarmonyVotingFinalizer = {
           const blockKey = `${target.network}:${normalizeAddress(target.pluginAddress)}:${proposalId.toString()}`
           const blocked = blockedByKey.get(blockKey)
           if (blocked && !revalidateBlocked) {
-            logger.debug('Proposal is blocked; skipping', llo({
-              target,
-              proposalId: proposalId.toString(),
-              onchainRoot: blocked.onchainRoot,
-              computedRoot: blocked.computedRoot,
-            }))
+            logger.debug(
+              'Proposal is blocked; skipping',
+              llo({
+                target,
+                proposalId: proposalId.toString(),
+                onchainRoot: blocked.onchainRoot,
+                computedRoot: blocked.computedRoot,
+              }),
+            )
             continue
           }
 
@@ -398,27 +407,36 @@ export const HarmonyVotingFinalizer = {
                     onchainRoot: merkleRoot,
                     computedRoot,
                   })
-                  logger.error('Merkle root mismatch; proposal BLOCKED (use REVALIDATE_BLOCKED to retry)', llo({
-                    target,
-                    proposalId: proposalId.toString(),
-                    onchainRoot: merkleRoot,
-                    computedRoot,
-                  }))
+                  logger.error(
+                    'Merkle root mismatch; proposal BLOCKED (use REVALIDATE_BLOCKED to retry)',
+                    llo({
+                      target,
+                      proposalId: proposalId.toString(),
+                      onchainRoot: merkleRoot,
+                      computedRoot,
+                    }),
+                  )
                 } else {
-                  logger.debug('Merkle root mismatch; still blocked', llo({
-                    target,
-                    proposalId: proposalId.toString(),
-                    onchainRoot: merkleRoot,
-                    computedRoot,
-                  }))
+                  logger.debug(
+                    'Merkle root mismatch; still blocked',
+                    llo({
+                      target,
+                      proposalId: proposalId.toString(),
+                      onchainRoot: merkleRoot,
+                      computedRoot,
+                    }),
+                  )
                 }
               } else {
-                logger.warn('Merkle root mismatch; skipping submissions', llo({
-                  target,
-                  proposalId: proposalId.toString(),
-                  onchainRoot: merkleRoot,
-                  computedRoot,
-                }))
+                logger.warn(
+                  'Merkle root mismatch; skipping submissions',
+                  llo({
+                    target,
+                    proposalId: proposalId.toString(),
+                    onchainRoot: merkleRoot,
+                    computedRoot,
+                  }),
+                )
               }
               continue
             }
@@ -426,12 +444,15 @@ export const HarmonyVotingFinalizer = {
             // Root matches: if it was blocked before, unblock.
             if (blocked) {
               blockedByKey.delete(blockKey)
-              logger.info('Merkle root revalidated; proposal UNBLOCKED', llo({
-                target,
-                proposalId: proposalId.toString(),
-                onchainRoot: merkleRoot,
-                computedRoot,
-              }))
+              logger.info(
+                'Merkle root revalidated; proposal UNBLOCKED',
+                llo({
+                  target,
+                  proposalId: proposalId.toString(),
+                  onchainRoot: merkleRoot,
+                  computedRoot,
+                }),
+              )
             }
           } else {
             try {
@@ -472,19 +493,25 @@ export const HarmonyVotingFinalizer = {
             try {
               const tx = await contract.submitVotingPower(proposalId, voter, votingPower, proofEntry.proof)
               await tx.wait()
-              logger.info('Submitted voting power', llo({
-                target,
-                proposalId: proposalId.toString(),
-                voter,
-                tx: tx.hash,
-              }))
+              logger.info(
+                'Submitted voting power',
+                llo({
+                  target,
+                  proposalId: proposalId.toString(),
+                  voter,
+                  tx: tx.hash,
+                }),
+              )
             } catch (error: any) {
-              logger.warn('Failed to submit voting power', llo({
-                target,
-                proposalId: proposalId.toString(),
-                voter,
-                error: error?.message || error,
-              }))
+              logger.warn(
+                'Failed to submit voting power',
+                llo({
+                  target,
+                  proposalId: proposalId.toString(),
+                  voter,
+                  error: error?.message || error,
+                }),
+              )
             }
           }
 

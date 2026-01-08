@@ -5,7 +5,7 @@ import {
   type IPaginatedResult,
   type IPaginationParams,
   ErrorKeyEnum,
-  NetworksEnum,
+  type NetworksEnum,
 } from '@src/types'
 import { Models } from '@dbModels'
 import { assertExposable } from '@errors'
@@ -24,7 +24,9 @@ const DaoAdminController = {
     return true
   },
 
-  getVisibilityStatus: async (params: Pick<IAVisibilityStatusParams, 'address' | 'network'>): Promise<{ status: boolean }> => {
+  getVisibilityStatus: async (
+    params: Pick<IAVisibilityStatusParams, 'address' | 'network'>,
+  ): Promise<{ status: boolean }> => {
     const dao = await Models.Dao.findByAddress(params.address, params.network)
     assertExposable(dao, ErrorKeyEnum.notFound)
 
@@ -54,7 +56,11 @@ const DaoAdminController = {
     })
   },
 
-  setPrimaryName: async (params: { address: string; network: NetworksEnum; primaryName?: string | null }): Promise<{ primaryName: string | null }> => {
+  setPrimaryName: async (params: {
+    address: string
+    network: NetworksEnum
+    primaryName?: string | null
+  }): Promise<{ primaryName: string | null }> => {
     const dao = await Models.Dao.findByAddress(params.address, params.network)
     assertExposable(dao, ErrorKeyEnum.notFound)
 
@@ -76,7 +82,7 @@ const DaoAdminController = {
     // Resolve primaryName to address
     const resolvedAddress = await NameResolver.resolveNameToAddress(params.primaryName, params.network)
     assertExposable(!!resolvedAddress, ErrorKeyEnum.badParams, 400, 'Primary name does not resolve to any address')
-    const resolved = resolvedAddress as string
+    const resolved = resolvedAddress!
 
     // Validate that resolved address matches DAO address (case-insensitive)
     const addressesMatch = resolved.toLowerCase() === params.address.toLowerCase()

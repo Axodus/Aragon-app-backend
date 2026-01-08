@@ -117,7 +117,9 @@ describe('Helper: PluginDetector', () => {
     sandbox.stub(ProviderModule, 'getAnyRpcProvider').returns({
       getCode: sandbox
         .stub()
-        .resolves(simulateBytecodeForFunctions([...PluginDetector.HARMONY_VOTING_FUNCTIONS, ...PluginDetector.HAS_TARGET])),
+        .resolves(
+          simulateBytecodeForFunctions([...PluginDetector.HARMONY_VOTING_FUNCTIONS, ...PluginDetector.HAS_TARGET]),
+        ),
     } as any)
 
     const result = await PluginDetector.detectPluginType('0xAddress', NetworksEnum.ethereumMainnet)

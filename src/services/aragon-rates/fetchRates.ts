@@ -199,7 +199,11 @@ export const FetchRates = {
 
       const rawTokenUpdate: Partial<Token> = {
         totalSupply: (totalSupply ?? token.totalSupply ?? '0').toString(),
-        priceUsd: isHarmonyNativeToken ? bandPriceUsd ?? token.priceUsd : coingeckoInfo ? coingeckoInfo.priceUsd : token.priceUsd,
+        priceUsd: isHarmonyNativeToken
+          ? (bandPriceUsd ?? token.priceUsd)
+          : coingeckoInfo
+            ? coingeckoInfo.priceUsd
+            : token.priceUsd,
         logo: coingeckoInfo ? coingeckoInfo.logo : token.logo,
       }
 
