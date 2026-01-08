@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
-set -e
 
-HOST="$1"
-PORT="$2"
+MONGO_URI=$1
 
-echo "Waiting for $HOST:$PORT..."
+echo "Waiting for MongoDB PRIMARY..."
 
-while ! nc -z "$HOST" "$PORT"; do
+until mongosh "$MONGO_URI" --quiet --eval '
+  rs.isMaster().ismaster || rs.isMaster().isWritablePrimary
+' | grep -q true; do
+  echo "MongoDB not PRIMARY yet..."
   sleep 2
 done
 
-echo "$HOST:$PORT is up"
+echo "MongoDB PRIMARY is ready"
