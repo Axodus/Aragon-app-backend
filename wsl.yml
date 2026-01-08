@@ -1,4 +1,3 @@
-
 services:
   ### =========================
   ### Core Services
@@ -7,122 +6,158 @@ services:
   service-aragon-api:
     build:
       context: ./
-    container_name: api
+    container_name: service-api
     ports:
-      - ${SERVICE_API_PORT:-4000}:${SERVICE_API_PORT:-4000}
+      - "${SERVICE_API_PORT:-4000}:${SERVICE_API_PORT:-4000}"
     environment:
       SERVICES_ARAGON_API_PORT: ${SERVICE_API_PORT:-4000}
-      MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
+      MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
-      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
-    command: yarn service:aragon-api
+      SERVICES_ARAGON_API_BASE_URL: http://api:4000
     depends_on:
       - mongo-init-replica
       - rabbitmq
-      
+    restart: unless-stopped
+    command: >
+      bash -c "
+      bash scripts/waitUp.sh mongo1 27017 &&
+      bash scripts/waitUp.sh rabbitmq 5672 &&
+      yarn service:aragon-api
+      "
 
   service-aragon-indexer:
     build:
       context: ./
-    container_name: indexer
+    container_name: service-indexer
     environment:
-      MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
+      MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
-      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
+      SERVICES_ARAGON_API_BASE_URL: http://api:4000
       NODES_HARMONY_MAINNET_FROM_BLOCK: ${NODES_HARMONY_MAINNET_FROM_BLOCK:-82187187}
       NODES_HARMONY_TESTNET_FROM_BLOCK: ${NODES_HARMONY_TESTNET_FROM_BLOCK:-52100000}
-    command: yarn service:aragon-indexer
     depends_on:
       - mongo-init-replica
       - rabbitmq
-    
+    restart: unless-stopped
+    command: >
+      bash -c "
+      bash scripts/waitUp.sh mongo1 27017 &&
+      yarn service:aragon-indexer
+      "
 
   service-aragon-dao:
     build:
       context: ./
-    container_name: dao
+    container_name: service-dao
     environment:
-      MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
+      MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
-      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
+      SERVICES_ARAGON_API_BASE_URL: http://api:4000
     depends_on:
       - mongo-init-replica
       - rabbitmq
-    command: yarn service:aragon-dao
-      
+    restart: unless-stopped
+    command: >
+      bash -c "
+      bash scripts/waitUp.sh mongo1 27017 &&
+      bash scripts/waitUp.sh rabbitmq 5672 &&
+      yarn service:aragon-dao
+      "
 
   service-aragon-transfers:
     build:
       context: ./
-    container_name: transfers    
+    container_name: service-transfers
     environment:
-      MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
+      MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
-      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
+      SERVICES_ARAGON_API_BASE_URL: http://api:4000
     depends_on:
       - mongo-init-replica
       - rabbitmq
-    command: yarn service:aragon-transfers
-      
+    restart: unless-stopped
+    command: >
+      bash -c "
+      bash scripts/waitUp.sh mongo1 27017 &&
+      bash scripts/waitUp.sh rabbitmq 5672 &&
+      yarn service:aragon-transfers
+      "
 
   service-aragon-gateway:
     build:
       context: ./
-    container_name: gateway
+    container_name: service-gateway
     environment:
-      MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
+      MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
-      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-gateway:4000
+      SERVICES_ARAGON_API_BASE_URL: http://gateway:4000
     depends_on:
       - mongo-init-replica
       - rabbitmq
-    command: yarn service:aragon-gateway
-      
+    restart: unless-stopped
+    command: >
+      bash -c "
+      bash scripts/waitUp.sh mongo1 27017 &&
+      bash scripts/waitUp.sh rabbitmq 5672 &&
+      yarn service:aragon-gateway
+      "
 
   service-aragon-rates:
     build:
       context: ./
-    container_name: rates
+    container_name: service-rates
     environment:
-      MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
+      MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
-      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
+      SERVICES_ARAGON_API_BASE_URL: http://api:4000
     depends_on:
       - mongo-init-replica
       - rabbitmq
-    command: yarn service:aragon-rates
-      
+    restart: unless-stopped
+    command: >
+      bash -c "
+      bash scripts/waitUp.sh mongo1 27017 &&
+      yarn service:aragon-rates
+      "
 
   service-aragon-admin-api:
     build:
       context: ./
+    container_name: service-admin-api
     ports:
-      - ${SERVICE_ADMIN_API_PORT:-4001}:${SERVICE_ADMIN_API_PORT:-4001}
-    
-    container_name: admin-api
+      - "${SERVICE_ADMIN_API_PORT:-4001}:${SERVICE_ADMIN_API_PORT:-4001}"
     environment:
       SERVICES_ARAGON_ADMIN_API_PORT: ${SERVICE_ADMIN_API_PORT:-4001}
-      MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
+      MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
-      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
+      SERVICES_ARAGON_API_BASE_URL: http://api:4000
     depends_on:
       - mongo-init-replica
       - rabbitmq
-    command: yarn service:aragon-admin-api
-      
+    restart: unless-stopped
+    command: >
+      bash -c "
+      bash scripts/waitUp.sh mongo1 27017 &&
+      yarn service:aragon-admin-api
+      "
 
   service-aragon-plugins:
     build:
       context: ./
-    container_name: plugins
+    container_name: service-plugins
     environment:
-      MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
+      MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
-      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
+      SERVICES_ARAGON_API_BASE_URL: http://api:4000
     depends_on:
       - mongo-init-replica
       - rabbitmq
-    command: yarn service:aragon-plugins
+    restart: unless-stopped
+    command: >
+      bash -c "
+      bash scripts/waitUp.sh mongo1 27017 &&
+      yarn service:aragon-plugins
+      "
 
   ### =========================
   ### Dependencies
@@ -137,36 +172,34 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: user
       RABBITMQ_DEFAULT_PASS: password
+    restart: unless-stopped
 
   mongo1:
     image: mongo:8.0
     container_name: mongo1
     hostname: mongo1
-    command: [ "mongod", "--replSet", "rs0", "--bind_ip_all" ]
-    ports:
-      - "27017:27017"
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     volumes:
       - mongo1_data:/data/db
+    restart: unless-stopped
 
   mongo2:
     image: mongo:8.0
     container_name: mongo2
     hostname: mongo2
-    command: [ "mongod", "--replSet", "rs0", "--bind_ip_all" ]
-    ports:
-      - "27018:27017"
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     volumes:
       - mongo2_data:/data/db
+    restart: unless-stopped
 
   mongo3:
     image: mongo:8.0
     container_name: mongo3
     hostname: mongo3
-    command: [ "mongod", "--replSet", "rs0", "--bind_ip_all" ]
-    ports:
-      - "27019:27017"
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     volumes:
       - mongo3_data:/data/db
+    restart: unless-stopped
 
   mongo-init-replica:
     image: mongo:8.0
@@ -178,21 +211,35 @@ services:
     entrypoint: /bin/bash
     command: >
       -c "
-      echo 'Waiting a few seconds for MongoDB nodes to be ready...';
+      echo 'Waiting Mongo nodes...';
       sleep 5;
-      echo 'Initializing replica set...';
+
       mongosh --host mongo1:27017 --eval '
-        rs.initiate({
-          _id: \"rs0\",
-          members: [
-            { _id: 0, host: \"mongo1:27017\" },
-            { _id: 1, host: \"mongo2:27017\" },
-            { _id: 2, host: \"mongo3:27017\" }
-          ]
-        });
+        try {
+          rs.status();
+          print(\"Replica set already initialized\");
+        } catch (e) {
+          rs.initiate({
+            _id: \"rs0\",
+            members: [
+              { _id: 0, host: \"mongo1:27017\" },
+              { _id: 1, host: \"mongo2:27017\" },
+              { _id: 2, host: \"mongo3:27017\" }
+            ]
+          });
+        }
       ';
-      echo 'Replica set initialized.'
+
+      echo 'Waiting for PRIMARY...';
+      until mongosh --host mongo1:27017 --quiet --eval '
+        rs.status().members.some(m => m.stateStr === \"PRIMARY\")
+      '; do
+        sleep 2;
+      done;
+
+      echo 'Replica set ready';
       "
+    restart: "no"
 
 volumes:
   mongo1_data:

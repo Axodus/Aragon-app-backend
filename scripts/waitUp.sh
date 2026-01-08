@@ -1,16 +1,13 @@
 #!/usr/bin/env bash
+set -e
 
-service_dns=$1
-service_port=$2
+HOST="$1"
+PORT="$2"
 
-function wait_up {
+echo "Waiting for $HOST:$PORT..."
 
-  if ! nc -z ${service_dns} ${service_port}; then
-    echo "Waiting up for ${service_dns}..."
-    sleep 2
-    wait_up
-  fi
+while ! nc -z "$HOST" "$PORT"; do
+  sleep 2
+done
 
-}
-
-wait_up
+echo "$HOST:$PORT is up"
