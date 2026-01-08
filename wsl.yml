@@ -19,8 +19,8 @@ services:
       - rabbitmq
     command: >
       bash -c "
-      yarn wait:db &&
-      yarn wait:rabbitmq &&
+      yarn wait:db:local &&
+      yarn wait:rabbitmq:local &&
       yarn service:aragon-api
       "
 
@@ -38,7 +38,7 @@ services:
       - rabbitmq
     command: >
       bash -c "
-      yarn wait:db &&
+      yarn wait:db:local &&
       yarn service:aragon-indexer
       "
 
@@ -54,8 +54,8 @@ services:
       - rabbitmq
     command: >
       bash -c "
-      yarn wait:db &&
-      yarn wait:rabbitmq &&
+      yarn wait:db:local &&
+      yarn wait:rabbitmq:local &&
       yarn service:aragon-dao
       "
 
@@ -71,8 +71,8 @@ services:
       - rabbitmq
     command: >
       bash -c "
-      yarn wait:db &&
-      yarn wait:rabbitmq &&
+      yarn wait:db:local &&
+      yarn wait:rabbitmq:local &&
       yarn service:aragon-transfers
       "
 
@@ -88,8 +88,8 @@ services:
       - rabbitmq
     command: >
       bash -c "
-      yarn wait:db &&
-      yarn wait:rabbitmq &&
+      yarn wait:db:local &&
+      yarn wait:rabbitmq:local &&
       yarn service:aragon-gateway
       "
 
@@ -105,7 +105,7 @@ services:
       - rabbitmq
     command: >
       bash -c "
-      yarn wait:db &&
+      yarn wait:db:local &&
       yarn service:aragon-rates
       "
 
@@ -124,7 +124,7 @@ services:
       - rabbitmq
     command: >
       bash -c "
-      yarn wait:db &&
+      yarn wait:db:local &&
       yarn service:aragon-admin-api
       "
 
@@ -140,7 +140,7 @@ services:
       - rabbitmq
     command: >
       bash -c "
-      yarn wait:db &&
+      yarn wait:db:local &&
       yarn service:aragon-plugins
       "
 
