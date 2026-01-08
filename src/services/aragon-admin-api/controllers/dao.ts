@@ -67,22 +67,24 @@ const DaoAdminController = {
 
     // Validate that primaryName is a .country domain
     const isCountryName = /^[a-z0-9-]+\.country$/i.test(params.primaryName)
-    assertExposable(isCountryName, ErrorKeyEnum.invalidInput, 'Primary name must be a .country domain')
+    assertExposable(isCountryName, ErrorKeyEnum.badParams, 400, 'Primary name must be a .country domain')
 
     // Validate that primaryName is supported by our resolver
     const isSupported = NameResolver.isSupportedName(params.primaryName)
-    assertExposable(isSupported, ErrorKeyEnum.invalidInput, 'Primary name is not supported')
+    assertExposable(isSupported, ErrorKeyEnum.badParams, 400, 'Primary name is not supported')
 
     // Resolve primaryName to address
     const resolvedAddress = await NameResolver.resolveNameToAddress(params.primaryName, params.network)
-    assertExposable(resolvedAddress, ErrorKeyEnum.invalidInput, 'Primary name does not resolve to any address')
+    assertExposable(!!resolvedAddress, ErrorKeyEnum.badParams, 400, 'Primary name does not resolve to any address')
+    const resolved = resolvedAddress as string
 
     // Validate that resolved address matches DAO address (case-insensitive)
-    const addressesMatch = resolvedAddress.toLowerCase() === params.address.toLowerCase()
+    const addressesMatch = resolved.toLowerCase() === params.address.toLowerCase()
     assertExposable(
       addressesMatch,
-      ErrorKeyEnum.invalidInput,
-      `Primary name resolves to ${resolvedAddress} but DAO address is ${params.address}`,
+      ErrorKeyEnum.badParams,
+      400,
+      `Primary name resolves to ${resolved} but DAO address is ${params.address}`,
     )
 
     // Save primaryName
