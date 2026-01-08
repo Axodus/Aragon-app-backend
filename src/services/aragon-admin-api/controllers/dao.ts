@@ -5,11 +5,13 @@ import {
   type IPaginatedResult,
   type IPaginationParams,
   ErrorKeyEnum,
+  NetworksEnum,
 } from '@src/types'
 import { Models } from '@dbModels'
 import { assertExposable } from '@errors'
 import PairDataModule from '@modules/pairData'
 import DaoEnsHelper from '@helpers/daoEns'
+import NameResolver from '@helpers/nameResolver'
 
 const DaoAdminController = {
   setVisibilityStatus: async (params: IAVisibilityStatusParams): Promise<any> => {
@@ -50,6 +52,44 @@ const DaoAdminController = {
       network: params.network,
       ens: params.ens ?? null,
     })
+  },
+
+  setPrimaryName: async (params: { address: string; network: NetworksEnum; primaryName?: string | null }): Promise<{ primaryName: string | null }> => {
+    const dao = await Models.Dao.findByAddress(params.address, params.network)
+    assertExposable(dao, ErrorKeyEnum.notFound)
+
+    // If primaryName is null/undefined, clear it
+    if (!params.primaryName) {
+      dao.primaryName = null
+      await dao.save()
+      return { primaryName: null }
+    }
+
+    // Validate that primaryName is a .country domain
+    const isCountryName = /^[a-z0-9-]+\.country$/i.test(params.primaryName)
+    assertExposable(isCountryName, ErrorKeyEnum.invalidInput, 'Primary name must be a .country domain')
+
+    // Validate that primaryName is supported by our resolver
+    const isSupported = NameResolver.isSupportedName(params.primaryName)
+    assertExposable(isSupported, ErrorKeyEnum.invalidInput, 'Primary name is not supported')
+
+    // Resolve primaryName to address
+    const resolvedAddress = await NameResolver.resolveNameToAddress(params.primaryName, params.network)
+    assertExposable(resolvedAddress, ErrorKeyEnum.invalidInput, 'Primary name does not resolve to any address')
+
+    // Validate that resolved address matches DAO address (case-insensitive)
+    const addressesMatch = resolvedAddress.toLowerCase() === params.address.toLowerCase()
+    assertExposable(
+      addressesMatch,
+      ErrorKeyEnum.invalidInput,
+      `Primary name resolves to ${resolvedAddress} but DAO address is ${params.address}`,
+    )
+
+    // Save primaryName
+    dao.primaryName = params.primaryName.toLowerCase()
+    await dao.save()
+
+    return { primaryName: dao.primaryName }
   },
 }
 

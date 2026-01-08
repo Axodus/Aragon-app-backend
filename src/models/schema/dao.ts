@@ -122,6 +122,9 @@ export default class Dao extends Model {
   public subdomain!: string
 
   @prop({ type: () => String, default: null })
+  public primaryName!: string
+
+  @prop({ type: () => String, default: null })
   public metadataIpfs!: string
 
   @prop({ type: () => String, default: null })
@@ -803,6 +806,7 @@ export default class Dao extends Model {
           creator: 1,
           ens: 1,
           subdomain: 1,
+          primaryName: 1,
           metadataIpfs: 1,
           name: 1,
           description: 1,

@@ -61,6 +61,18 @@ const DaoAdminRouter = {
     ctx.body = await DaoAdminController.setEns(formattedValues)
   },
 
+  setPrimaryName: async function (ctx: RouterContext) {
+    const body = ctx.request.body as any
+    const params = {
+      address: body?.address,
+      network: body?.network,
+      primaryName: body?.primaryName,
+    }
+
+    const formattedValues = await ValidationSchema.validateParams(GenericSchema.setDaoPrimaryNameParams, params)
+    ctx.body = await DaoAdminController.setPrimaryName(formattedValues)
+  },
+
   router(): Router {
     const router = new Router()
     const authedAdminOrRoot = AuthMiddleware.authAssertAdminOrRoot()
@@ -69,6 +81,7 @@ const DaoAdminRouter = {
     router.get('/status/:daoAddress/:network', authedAdminOrRoot, DaoAdminRouter.getVisibilityStatus)
     router.post('/set-status/:daoAddress/:network/:status', authedAdminOrRoot, DaoAdminRouter.setVisibilityStatus)
     router.post('/set-ens', authedAdminOrRoot, DaoAdminRouter.setEns)
+    router.post('/set-primary-name', authedAdminOrRoot, DaoAdminRouter.setPrimaryName)
 
     return router
   },
