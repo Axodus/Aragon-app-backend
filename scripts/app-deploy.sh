@@ -62,6 +62,21 @@ echo "🔧 Project: $COMPOSE_PROJECT_NAME"
 echo "🔧 ENV_SUFFIX: $ENV_SUFFIX"
 echo "🔧 Compose file: $DOCKER_FILE"
 
+ensure_docker_network() {
+  local network_name="$1"
+
+  if docker network inspect "$network_name" >/dev/null 2>&1; then
+    return 0
+  fi
+
+  echo "🌐 Creating Docker network: $network_name"
+  docker network create "$network_name" >/dev/null
+}
+
+# docker-compose.yml declares these networks as external.
+ensure_docker_network "internal-net"
+ensure_docker_network "public-net"
+
 # List of microservice names (as defined in compose)
 MICROSERVICES=(
   #service-aragon-api done HA
