@@ -14,15 +14,11 @@ services:
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
       SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
+    command: yarn service:aragon-api
     depends_on:
       - mongo-init-replica
       - rabbitmq
-    command: >
-      bash -c "
-      yarn wait:db:local &&
-      yarn wait:rabbitmq:local &&
-      yarn service:aragon-api
-      "
+      
 
   service-aragon-indexer:
     build:
@@ -33,14 +29,11 @@ services:
       SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
       NODES_HARMONY_MAINNET_FROM_BLOCK: ${NODES_HARMONY_MAINNET_FROM_BLOCK:-82187187}
       NODES_HARMONY_TESTNET_FROM_BLOCK: ${NODES_HARMONY_TESTNET_FROM_BLOCK:-52100000}
+    command: yarn service:aragon-indexer
     depends_on:
       - mongo-init-replica
       - rabbitmq
-    command: >
-      bash -c "
-      yarn wait:db:local &&
-      yarn service:aragon-indexer
-      "
+    
 
   service-aragon-dao:
     build:
@@ -52,12 +45,8 @@ services:
     depends_on:
       - mongo-init-replica
       - rabbitmq
-    command: >
-      bash -c "
-      yarn wait:db:local &&
-      yarn wait:rabbitmq:local &&
-      yarn service:aragon-dao
-      "
+    command: yarn service:aragon-dao
+      
 
   service-aragon-transfers:
     build:
@@ -69,12 +58,8 @@ services:
     depends_on:
       - mongo-init-replica
       - rabbitmq
-    command: >
-      bash -c "
-      yarn wait:db:local &&
-      yarn wait:rabbitmq:local &&
-      yarn service:aragon-transfers
-      "
+    command: yarn service:aragon-transfers
+      
 
   service-aragon-gateway:
     build:
@@ -86,12 +71,8 @@ services:
     depends_on:
       - mongo-init-replica
       - rabbitmq
-    command: >
-      bash -c "
-      yarn wait:db:local &&
-      yarn wait:rabbitmq:local &&
-      yarn service:aragon-gateway
-      "
+    command: yarn service:aragon-gateway
+      
 
   service-aragon-rates:
     build:
@@ -103,11 +84,8 @@ services:
     depends_on:
       - mongo-init-replica
       - rabbitmq
-    command: >
-      bash -c "
-      yarn wait:db:local &&
-      yarn service:aragon-rates
-      "
+    command: yarn service:aragon-rates
+      
 
   service-aragon-admin-api:
     build:
@@ -122,11 +100,8 @@ services:
     depends_on:
       - mongo-init-replica
       - rabbitmq
-    command: >
-      bash -c "
-      yarn wait:db:local &&
-      yarn service:aragon-admin-api
-      "
+    command: yarn service:aragon-admin-api
+      
 
   service-aragon-plugins:
     build:
@@ -138,11 +113,7 @@ services:
     depends_on:
       - mongo-init-replica
       - rabbitmq
-    command: >
-      bash -c "
-      yarn wait:db:local &&
-      yarn service:aragon-plugins
-      "
+    command: yarn service:aragon-plugins
 
   ### =========================
   ### Dependencies
