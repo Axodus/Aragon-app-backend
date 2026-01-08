@@ -7,6 +7,7 @@ services:
   service-aragon-api:
     build:
       context: ./
+    container_name: api
     ports:
       - ${SERVICE_API_PORT:-4000}:${SERVICE_API_PORT:-4000}
     environment:
@@ -23,6 +24,7 @@ services:
   service-aragon-indexer:
     build:
       context: ./
+    container_name: indexer
     environment:
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
@@ -38,6 +40,7 @@ services:
   service-aragon-dao:
     build:
       context: ./
+    container_name: dao
     environment:
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
@@ -51,6 +54,7 @@ services:
   service-aragon-transfers:
     build:
       context: ./
+    container_name: transfers    
     environment:
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
@@ -64,6 +68,7 @@ services:
   service-aragon-gateway:
     build:
       context: ./
+    container_name: gateway
     environment:
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
@@ -77,6 +82,7 @@ services:
   service-aragon-rates:
     build:
       context: ./
+    container_name: rates
     environment:
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
@@ -92,6 +98,8 @@ services:
       context: ./
     ports:
       - ${SERVICE_ADMIN_API_PORT:-4001}:${SERVICE_ADMIN_API_PORT:-4001}
+    
+    container_name: admin-api
     environment:
       SERVICES_ARAGON_ADMIN_API_PORT: ${SERVICE_ADMIN_API_PORT:-4001}
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
@@ -106,6 +114,7 @@ services:
   service-aragon-plugins:
     build:
       context: ./
+    container_name: plugins
     environment:
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
