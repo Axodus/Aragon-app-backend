@@ -121,6 +121,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:management
+    container_name: rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -130,7 +131,9 @@ services:
 
   mongo1:
     image: mongo:8.0
-    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    container_name: mongo1
+    hostname: mongo1
+    command: [ "mongod", "--replSet", "rs0", "--bind_ip_all" ]
     ports:
       - "27017:27017"
     volumes:
@@ -138,7 +141,9 @@ services:
 
   mongo2:
     image: mongo:8.0
-    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    container_name: mongo2
+    hostname: mongo2
+    command: [ "mongod", "--replSet", "rs0", "--bind_ip_all" ]
     ports:
       - "27018:27017"
     volumes:
@@ -146,7 +151,9 @@ services:
 
   mongo3:
     image: mongo:8.0
-    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    container_name: mongo3
+    hostname: mongo3
+    command: [ "mongod", "--replSet", "rs0", "--bind_ip_all" ]
     ports:
       - "27019:27017"
     volumes:
@@ -154,14 +161,17 @@ services:
 
   mongo-init-replica:
     image: mongo:8.0
+    container_name: mongo-init-replica
     depends_on:
       - mongo1
       - mongo2
       - mongo3
-    entrypoint: bash
+    entrypoint: /bin/bash
     command: >
       -c "
-      sleep 5 &&
+      echo 'Waiting a few seconds for MongoDB nodes to be ready...';
+      sleep 5;
+      echo 'Initializing replica set...';
       mongosh --host mongo1:27017 --eval '
         rs.initiate({
           _id: \"rs0\",
@@ -171,11 +181,11 @@ services:
             { _id: 2, host: \"mongo3:27017\" }
           ]
         });
-      '
+      ';
+      echo 'Replica set initialized.'
       "
 
 volumes:
   mongo1_data:
   mongo2_data:
   mongo3_data:
-

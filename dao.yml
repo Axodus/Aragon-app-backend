@@ -219,5 +219,3 @@ volumes:
   mongo1_data:
   mongo2_data:
   mongo3_data:
-
-
