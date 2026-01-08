@@ -20,7 +20,7 @@ services:
     restart: unless-stopped
     command: >
       bash -c "
-      bash scripts/waitUp.sh mongo1 27017 &&
+      bash scripts/waitUp.sh 'mongodb://mongo1:27017/?replicaSet=rs0' &&
       bash scripts/waitUp.sh rabbitmq 5672 &&
       yarn service:aragon-api
       "
@@ -41,7 +41,7 @@ services:
     restart: unless-stopped
     command: >
       bash -c "
-      bash scripts/waitUp.sh mongo1 27017 &&
+      bash scripts/waitUp.sh 'mongodb://mongo1:27017/?replicaSet=rs0' &&
       yarn service:aragon-indexer
       "
 
@@ -59,7 +59,7 @@ services:
     restart: unless-stopped
     command: >
       bash -c "
-      bash scripts/waitUp.sh mongo1 27017 &&
+      bash scripts/waitUp.sh 'mongodb://mongo1:27017/?replicaSet=rs0' &&
       bash scripts/waitUp.sh rabbitmq 5672 &&
       yarn service:aragon-dao
       "
@@ -78,7 +78,7 @@ services:
     restart: unless-stopped
     command: >
       bash -c "
-      bash scripts/waitUp.sh mongo1 27017 &&
+      bash scripts/waitUp.sh 'mongodb://mongo1:27017/?replicaSet=rs0' &&
       bash scripts/waitUp.sh rabbitmq 5672 &&
       yarn service:aragon-transfers
       "
@@ -97,7 +97,7 @@ services:
     restart: unless-stopped
     command: >
       bash -c "
-      bash scripts/waitUp.sh mongo1 27017 &&
+      bash scripts/waitUp.sh 'mongodb://mongo1:27017/?replicaSet=rs0' &&
       bash scripts/waitUp.sh rabbitmq 5672 &&
       yarn service:aragon-gateway
       "
@@ -116,7 +116,7 @@ services:
     restart: unless-stopped
     command: >
       bash -c "
-      bash scripts/waitUp.sh mongo1 27017 &&
+      bash scripts/waitUp.sh 'mongodb://mongo1:27017/?replicaSet=rs0' &&
       yarn service:aragon-rates
       "
 
@@ -137,7 +137,7 @@ services:
     restart: unless-stopped
     command: >
       bash -c "
-      bash scripts/waitUp.sh mongo1 27017 &&
+      bash scripts/waitUp.sh 'mongodb://mongo1:27017/?replicaSet=rs0' &&
       yarn service:aragon-admin-api
       "
 
@@ -155,7 +155,7 @@ services:
     restart: unless-stopped
     command: >
       bash -c "
-      bash scripts/waitUp.sh mongo1 27017 &&
+      bash scripts/waitUp.sh 'mongodb://mongo1:27017/?replicaSet=rs0' &&
       yarn service:aragon-plugins
       "
 
