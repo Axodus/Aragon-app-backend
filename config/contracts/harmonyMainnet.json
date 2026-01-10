@@ -1,4 +1,46 @@
 {
+  "v1.4.0": {
+    "DAOFactory": {
+      "address": "0xBbfff9D297762931ae7Dc37F0cc33a397bC50Ba0",
+      "deploymentTx": "0xc97164e7f0bbd985b294e03c9b74d11492cdf62405cf2bd5b4f10d17d9d42a8b",
+      "blockNumber": 0
+    },
+    "DAOBase": {
+      "address": "0x14B83cf98a6a311D8ff3c311D781ac392348316b",
+      "deploymentTx": "0x",
+      "blockNumber": 0
+    },
+    "DAORegistryProxy": {
+      "address": "0xf0d596798761e2597e3Dc06b219eBbF1db0B9518",
+      "deploymentTx": "0xeca59c8cb9effdb8d38d1b6f6ff76960149978759add820fe3a1466c733464ad",
+      "blockNumber": 0
+    },
+    "PluginRepoRegistryProxy": {
+      "address": "0x24416Fcd035314C952A16549b47E8251aCdd844E",
+      "deploymentTx": "0xa482f25d7864dc1dbaf2330d4e4ba58e4a22d0218f8e1ab12358489f200fb375",
+      "blockNumber": 0
+    },
+    "PluginRepoFactory": {
+      "address": "0x753e32a799F319d25aCf138b343003ce0A5171eB",
+      "deploymentTx": "0xbc1a167f85b448a44831844c1c4a16ff0b0b2738ed8018a8cd20927ba660a7c5",
+      "blockNumber": 0
+    },
+    "PluginSetupProcessor": {
+      "address": "0x6300477942944d2501db08cD5b7e37DC6423E77C",
+      "deploymentTx": "0x8d25f25fac254c9f825ac35c6711c0a86dc5673fed591049b9f0b54b4d4da4cc",
+      "blockNumber": 0
+    },
+    "GlobalExecutor": {
+      "address": "0xC5066174C2ED21acbdcAd9Bb4d3BdeeDdd56CE37",
+      "deploymentTx": "0x3cb5373517799b186c3daa75bfac4d81ed0a7dad80f193a8c505c347480e9f7b",
+      "blockNumber": 0
+    },
+    "ManagementDAOProxy": {
+      "address": "0x8f9a805603B6fd5df7e8d284CA66CcaF77C3BeF6",
+      "deploymentTx": "0xda21fbb08b96dff29395216dd773e251d3d71481ed06a3bdc41d7dd20a799f6d",
+      "blockNumber": 0
+    }
+  },
   "v1.3.0": {
     "AddresslistVotingSetup": {
       "address": "0x0000000000000000000000000000000000000000",

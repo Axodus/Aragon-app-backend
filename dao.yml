@@ -32,7 +32,7 @@ services:
       RABBITMQ_URI: amqp://user:password@rabbitmq:5672
       SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
       # IMPORTANT: usado apenas no primeiro start (se não existir checkpoint no Mongo)
-      NODES_HARMONY_MAINNET_FROM_BLOCK: ${NODES_HARMONY_MAINNET_FROM_BLOCK:-83407187}
+      NODES_HARMONY_MAINNET_FROM_BLOCK: ${NODES_HARMONY_MAINNET_FROM_BLOCK:-83548690}
       NODES_HARMONY_TESTNET_FROM_BLOCK: ${NODES_HARMONY_TESTNET_FROM_BLOCK:-53100000}
     depends_on:
       mongo1:
