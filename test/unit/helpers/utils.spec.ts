@@ -134,6 +134,8 @@ describe('Helpers:Utils', () => {
       'ethereum-mainnet': 'ETHEREUM_MAINNET',
       'ethereum-sepolia': 'ETHEREUM_SEPOLIA',
       'polygon-mainnet': 'POLYGON_MAINNET',
+      'harmony-mainnet': 'HARMONY_MAINNET',
+      'harmony-testnet': 'HARMONY_TESTNET',
       'base-mainnet': 'BASE_MAINNET',
       'arbitrum-mainnet': 'ARBITRUM_MAINNET',
       'zksync-sepolia': 'ZKSYNC_SEPOLIA',

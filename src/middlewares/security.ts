@@ -11,7 +11,7 @@ const ALLOWED_ORIGINS = new Set([
 const LOCALHOST_ORIGIN_RE = /^http:\/\/(localhost|127\.0\.0\.1)(?::\d+)?$/
 
 const applyCorsHeaders = (ctx: Koa.Context) => {
-  const origin = ctx.request.headers.origin
+  const origin = ctx.request?.headers?.origin
   const isAllowedOrigin =
     typeof origin === 'string' && (ALLOWED_ORIGINS.has(origin) || LOCALHOST_ORIGIN_RE.test(origin))
 
@@ -41,7 +41,7 @@ const applySecurityHeaders = (ctx: Koa.Context) => {
 const applyPrivateNetworkAccessHeaders = (ctx: Koa.Context) => {
   // Private Network Access (Chrome): respond positively to PNA preflight.
   // https://developer.chrome.com/blog/private-network-access-preflight/
-  if (ctx.request.headers['access-control-request-private-network'] === 'true') {
+  if (ctx.request?.headers?.['access-control-request-private-network'] === 'true') {
     ctx.response.set('Access-Control-Allow-Private-Network', 'true')
   }
 }

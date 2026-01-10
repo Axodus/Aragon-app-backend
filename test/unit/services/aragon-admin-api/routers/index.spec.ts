@@ -10,6 +10,7 @@ import Koa from 'koa'
 import supertest from 'supertest'
 import CapitalDistributorAdminRouter from '@admin-api/routers/capitalDistributor'
 import MetricsAdminRouter from '@admin-api/routers/metrics'
+import HarmonyVotingAdminRouter from '@admin-api/routers/harmonyVoting'
 
 describe('Router: MainAdminRouter', () => {
   let sandbox: SinonSandbox
@@ -37,6 +38,7 @@ describe('Router: MainAdminRouter', () => {
     stubRouter(DaoAdminRouter, 'dao')
     stubRouter(CapitalDistributorAdminRouter, 'capital-distributor')
     stubRouter(MetricsAdminRouter, 'metrics')
+    stubRouter(HarmonyVotingAdminRouter, 'harmony-voting')
 
     // Removed unnecessary 1000ms wait
 
@@ -45,12 +47,15 @@ describe('Router: MainAdminRouter', () => {
 
     const routers = [
       StatusAdminRouter,
+      MetricsAdminRouter,
       QueueAdminRouter,
       DaoAdminRouter,
       CapitalDistributorAdminRouter,
-      MetricsAdminRouter,
+      HarmonyVotingAdminRouter,
     ]
-    expect(use.callCount).to.be.eq(routers.length)
+    // Status is mounted without a path prefix, DAO is mounted twice (with and without "/dao")
+    // for reverse-proxy compatibility.
+    expect(use.callCount).to.be.eq(7)
     expect(use.calledWith(`statusRoutes`, `statusAllowedMethod`)).to.be.true
 
     function expectRouter(name: string) {
@@ -58,6 +63,13 @@ describe('Router: MainAdminRouter', () => {
     }
 
     expectRouter('queue')
+    expectRouter('metrics')
+    expectRouter('dao')
+    expectRouter('capital-distributor')
+    expectRouter('harmony-voting')
+
+    // DAO router also mounted at root
+    expect(use.calledWith(`daoRoutes`, `daoAllowedMethod`)).to.be.true
   })
 
   it('Should setup main router with all child routers', async () => {

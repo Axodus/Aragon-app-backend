@@ -40,9 +40,14 @@ const MockDB = {
   },
 
   _connectMongoDB: async () => {
+    // MongoDB 5.x binaries depend on OpenSSL 1.1 (libcrypto.so.1.1) which is not
+    // available on newer Linux distros (e.g. Ubuntu 22.04+). Default to a newer
+    // MongoDB version, but allow overriding via env for reproducibility.
+    const mongoMemoryServerVersion = process.env.MONGOMS_VERSION || '7.0.5'
+
     MockDB.replSet = new MongoMemoryReplSet({
       binary: {
-        version: '5.0.8',
+        version: mongoMemoryServerVersion,
       },
       instanceOpts: [
         {
