@@ -150,7 +150,12 @@ describe('Modules: TaskScheduler', () => {
     const scheduler = new TaskScheduler()
     await scheduler.startTask(serviceName, taskOptions)
 
-    await Utils.wait(350) // Wait long enough for at least 3 intervals
+    // Don't rely on wall-clock timing (can be flaky under load / CI / Node version changes)
+    await waitFor(() => fakeService.start.callCount >= 2 && failingService.start.callCount >= 2, {
+      timeoutMs: 3000,
+      stepMs: 20,
+    })
+
     expect(fakeService.start.callCount).to.be.at.least(2) // Should run at least twice
     expect(failingService.start.callCount).to.be.at.least(2)
 
