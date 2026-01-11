@@ -39,6 +39,66 @@
       "address": "0x8f9a805603B6fd5df7e8d284CA66CcaF77C3BeF6",
       "deploymentTx": "0xda21fbb08b96dff29395216dd773e251d3d71481ed06a3bdc41d7dd20a799f6d",
       "blockNumber": 0
+    },
+
+    "AdminSetup": {
+      "address": "0x1837Eb45ACfaFC0497b30BEF2c28f87f63Ec6C8E",
+      "blockNumber": 82991977,
+      "deploymentTx": "0x405a6bc98366efedbdc16d6fcd6706962bf5ffb66958e36ed418ee592797268b"
+    },
+    "AdminSetupImplementation": {
+      "address": "0x1837Eb45ACfaFC0497b30BEF2c28f87f63Ec6C8E",
+      "blockNumber": 82991977,
+      "deploymentTx": "0x405a6bc98366efedbdc16d6fcd6706962bf5ffb66958e36ed418ee592797268b"
+    },
+
+    "MultisigSetup": {
+      "address": "0xf8483b2fCEfb48a0bD22268c8390B8191E444498",
+      "blockNumber": 82991977,
+      "deploymentTx": "0x14a26d879eca2e94183dced83f776f8b53b3b4014b77777b5d33627d81dac5ff"
+    },
+    "MultisigSetupImplementation": {
+      "address": "0xf8483b2fCEfb48a0bD22268c8390B8191E444498",
+      "blockNumber": 82991977,
+      "deploymentTx": "0x14a26d879eca2e94183dced83f776f8b53b3b4014b77777b5d33627d81dac5ff"
+    },
+
+    "TokenVotingSetup": {
+      "address": "0x10A538a54A5eCB8d8AFf082d44FF321f12b61196",
+      "blockNumber": 82991978,
+      "deploymentTx": "0xfc4081a3f6133020e2bba33492d1878175934dd8eec9bdc41941163ec2f3e7b6"
+    },
+    "TokenVotingSetupImplementation": {
+      "address": "0x10A538a54A5eCB8d8AFf082d44FF321f12b61196",
+      "blockNumber": 82991978,
+      "deploymentTx": "0xfc4081a3f6133020e2bba33492d1878175934dd8eec9bdc41941163ec2f3e7b6"
+    },
+
+    "AdminRepoProxy": {
+      "address": "0x0686651E2592Bb8f8059cfE6e3bD80c8C044296b",
+      "blockNumber": 82991978,
+      "deploymentTx": "0xd69f2bd5e584768e944a13d01a787171df75b41fa6fc31b560a85c27418b5edb"
+    },
+    "MultisigRepoProxy": {
+      "address": "0xf93434A71C0072EBc245994ba3f1FfcE765Fb458",
+      "blockNumber": 82991978,
+      "deploymentTx": "0x4446b5bbd509ae36dc96a5e863d5e1e11be8302990b7950bfd4e356a322c5e61"
+    },
+    "TokenVotingRepoProxy": {
+      "address": "0xC4569FA9cbDcb342e55132bDe5B32345A6E23eFF",
+      "blockNumber": 82991978,
+      "deploymentTx": "0x7fc558fd168e10fb64ca9b76d795e0ae4349bb75c95626dcdcd5910f55e4c9fb"
+    },
+
+    "ENSRegistry": {
+      "address": "0xc1E028592e01162a86a1679da7444c6F342790bE",
+      "blockNumber": 0,
+      "deploymentTx": "0x"
+    },
+    "PublicResolver": {
+      "address": "0xd73543019105A4c53D6aC7B409Df79f3B310e0D1",
+      "blockNumber": 0,
+      "deploymentTx": "0x"
     }
   },
   "v1.3.0": {
