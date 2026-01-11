@@ -90,6 +90,17 @@
       "deploymentTx": "0x7fc558fd168e10fb64ca9b76d795e0ae4349bb75c95626dcdcd5910f55e4c9fb"
     },
 
+    "HarmonyHIPVotingRepoProxy": {
+      "address": "0xB63fC0a5747a96F643B9f43156D8D041df48eC30",
+      "blockNumber": 0,
+      "deploymentTx": "0x"
+    },
+    "HarmonyDelegationVotingRepoProxy": {
+      "address": "0xACcA531400E43aBF8d4DD778D4e63465d27b0D47",
+      "blockNumber": 0,
+      "deploymentTx": "0x"
+    },
+
     "ENSRegistry": {
       "address": "0xc1E028592e01162a86a1679da7444c6F342790bE",
       "blockNumber": 0,
