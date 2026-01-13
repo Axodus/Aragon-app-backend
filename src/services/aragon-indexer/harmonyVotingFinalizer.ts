@@ -96,6 +96,35 @@ async function fetchLogsChunked(params: {
   return all
 }
 
+async function getValidatorAddressFromPlugin(
+  pluginAddress: HexAddress,
+  network: NetworksEnum,
+): Promise<HexAddress | null> {
+  try {
+    const provider = ProviderModule.getAnyRpcProvider(network)
+    if (!provider) {
+      logger.error('No RPC provider for network', llo({ network, pluginAddress }))
+      return null
+    }
+
+    const pluginContract = new Contract(
+      pluginAddress,
+      ['function validatorAddress() view returns (address)'],
+      provider,
+    )
+
+    const validatorAddress = await pluginContract.validatorAddress()
+    if (!validatorAddress || validatorAddress === ethers.ZeroAddress) {
+      return null
+    }
+
+    return validatorAddress as HexAddress
+  } catch (error) {
+    logger.warn('Failed to read validatorAddress from plugin (might be HIP plugin)', llo({ network, pluginAddress, error: String(error) }))
+    return null
+  }
+}
+
 async function computeEligibleEntries(params: {
   target: FinalizerTarget
   snapshotBlock: number
@@ -221,12 +250,18 @@ async function computeEligibleEntries(params: {
     return { entries }
   }
 
-  if (!target.validatorAddress) {
-    throw new Error('Delegators mode requires validatorAddress in target config')
+  // For delegator mode: read validator address from plugin contract if not provided in config
+  let validatorAddress = target.validatorAddress
+  if (!validatorAddress) {
+    validatorAddress = await getValidatorAddressFromPlugin(target.pluginAddress, target.network)
+  }
+
+  if (!validatorAddress) {
+    throw new Error(`Delegators mode requires validatorAddress. Plugin ${target.pluginAddress} does not have validatorAddress() method or it returned zero address.`)
   }
 
   const info = await HarmonyRpc.getValidatorInformationByBlockNumber(
-    target.validatorAddress,
+    validatorAddress,
     snapshotBlock,
     target.network,
   )
