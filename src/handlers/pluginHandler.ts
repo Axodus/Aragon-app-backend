@@ -771,13 +771,25 @@ export const PluginHandler = {
         return
       }
 
-      const existingPlugin = await Models.Plugin.findOne({
+      // Alguns DAOs/Plugins legados (ou plugins de teste) podem ter divergência de
+      // pluginSetupRepoAddress entre o que foi persistido no install e o que aparece
+      // no fluxo de uninstall. Para não “travar” a remoção no UI, fazemos fallback.
+      let existingPlugin = await Models.Plugin.findOne({
         network: pluginLog.network,
         daoAddress: plugin.daoAddress,
-        pluginSetupRepoAddress: plugin.pluginSetupRepoAddress,
+        ...(plugin.pluginSetupRepoAddress ? { pluginSetupRepoAddress: plugin.pluginSetupRepoAddress } : {}),
         address: plugin.address,
         status: IPluginStatus.installed,
       })
+
+      if (!existingPlugin && plugin.pluginSetupRepoAddress) {
+        existingPlugin = await Models.Plugin.findOne({
+          network: pluginLog.network,
+          daoAddress: plugin.daoAddress,
+          address: plugin.address,
+          status: IPluginStatus.installed,
+        })
+      }
 
       if (!existingPlugin) return
 
