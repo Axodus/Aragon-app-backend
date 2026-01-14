@@ -107,11 +107,7 @@ async function getValidatorAddressFromPlugin(
       return undefined
     }
 
-    const pluginContract = new Contract(
-      pluginAddress,
-      ['function validatorAddress() view returns (address)'],
-      provider,
-    )
+    const pluginContract = new Contract(pluginAddress, ['function validatorAddress() view returns (address)'], provider)
 
     const validatorAddress = await pluginContract.validatorAddress()
     if (!validatorAddress || validatorAddress === ethers.ZeroAddress) {
@@ -120,7 +116,10 @@ async function getValidatorAddressFromPlugin(
 
     return validatorAddress as HexAddress
   } catch (error) {
-    logger.warn('Failed to read validatorAddress from plugin (might be HIP plugin)', llo({ network, pluginAddress, error: String(error) }))
+    logger.warn(
+      'Failed to read validatorAddress from plugin (might be HIP plugin)',
+      llo({ network, pluginAddress, error: String(error) }),
+    )
     return undefined
   }
 }
@@ -257,14 +256,12 @@ async function computeEligibleEntries(params: {
   }
 
   if (!validatorAddress) {
-    throw new Error(`Delegators mode requires validatorAddress. Plugin ${target.pluginAddress} does not have validatorAddress() method or it returned zero address.`)
+    throw new Error(
+      `Delegators mode requires validatorAddress. Plugin ${target.pluginAddress} does not have validatorAddress() method or it returned zero address.`,
+    )
   }
 
-  const info = await HarmonyRpc.getValidatorInformationByBlockNumber(
-    validatorAddress,
-    snapshotBlock,
-    target.network,
-  )
+  const info = await HarmonyRpc.getValidatorInformationByBlockNumber(validatorAddress, snapshotBlock, target.network)
   const delegations = Array.isArray(info?.validator?.delegations) ? info.validator.delegations : []
 
   const entries: { address: HexAddress; amount: string }[] = []
