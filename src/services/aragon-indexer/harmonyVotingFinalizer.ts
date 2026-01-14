@@ -253,7 +253,7 @@ async function computeEligibleEntries(params: {
   // For delegator mode: read validator address from plugin contract if not provided in config
   let validatorAddress = target.validatorAddress
   if (!validatorAddress) {
-    validatorAddress = await getValidatorAddressFromPlugin(target.pluginAddress, target.network)
+    validatorAddress = (await getValidatorAddressFromPlugin(target.pluginAddress, target.network)) ?? undefined
   }
 
   if (!validatorAddress) {
