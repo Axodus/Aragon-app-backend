@@ -51,6 +51,27 @@ const PluginsController = {
   getLogPluginSetupProcessor: async (extraParams: ILogPluginSetupProcessorParams) => {
     return await Models.LogPluginSetupProcessor.findOne(extraParams)
   },
+
+  getInstallationHelpers: async ({ pluginAddress, network }: IPluginExtraParams) => {
+    try {
+      const installationLog = await Models.LogPluginSetupProcessor.findOne({
+        pluginAddress,
+        network,
+        event: 'InstallationPrepared',
+      })
+
+      if (!installationLog) {
+        logger.warn('Installation log not found for plugin', llo({ pluginAddress, network }))
+        return { helpers: [] }
+      }
+
+      // Return helpers array (should be preserved from installation)
+      return { helpers: installationLog.helpers || [] }
+    } catch (error) {
+      logger.warn('Error while getting installation helpers', llo({ error, pluginAddress, network }))
+      throw error
+    }
+  },
 }
 
 export default PluginsController

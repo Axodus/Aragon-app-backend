@@ -70,6 +70,11 @@ export const PluginSetupProcessorHandler = {
           return
         }
 
+        // Extract helpers from preparedSetupData
+        const helpers: string[] = parsedEvent.args?.preparedSetupData?.helpers
+          ? Array.from(parsedEvent.args.preparedSetupData.helpers)
+          : []
+
         const rawPluginLog: Partial<LogPluginSetupProcessor> = {
           event: IEventLogPluginType.InstallationPrepared,
           network: info.network,
@@ -77,6 +82,7 @@ export const PluginSetupProcessorHandler = {
           transactionIndex: info.transactionIndex,
           logIndex: info.logIndex,
           permissions: utils.parsePermissions(parsedEvent.args?.preparedSetupData?.permissions),
+          helpers,
           sender: parsedEvent.args.sender,
           daoAddress,
           preparedSetupId: parsedEvent.args.preparedSetupId,

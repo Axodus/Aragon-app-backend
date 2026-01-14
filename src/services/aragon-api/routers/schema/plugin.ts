@@ -37,6 +37,13 @@ const PluginSchema = {
       .valid(...Object.values(NetworksEnum))
       .required(),
   }),
+
+  getInstallationHelpers: Joi.object({
+    network: Joi.string()
+      .valid(...Object.values(NetworksEnum))
+      .required(),
+    pluginAddress: ValidationSchema.joiAddress.required(),
+  }),
 }
 
 export default PluginSchema
