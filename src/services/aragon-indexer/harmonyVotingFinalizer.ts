@@ -99,12 +99,12 @@ async function fetchLogsChunked(params: {
 async function getValidatorAddressFromPlugin(
   pluginAddress: HexAddress,
   network: NetworksEnum,
-): Promise<HexAddress | null> {
+): Promise<HexAddress | undefined> {
   try {
     const provider = ProviderModule.getAnyRpcProvider(network)
     if (!provider) {
       logger.error('No RPC provider for network', llo({ network, pluginAddress }))
-      return null
+      return undefined
     }
 
     const pluginContract = new Contract(
@@ -115,13 +115,13 @@ async function getValidatorAddressFromPlugin(
 
     const validatorAddress = await pluginContract.validatorAddress()
     if (!validatorAddress || validatorAddress === ethers.ZeroAddress) {
-      return null
+      return undefined
     }
 
     return validatorAddress as HexAddress
   } catch (error) {
     logger.warn('Failed to read validatorAddress from plugin (might be HIP plugin)', llo({ network, pluginAddress, error: String(error) }))
-    return null
+    return undefined
   }
 }
 
