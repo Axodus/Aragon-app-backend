@@ -184,8 +184,8 @@ const HARMONY_MAINNET_CONFIG: BackfillConfig = {
   rpcUrl: 'https://api.harmony.one',
   pspAddress: '0xac1b0f953Ca517F4aB21Cc3E2cdb95b186DBF80D',
   pluginAddress: '0x48D6E7Dc4A289417D6878119092d2Bb040162995',
-  fromBlock: fromBlockArg ? parseInt(fromBlockArg) : 83_363_000, // Closer to actual block
-  toBlock: toBlockArg ? parseInt(toBlockArg) : 83_365_000, // Limit scan to ~2k blocks (faster)
+  fromBlock: fromBlockArg ? parseInt(fromBlockArg) : 83_642_000, // Closer to actual block 83642085
+  toBlock: toBlockArg ? parseInt(toBlockArg) : 83_644_000, // Limit scan to ~2k blocks (faster)
   chunkSize: 1000,
 };
 
