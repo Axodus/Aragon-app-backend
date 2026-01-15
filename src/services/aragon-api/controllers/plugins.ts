@@ -31,17 +31,27 @@ const PluginsController = {
     try {
       const plugins = await Models.Plugin.findByDaoWithFilters(params)
 
+      // 🔒 Filter "by request" plugins based on whitelist
+      const filteredPlugins = plugins.filter(plugin => {
+        // Se o plugin é "by request" (ex: HarmonyHIP)
+        if (plugin.slug === 'harmony-hip' && plugin.status === 'by-request') {
+          // Verificar se o DAO está na whitelist
+          return isDAOWhitelisted(params.daoAddress, 'harmony-hip')
+        }
+        return true // Outros plugins passam normalmente
+      })
+
       logger.info(
         'Retrieved plugins by DAO',
         llo({
           daoAddress: params.daoAddress,
           network: params.network,
-          count: plugins.length,
+          count: filteredPlugins.length,
           filters: params,
         }),
       )
 
-      return plugins
+      return filteredPlugins
     } catch (error) {
       logger.warn('Error while getting plugins by DAO', llo({ error, params }))
       throw error
@@ -112,6 +122,19 @@ const PluginsController = {
       },
     }
   },
+}
+
+// Helper function to check whitelist
+function isDAOWhitelisted(daoAddress: string, pluginSlug: string): boolean {
+  // Opção 1: Whitelist hardcoded (temporário)
+  const whitelist: Record<string, string[]> = {
+    'harmony-hip': [
+      '0x76B83B6148ccA891D768cE3129585F25d0104783', // DAO autorizado
+      '0xAnotherDAOAddress',
+    ],
+  }
+
+  return whitelist[pluginSlug]?.includes(daoAddress.toLowerCase()) || false
 }
 
 export default PluginsController
