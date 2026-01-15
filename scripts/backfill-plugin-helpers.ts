@@ -49,20 +49,26 @@ async function backfillPluginHelpers(cfg: BackfillConfig) {
   }
 
   const chunkSize = cfg.chunkSize || 1000;
-  console.log(`📦 Chunk size: ${chunkSize} blocks\n`);
+  const totalBlocks = toBlock - cfg.fromBlock + 1;
+  const estimatedChunks = Math.ceil(totalBlocks / chunkSize);
+  console.log(`📦 Chunk size: ${chunkSize} blocks`);
+  console.log(`📊 Total blocks to scan: ${totalBlocks.toLocaleString()} (~${estimatedChunks} chunks)\n`);
 
   let totalLogs = 0;
   let processed = 0;
   let updated = 0;
   let inserted = 0;
+  let currentChunk = 0;
 
   console.log('🔍 Fetching InstallationPrepared events in chunks...\n');
 
   // Fetch logs in chunks
   for (let from = cfg.fromBlock; from <= toBlock; from += chunkSize) {
     const to = Math.min(from + chunkSize - 1, toBlock);
+    currentChunk++;
     
-    console.log(`   Fetching blocks ${from} → ${to}...`);
+    const progress = ((currentChunk / estimatedChunks) * 100).toFixed(1);
+    console.log(`   [${currentChunk}/${estimatedChunks}] (${progress}%) Fetching blocks ${from.toLocaleString()} → ${to.toLocaleString()}...`);
 
     try {
       const logs = await provider.getLogs({
@@ -157,6 +163,7 @@ async function backfillPluginHelpers(cfg: BackfillConfig) {
 
   console.log('\n\n═══════════════════════════════════════');
   console.log('📊 Summary:');
+  console.log(`   Blocks scanned: ${totalBlocks.toLocaleString()}`);
   console.log(`   Total events found: ${totalLogs}`);
   console.log(`   Matching plugin: ${processed}`);
   console.log(`   Inserted: ${inserted}`);
@@ -167,14 +174,19 @@ async function backfillPluginHelpers(cfg: BackfillConfig) {
   console.log('✅ Disconnected from MongoDB');
 }
 
+// Parse CLI args (optional: yarn ts-node script.ts --from 54363000 --to 54365000)
+const args = process.argv.slice(2);
+const fromBlockArg = args.find(arg => arg.startsWith('--from='))?.split('=')[1];
+const toBlockArg = args.find(arg => arg.startsWith('--to='))?.split('=')[1];
+
 const HARMONY_MAINNET_CONFIG: BackfillConfig = {
   network: 'harmony-mainnet',
   rpcUrl: 'https://api.harmony.one',
   pspAddress: '0xac1b0f953Ca517F4aB21Cc3E2cdb95b186DBF80D',
   pluginAddress: '0x48D6E7Dc4A289417D6878119092d2Bb040162995',
-  fromBlock: 54_360_000, // Start closer to the actual installation block (54363917)
-  toBlock: 'latest',
-  chunkSize: 1000, // Safe for Harmony RPC limits
+  fromBlock: fromBlockArg ? parseInt(fromBlockArg) : 83_363_000, // Closer to actual block
+  toBlock: toBlockArg ? parseInt(toBlockArg) : 83_365_000, // Limit scan to ~2k blocks (faster)
+  chunkSize: 1000,
 };
 
 backfillPluginHelpers(HARMONY_MAINNET_CONFIG).catch((error) => {
