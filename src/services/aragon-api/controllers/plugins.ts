@@ -8,7 +8,6 @@ import RabbitMQHelper from '@helpers/rabbitMQ'
 import config from '@config'
 import logger from '@logger'
 import { Models } from '@dbModels'
-import { NotFoundError } from '@errors'
 
 const llo = logger.logMeta.bind(null, { service: 'PluginsController' })
 
@@ -88,7 +87,9 @@ const PluginsController = {
         }),
       )
 
-      throw new NotFoundError('Plugin installation not found')
+      const error = new Error('Plugin installation not found')
+      error.name = 'NotFoundError'
+      throw error
     }
 
     logger.info(
