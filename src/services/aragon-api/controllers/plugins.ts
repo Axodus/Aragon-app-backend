@@ -53,23 +53,34 @@ const PluginsController = {
   },
 
   getInstallationHelpers: async ({ pluginAddress, network }: IPluginExtraParams) => {
-    try {
-      const installationLog = await Models.LogPluginSetupProcessor.findOne({
-        pluginAddress,
-        network,
-        event: 'InstallationPrepared',
+    console.log(`[getInstallationHelpers] Looking for plugin installation:`)
+    console.log(`  Network: ${network.toLowerCase()}`)
+    console.log(`  Plugin: ${pluginAddress.toLowerCase()}`)
+
+    const installation = await Models.LogPluginSetupProcessor.findOne({
+      network: network.toLowerCase(),
+      pluginAddress: pluginAddress.toLowerCase(),
+      event: 'InstallationPrepared',
+    })
+      .select('helpers transactionHash blockNumber')
+      .lean()
+
+    console.log(`[getInstallationHelpers] Found installation:`, installation ? 'YES' : 'NO')
+
+    if (!installation) {
+      console.log(`[getInstallationHelpers] Querying collection directly...`)
+      const count = await Models.LogPluginSetupProcessor.countDocuments({
+        network: network.toLowerCase(),
+        pluginAddress: pluginAddress.toLowerCase(),
       })
+      console.log(`[getInstallationHelpers] Total docs with this plugin: ${count}`)
+      throw new NotFoundError('Plugin installation not found')
+    }
 
-      if (!installationLog) {
-        logger.warn('Installation log not found for plugin', llo({ pluginAddress, network }))
-        return { helpers: [] }
-      }
+    console.log(`[getInstallationHelpers] Helpers:`, installation.helpers)
 
-      // Return helpers array (should be preserved from installation)
-      return { helpers: installationLog.helpers || [] }
-    } catch (error) {
-      logger.warn('Error while getting installation helpers', llo({ error, pluginAddress, network }))
-      throw error
+    return {
+      helpers: installation.helpers || [],
     }
   },
 }
