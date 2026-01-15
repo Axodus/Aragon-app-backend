@@ -1,7 +1,66 @@
 import { ethers } from 'ethers';
 import mongoose from 'mongoose';
 import config from '@config';
-import { Models } from '@dbModels';
+
+// Define the schema inline since Models export might be incomplete
+interface ILogPluginSetupProcessor {
+  network: string;
+  event: string;
+  blockNumber: number;
+  blockTimestamp: number;
+  transactionHash: string;
+  logIndex: number;
+  daoAddress: string;
+  pluginAddress: string;
+  pluginSetupRepo: string;
+  preparedSetupId: string;
+  versionTag: {
+    release: number;
+    build: number;
+  };
+  data: string;
+  helpers: string[];
+  sender: string;
+  _metadata?: {
+    source: string;
+    reason: string;
+    extractedAt: Date;
+  };
+}
+
+const LogPluginSetupProcessorSchema = new mongoose.Schema<ILogPluginSetupProcessor>({
+  network: { type: String, required: true, index: true },
+  event: { type: String, required: true },
+  blockNumber: { type: Number, required: true, index: true },
+  blockTimestamp: { type: Number, required: true },
+  transactionHash: { type: String, required: true, index: true },
+  logIndex: { type: Number, required: true },
+  daoAddress: { type: String, required: true, index: true },
+  pluginAddress: { type: String, required: true, index: true },
+  pluginSetupRepo: { type: String, required: true },
+  preparedSetupId: { type: String, required: true },
+  versionTag: {
+    release: { type: Number, required: true },
+    build: { type: Number, required: true },
+  },
+  data: { type: String, required: true },
+  helpers: [{ type: String }],
+  sender: { type: String, required: true },
+  _metadata: {
+    source: String,
+    reason: String,
+    extractedAt: Date,
+  },
+}, {
+  timestamps: true,
+  collection: 'logpluginsetupprocessors',
+});
+
+// Create compound index for uniqueness
+LogPluginSetupProcessorSchema.index({ network: 1, transactionHash: 1, logIndex: 1 }, { unique: true });
+
+const LogPluginSetupProcessorModel = mongoose.models.LogPluginSetupProcessor || 
+  mongoose.model<ILogPluginSetupProcessor>('LogPluginSetupProcessor', LogPluginSetupProcessorSchema);
 
 async function extractHelpersFromPlugin() {
   console.log('🔍 Extracting helpers from plugin state...\n');
@@ -31,14 +90,6 @@ async function extractHelpersFromPlugin() {
 
   console.log(`📦 Transaction has ${receipt.logs.length} logs\n`);
 
-  // Common helper contract patterns in Aragon OSx plugins
-  const helperPatterns = [
-    'Initialized',           // Helper initialization event
-    'MemberAdded',          // Multisig/voting helper
-    'VotingSettingsUpdated', // Voting helper
-    'ProposalCreated',      // Governance helper
-  ];
-
   // Extract unique contract addresses from logs (potential helpers)
   const potentialHelpers = new Set<string>();
   
@@ -57,8 +108,6 @@ async function extractHelpersFromPlugin() {
   if (helpers.length === 0) {
     console.log('\n⚠️  No helper contracts found in transaction logs');
     console.log('   This plugin might not use helpers, or they were deployed separately\n');
-    
-    // Create record without helpers
     console.log('📝 Creating installation record without helpers...');
   } else {
     console.log('\n✅ Using these as helpers\n');
@@ -71,22 +120,22 @@ async function extractHelpersFromPlugin() {
   }
 
   // Create document to insert
-  const doc = {
+  const doc: ILogPluginSetupProcessor = {
     network: 'harmony-mainnet',
     event: 'InstallationPrepared',
     blockNumber,
     blockTimestamp: Number(block.timestamp),
     transactionHash: txHash,
-    logIndex: 0, // Synthetic log index since there's no actual InstallationPrepared event
+    logIndex: 0,
     daoAddress: daoAddress.toLowerCase(),
     pluginAddress: pluginAddress.toLowerCase(),
-    pluginSetupRepo: '0x0000000000000000000000000000000000000000', // Unknown since no PSP was used
-    preparedSetupId: ethers.ZeroHash, // No setup ID since no PSP
+    pluginSetupRepo: '0x0000000000000000000000000000000000000000',
+    preparedSetupId: ethers.ZeroHash,
     versionTag: {
       release: 1,
       build: 1,
     },
-    data: '0x', // No setup data
+    data: '0x',
     helpers: helpers,
     sender: receipt.from.toLowerCase(),
     _metadata: {
@@ -98,7 +147,7 @@ async function extractHelpersFromPlugin() {
 
   console.log('💾 Saving to MongoDB...\n');
 
-  const result = await Models.LogPluginSetupProcessor.updateOne(
+  const result = await LogPluginSetupProcessorModel.updateOne(
     {
       network: 'harmony-mainnet',
       transactionHash: txHash,
