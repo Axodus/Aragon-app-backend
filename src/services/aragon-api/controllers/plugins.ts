@@ -8,6 +8,7 @@ import RabbitMQHelper from '@helpers/rabbitMQ'
 import config from '@config'
 import logger from '@logger'
 import { Models } from '@dbModels'
+import { NotFoundError } from '@errors'
 
 const llo = logger.logMeta.bind(null, { service: 'PluginsController' })
 
@@ -53,34 +54,61 @@ const PluginsController = {
   },
 
   getInstallationHelpers: async ({ pluginAddress, network }: IPluginExtraParams) => {
-    console.log(`[getInstallationHelpers] Looking for plugin installation:`)
-    console.log(`  Network: ${network.toLowerCase()}`)
-    console.log(`  Plugin: ${pluginAddress.toLowerCase()}`)
+    logger.info('Looking for plugin installation', llo({ network, pluginAddress }))
 
     const installation = await Models.LogPluginSetupProcessor.findOne({
       network: network.toLowerCase(),
       pluginAddress: pluginAddress.toLowerCase(),
       event: 'InstallationPrepared',
     })
-      .select('helpers transactionHash blockNumber')
+      .select('helpers transactionHash blockNumber _metadata')
       .lean()
 
-    console.log(`[getInstallationHelpers] Found installation:`, installation ? 'YES' : 'NO')
+    logger.info(
+      'Plugin installation query result',
+      llo({
+        found: !!installation,
+        network,
+        pluginAddress,
+      }),
+    )
 
     if (!installation) {
-      console.log(`[getInstallationHelpers] Querying collection directly...`)
       const count = await Models.LogPluginSetupProcessor.countDocuments({
         network: network.toLowerCase(),
         pluginAddress: pluginAddress.toLowerCase(),
       })
-      console.log(`[getInstallationHelpers] Total docs with this plugin: ${count}`)
+
+      logger.warn(
+        'Plugin installation not found',
+        llo({
+          network,
+          pluginAddress,
+          totalDocsWithPlugin: count,
+        }),
+      )
+
       throw new NotFoundError('Plugin installation not found')
     }
 
-    console.log(`[getInstallationHelpers] Helpers:`, installation.helpers)
+    logger.info(
+      'Plugin installation helpers retrieved',
+      llo({
+        network,
+        pluginAddress,
+        helpersCount: installation.helpers?.length || 0,
+        helpers: installation.helpers,
+        source: installation._metadata?.source,
+      }),
+    )
 
     return {
       helpers: installation.helpers || [],
+      metadata: {
+        transactionHash: installation.transactionHash,
+        blockNumber: installation.blockNumber,
+        source: installation._metadata?.source || 'indexer',
+      },
     }
   },
 }
