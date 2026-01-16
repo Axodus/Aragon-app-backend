@@ -1,6 +1,7 @@
 import logger from '@logger'
 import {
   EnumQueueName,
+  type HexAddress,
   type ILogInfo,
   IPluginInterfaceType,
   type IProposalMetadata,
@@ -432,11 +433,14 @@ export const ProposalHandler = {
         summary: metadataUri ? `Metadata hash: ${metadataUri}` : 'Harmony voting proposal.',
         description: '',
         resources: [],
-        media: null,
+        media: {
+          header: null,
+          logo: null,
+        },
       }
 
       const transaction = await Web3Helper.getTransaction(info.transactionHash, info.network)
-      const creatorAddress = ((transaction?.from as HexAddress) || ZeroAddress) as HexAddress
+      const creatorAddress = (transaction?.from || ZeroAddress) as HexAddress
 
       const document: Partial<Proposal> = {
         network: info.network,
