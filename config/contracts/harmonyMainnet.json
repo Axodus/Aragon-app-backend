@@ -92,13 +92,15 @@
 
     "HarmonyHIPVotingRepoProxy": {
       "address": "0xE6E54ac81EFB41fdf0D559eeae51DbFB3C750088",
-      "blockNumber": 0,
-      "deploymentTx": "0x"
+      "blockNumber": 83826700,
+      "deploymentTx": "0x",
+      "note": "Deployed 2026-01-16 - HIP voting plugin repository"
     },
     "HarmonyDelegationVotingRepoProxy": {
       "address": "0x4ac3dAfD88DeFd9a000076365e28B3dE3A862700",
-      "blockNumber": 0,
-      "deploymentTx": "0x"
+      "blockNumber": 83826700,
+      "deploymentTx": "0x",
+      "note": "Deployed 2026-01-16 - Delegation voting plugin repository"
     },
 
     "ENSRegistry": {
