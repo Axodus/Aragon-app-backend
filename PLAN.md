@@ -1,8 +1,8 @@
 # Harmony Plugins Backend Update Plan
 
 ## Task Breakdown
-- [ ] Locate Harmony mainnet contracts config for plugin repos.
-- [ ] Update Harmony HIP/Delegation repo proxy addresses.
+- [x] Locate Harmony mainnet contracts config for plugin repos.
+- [x] Update Harmony HIP/Delegation repo proxy addresses.
 - [ ] Confirm handlers/indexer use updated config.
 - [ ] Summarize changes for UI testing.
 

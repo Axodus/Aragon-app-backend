@@ -91,12 +91,12 @@
     },
 
     "HarmonyHIPVotingRepoProxy": {
-      "address": "0xB63fC0a5747a96F643B9f43156D8D041df48eC30",
+      "address": "0x377Fa6d56066b81a7233043302B7e1569591253E",
       "blockNumber": 0,
       "deploymentTx": "0x"
     },
     "HarmonyDelegationVotingRepoProxy": {
-      "address": "0xACcA531400E43aBF8d4DD778D4e63465d27b0D47",
+      "address": "0x908a794F6e59872cB9b5Da0465a667833eEBdcFD",
       "blockNumber": 0,
       "deploymentTx": "0x"
     },
