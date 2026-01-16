@@ -2,8 +2,8 @@ const { MongoClient } = require('mongodb');
 require('dotenv').config();
 
 async function checkPlugin() {
-  // Use direct connection to mongo1 on port 27017
-  const mongoUri = 'mongodb://localhost:27017/aragon?directConnection=true';
+  // Inside Docker containers, use mongo1 hostname
+  const mongoUri = 'mongodb://mongo1:27017/aragon?directConnection=true';
   
   console.log('Connecting to MongoDB...');
   console.log('URI:', mongoUri);
