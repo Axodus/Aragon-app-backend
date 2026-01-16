@@ -529,10 +529,6 @@ const IndexerEventConfig: IIndexerConfig[] = [
       },
     ],
   },
-
-  // Capital Distributor events
-  {
-    event: 'CampaignCreated',
   {
     event: 'HarmonyVoteCast',
     enableHistorical: true,
@@ -544,6 +540,10 @@ const IndexerEventConfig: IIndexerConfig[] = [
       },
     ],
   },
+
+  // Capital Distributor events
+  {
+    event: 'CampaignCreated',
     enableHistorical: true,
     topic: new Interface(CapitalDistributor.abi).getEvent('CampaignCreated')?.topicHash!,
     config: [
