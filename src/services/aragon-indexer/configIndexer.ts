@@ -221,7 +221,7 @@ const IndexerEventConfig: IIndexerConfig[] = [
     topic: new Interface(HarmonyVotingPlugin.abi).getEvent('ProposalCreated')?.topicHash!,
     config: [
       {
-        abi: HarmonyVotingPlugin.abi,
+        abi: HarmonyVotingPlugin.abi as unknown as any[],
         handler: ProposalHandler.harmonyProposalCreated,
       },
     ],
@@ -535,7 +535,7 @@ const IndexerEventConfig: IIndexerConfig[] = [
     topic: new Interface(HarmonyVotingPlugin.abi).getEvent('VoteCast')?.topicHash!,
     config: [
       {
-        abi: HarmonyVotingPlugin.abi,
+        abi: HarmonyVotingPlugin.abi as unknown as any[],
         handler: ProposalHandler.harmonyVoteCast,
       },
     ],
