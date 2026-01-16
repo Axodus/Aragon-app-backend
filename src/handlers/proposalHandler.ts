@@ -9,7 +9,7 @@ import {
   ITokenVotingLogs,
   KnownActionSignature,
 } from '@types'
-import { Interface, type LogDescription } from 'ethers'
+import { Interface, type LogDescription, ZeroAddress } from 'ethers'
 import { Models } from '@dbModels'
 import IPFSModule from '@modules/ipfs'
 import type Vote from '@models/schema/vote'
@@ -374,6 +374,117 @@ export const ProposalHandler = {
     }
   },
 
+  harmonyProposalCreated: async (parsedEvent: LogDescription, info: ILogInfo) => {
+    try {
+      const pluginAddress = info.address
+
+      const relatedPlugin = await Models.Plugin.findByAddress(pluginAddress, info.network)
+
+      if (!relatedPlugin) {
+        logger.warn('Plugin not found', llo(info))
+        return { newProposal: undefined, relatedPlugin: undefined }
+      }
+
+      info.interfaceType = relatedPlugin.interfaceType
+
+      const proposalIndex = parsedEvent.args?.proposalId?.toString()
+      const existingLog = await Models.Proposal.findExistingLog({
+        transactionHash: info.transactionHash,
+        pluginAddress,
+        proposalIndex,
+      })
+      if (existingLog) {
+        return { newProposal: undefined, relatedPlugin: undefined }
+      }
+
+      const settings = await Models.Setting.findLastSettingByBlockNumber(pluginAddress, info.blockNumber)
+
+      let rawSettings: any = null
+
+      if (settings) {
+        rawSettings = {
+          id: settings.id,
+          transactionHash: settings.transactionHash,
+          blockNumber: settings.blockNumber,
+          blockTimestamp: settings.blockTimestamp,
+          network: settings.network,
+          daoAddress: settings.daoAddress,
+          pluginAddress: settings.pluginAddress,
+          pluginSubdomain: settings.pluginSubdomain,
+          tokenAddress: settings?.tokenAddress,
+          onlyListed: settings?.onlyListed,
+          minApprovals: settings?.minApprovals,
+          votingMode: settings?.votingMode,
+          supportThreshold: settings?.supportThreshold,
+          minParticipation: settings?.minParticipation,
+          minDuration: settings?.minDuration,
+          minProposerVotingPower: settings?.minProposerVotingPower,
+          stages: settings?.stages?.toObject(),
+        }
+      }
+
+      const blockTimestamp = await Web3Helper.getBlockTimestamp(info.blockNumber, info.network)
+      const metadataHash = parsedEvent.args?.metadata
+      const metadataUri = metadataHash ? metadataHash.toString() : null
+
+      const proposalMetadata: IProposalMetadata = {
+        title: `Harmony proposal #${proposalIndex}`,
+        summary: metadataUri ? `Metadata hash: ${metadataUri}` : 'Harmony voting proposal.',
+        description: '',
+        resources: [],
+        media: null,
+      }
+
+      const transaction = await Web3Helper.getTransaction(info.transactionHash, info.network)
+      const creatorAddress = ((transaction?.from as HexAddress) || ZeroAddress) as HexAddress
+
+      const document: Partial<Proposal> = {
+        network: info.network,
+        blockNumber: info.blockNumber,
+        blockTimestamp,
+        transactionHash: info.transactionHash,
+        title: proposalMetadata?.title!,
+        description: proposalMetadata?.description!,
+        summary: proposalMetadata?.summary!,
+        resources: proposalMetadata?.resources as any,
+        media: proposalMetadata?.media as any,
+        daoAddress: relatedPlugin.daoAddress,
+        pluginAddress,
+        pluginSubdomain: relatedPlugin.subdomain,
+        creatorAddress,
+        proposalIndex,
+        startDate: Number(parsedEvent.args.startDate),
+        endDate: Number(parsedEvent.args.endDate),
+        allowFailureMap: 0,
+        metadataUri,
+        settings: rawSettings,
+        rawActions: [],
+      }
+
+      document.decoding = false
+
+      const incrementalId = Number(proposalIndex)
+
+      if (Number.isNaN(incrementalId)) {
+        logger.error('Error harmonyProposalCreated - incrementalId is NaN', llo({ ...info, parsedEvent }))
+        return { newProposal: undefined, relatedPlugin: undefined }
+      }
+
+      document.incrementalId = incrementalId
+
+      const newProposal = await Models.Proposal.create(document)
+
+      logger.verbose('New Harmony Proposal', llo({ ...info, logId: newProposal.id }))
+
+      await ProposalHandler.pairSppProposals(newProposal, relatedPlugin, info)
+
+      await MemberGovernanceFactory.createBaseMember(newProposal.creatorAddress, info.blockNumber)
+    } catch (error) {
+      logger.error('Error Create harmony proposal', llo({ ...info, error, parsedEvent }))
+      return undefined
+    }
+  },
+
   approved: async (parsedEvent: LogDescription, info: ILogInfo) => {
     try {
       const proposalIndex = parsedEvent.args.proposalId.toString()
@@ -549,6 +660,81 @@ export const ProposalHandler = {
       })
     } catch (error) {
       logger.error('Error VoteCast Proposal', llo({ ...info, error, parsedEvent }))
+    }
+  },
+
+  harmonyVoteCast: async (parsedEvent: LogDescription, info: ILogInfo) => {
+    try {
+      const proposalIndex = parsedEvent.args.proposalId.toString()
+
+      const plugin = await Models.Plugin.findByAddress(info.address, info.network)
+      if (!plugin) {
+        logger.warn('HarmonyVoteCast - Plugin not found', llo(info))
+        return
+      }
+
+      if (!plugin.isSupported) {
+        logger.warn('HarmonyVoteCast - plugin not supported', llo(info))
+        return
+      }
+
+      const proposal = await Models.Proposal.findByProposalIndex(proposalIndex, info.address, info.network)
+
+      if (!proposal) {
+        logger.warn('HarmonyVoteCast - Proposal not found', llo(info))
+        return
+      }
+
+      const existingLog = await Models.Vote.findExistingLog({
+        network: info.network,
+        transactionHash: info.transactionHash,
+        transactionIndex: info.transactionIndex,
+        logIndex: info.logIndex,
+      })
+      if (existingLog) return
+
+      const document: Partial<Vote> = {
+        network: info.network,
+        transactionHash: info.transactionHash,
+        transactionIndex: info.transactionIndex,
+        logIndex: info.logIndex,
+        blockNumber: info.blockNumber,
+        blockTimestamp: (await Web3Helper.getBlockTimestamp(info.blockNumber, info.network)) || undefined,
+        daoAddress: proposal.daoAddress,
+        pluginAddress: info.address,
+        memberAddress: parsedEvent.args.voter,
+        proposalIndex,
+        voteOption: Number(parsedEvent.args.option),
+        votingPower: '0',
+      }
+
+      const existingMemberVote = await Models.Vote.findVoteOnPlugin({
+        network: info.network,
+        pluginAddress: info.address,
+        memberAddress: parsedEvent.args.voter,
+        proposalIndex,
+      })
+
+      const isExistingVote = !!existingMemberVote
+
+      if (isExistingVote) {
+        document.replacedTransactionHash = existingMemberVote.transactionHash
+      }
+
+      await DbTx.executeTxFn(async ({ session }) => {
+        const logId = await Models.Vote.create(document, { session })
+
+        if (isExistingVote) {
+          await existingMemberVote.deleteOne({ session })
+        }
+        await DbTx.safeCommit(session)
+        const logName = existingMemberVote ? 'Replace Vote - HarmonyVoteCast' : 'New Vote - HarmonyVoteCast'
+        logger.verbose(`Created new document - ${logName}`, llo({ ...info, documentId: logId.id }))
+      })
+
+      await MemberGovernanceFactory.createBaseMember(document.memberAddress!, info.blockNumber)
+    } catch (error) {
+      logger.error('Error HarmonyVoteCast Proposal', llo({ ...info, error, parsedEvent }))
     }
   },
 

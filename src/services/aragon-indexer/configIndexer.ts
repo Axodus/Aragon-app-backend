@@ -33,6 +33,7 @@ import { CapitalDistributor } from '@artifacts/CapitalDistributor'
 import { CapitalDistributorHandler } from '@handlers/capitalDistributorHandler'
 import { GaugeVoter } from '@artifacts/GaugeVoter'
 import { GaugeHandler } from '@handlers/gaugeHandler'
+import { HarmonyVotingPlugin } from '@artifacts/HarmonyVotingPlugin'
 
 const IndexerEventConfig: IIndexerConfig[] = [
   // historical and realtime on startup
@@ -211,6 +212,17 @@ const IndexerEventConfig: IIndexerConfig[] = [
       {
         abi: SharedLogs.abi,
         handler: ProposalHandler.proposalCreated,
+      },
+    ],
+  },
+  {
+    event: 'HarmonyProposalCreated',
+    enableHistorical: true,
+    topic: new Interface(HarmonyVotingPlugin.abi).getEvent('ProposalCreated')?.topicHash!,
+    config: [
+      {
+        abi: HarmonyVotingPlugin.abi,
+        handler: ProposalHandler.harmonyProposalCreated,
       },
     ],
   },
@@ -521,6 +533,17 @@ const IndexerEventConfig: IIndexerConfig[] = [
   // Capital Distributor events
   {
     event: 'CampaignCreated',
+  {
+    event: 'HarmonyVoteCast',
+    enableHistorical: true,
+    topic: new Interface(HarmonyVotingPlugin.abi).getEvent('VoteCast')?.topicHash!,
+    config: [
+      {
+        abi: HarmonyVotingPlugin.abi,
+        handler: ProposalHandler.harmonyVoteCast,
+      },
+    ],
+  },
     enableHistorical: true,
     topic: new Interface(CapitalDistributor.abi).getEvent('CampaignCreated')?.topicHash!,
     config: [
