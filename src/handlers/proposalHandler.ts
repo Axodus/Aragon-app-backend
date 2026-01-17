@@ -439,8 +439,9 @@ export const ProposalHandler = {
       }
 
       const blockTimestamp = await Web3Helper.getBlockTimestamp(info.blockNumber, info.network)
+      const normalizedBlockTimestamp = (blockTimestamp ?? undefined) as Proposal['blockTimestamp']
       const block = await Web3Helper.getBlock(info.blockNumber, info.network)
-      const blockHash = block?.hash
+      const blockHash = block?.hash ?? undefined
       const metadataHash = parsedEvent.args?.metadata
       const metadataUri = metadataHash ? metadataHash.toString() : null
 
@@ -462,7 +463,7 @@ export const ProposalHandler = {
         network: info.network,
         blockNumber: info.blockNumber,
         blockHash,
-        blockTimestamp: normalizedBlockTimestamp,
+          blockTimestamp: normalizedBlockTimestamp,
         transactionHash: info.transactionHash,
         title: proposalMetadata?.title!,
         description: proposalMetadata?.description!,
@@ -477,7 +478,7 @@ export const ProposalHandler = {
         startDate: Number(parsedEvent.args.startDate),
         endDate: Number(parsedEvent.args.endDate),
         allowFailureMap: 0,
-        metadataUri,
+          metadataUri: metadataUri ?? undefined,
         settings: rawSettings,
         rawActions: [],
       }
@@ -727,7 +728,7 @@ export const ProposalHandler = {
       }
 
       const block = await Web3Helper.getBlock(info.blockNumber, info.network)
-      const blockHash = block?.hash
+      const blockHash = block?.hash ?? undefined
 
       const document: Partial<Vote> = {
         network: info.network,
