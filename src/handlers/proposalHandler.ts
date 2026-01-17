@@ -177,6 +177,7 @@ export const ProposalHandler = {
       }
 
       const blockTimestamp = await Web3Helper.getBlockTimestamp(info.blockNumber, info.network)
+      const normalizedBlockTimestamp = (blockTimestamp ?? undefined) as Proposal['blockTimestamp']
 
       const document: Partial<Proposal> = {
         network: info.network,
@@ -461,7 +462,7 @@ export const ProposalHandler = {
         network: info.network,
         blockNumber: info.blockNumber,
         blockHash,
-        blockTimestamp: blockTimestamp ?? undefined,
+        blockTimestamp: normalizedBlockTimestamp,
         transactionHash: info.transactionHash,
         title: proposalMetadata?.title!,
         description: proposalMetadata?.description!,
@@ -735,7 +736,7 @@ export const ProposalHandler = {
         logIndex: info.logIndex,
         blockNumber: info.blockNumber,
         blockHash,
-        blockTimestamp: (await Web3Helper.getBlockTimestamp(info.blockNumber, info.network)) ?? undefined,
+        blockTimestamp: ((await Web3Helper.getBlockTimestamp(info.blockNumber, info.network)) ?? undefined) as Vote['blockTimestamp'],
         daoAddress: proposal.daoAddress,
         pluginAddress: info.address,
         memberAddress: parsedEvent.args.voter,
