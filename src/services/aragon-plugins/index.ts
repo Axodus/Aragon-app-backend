@@ -124,6 +124,12 @@ const AragonPluginsService: IService & { pluginQueue: (params: IQueuePlugin) => 
         break
       }
     }
+
+    if (isHistorical && !plugin.isHistoricalSynced) {
+      await plugin
+        .updateOne({ isHistoricalSynced: true, historicalSyncedAt: Date.now() })
+        .catch(error => logger.warn('Failed to mark plugin historical sync', llo({ address, network, error })))
+    }
   },
 }
 

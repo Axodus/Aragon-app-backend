@@ -216,6 +216,14 @@ export const PluginSetupProcessorHandler = {
       id: pluginDb.address,
       params: { address: pluginDb.address, network: pluginDb.network, isHistorical },
     })
+
+    // Trigger a one-time historical sync for fresh installs to backfill events
+    if (!isHistorical) {
+      await RabbitMQHelper.sendMessage(EnumQueueName.plugins, {
+        id: `historical-${pluginDb.address}-${pluginDb.network}-${info.blockNumber}`,
+        params: { address: pluginDb.address, network: pluginDb.network, isHistorical: true },
+      })
+    }
   },
 
   updatePrepared: async (parsedEvent: LogDescription, info: ILogInfo) => {

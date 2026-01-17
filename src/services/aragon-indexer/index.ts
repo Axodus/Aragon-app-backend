@@ -1,5 +1,5 @@
 import logger from '@logger'
-import { EnumConnection, EnumQueueName, EnumServiceName, type IService } from '@types'
+import { EnumConnection, EnumQueueName, EnumServiceName, IPluginStatus, type IService } from '@types'
 import { TaskSchedulerState } from '@state/taskSchedulerState'
 import { NetworkHelper } from '@helpers/network'
 import configIndexer from '@indexer/configIndexer'
@@ -19,6 +19,27 @@ import harmonyTestnetContracts from '../../../config/contracts/harmonyTestnet.js
 const llo = logger.logMeta.bind(null, { service: 'service:IndexerService' })
 
 type ContractsConfig = Record<string, Record<string, { address: string; blockNumber?: number; deploymentTx?: string }>>
+
+const backfillInstalledPlugins = async (networkName: string) => {
+  const pluginsToSync = await Models.Plugin.find({
+    network: networkName,
+    status: IPluginStatus.installed,
+    isHistoricalSynced: { $ne: true },
+  })
+
+  if (!pluginsToSync.length) return
+
+  logger.info('Scheduling historical plugin sync', llo({ networkName, count: pluginsToSync.length }))
+
+  await Promise.all(
+    pluginsToSync.map(plugin =>
+      RabbitMQHelper.sendMessage(EnumQueueName.plugins, {
+        id: `historical-${plugin.address}-${plugin.network}`,
+        params: { address: plugin.address, network: plugin.network, isHistorical: true },
+      }),
+    ),
+  )
+}
 
 const getIndexerCoreAddresses = async (networkName: string): Promise<string[] | undefined> => {
   const configByNetwork: Partial<Record<string, ContractsConfig>> = {
@@ -125,6 +146,9 @@ const AragonIndexerService: IService & { repeaters: any } = {
           await historicalCrawler.crawl()
           logger.info('HistoricalCrawler end', llo({ networkName }))
         }
+
+        // Ensure newly installed plugins receive a one-time historical sync
+        await backfillInstalledPlugins(networkName)
 
         // sync all metrics by network
         logger.info('Sync all metrics start', llo({ networkName }))

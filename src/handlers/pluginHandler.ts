@@ -476,6 +476,8 @@ export const PluginHandler = {
         const document: Partial<Plugin> = {
           status: IPluginStatus.installed,
           pluginSetupRepoAddress: rawPlugin?.pluginSetupRepoAddress,
+          isHistoricalSynced: false,
+          historicalSyncedAt: null,
         }
 
         const plugin = await preInstalledPlugin.update(document, { session })
