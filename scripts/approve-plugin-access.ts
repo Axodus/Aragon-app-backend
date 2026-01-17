@@ -30,7 +30,7 @@ const main = async () => {
   if (args.help === 'true' || args.help === '1') {
     console.log('Usage:')
     console.log(
-      '  yarn plugin:approve --dao=0xDAO --network=harmony-mainnet --pluginSlug=harmony-hip --approvedBy=0xADMIN --reason="optional"'
+      '  yarn plugin:approve --dao=0xDAO --network=harmony-mainnet --pluginSlug=harmony-hip --approvedBy=0xADMIN --reason="optional"',
     )
     process.exit(0)
   }
@@ -87,7 +87,7 @@ const main = async () => {
         updatedAt: true,
       },
     },
-    { upsert: true }
+    { upsert: true },
   )
 
   console.log('✅ Approval saved')

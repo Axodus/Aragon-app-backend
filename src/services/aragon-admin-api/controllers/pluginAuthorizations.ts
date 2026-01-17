@@ -43,7 +43,7 @@ const PluginAuthorizationsController = {
         approvedBy,
         approvedAt: new Date(),
       },
-      { new: true, upsert: true }
+      { new: true, upsert: true },
     )
 
     logger.info('Plugin access approved', llo({ daoAddress, pluginSlug, network }))

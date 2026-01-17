@@ -32,7 +32,7 @@ const backfillInstalledPlugins = async (networkName: string) => {
   logger.info('Scheduling historical plugin sync', llo({ networkName, count: pluginsToSync.length }))
 
   await Promise.all(
-    pluginsToSync.map(plugin =>
+    pluginsToSync.map(async plugin =>
       RabbitMQHelper.sendMessage(EnumQueueName.plugins, {
         id: `historical-${plugin.address}-${plugin.network}`,
         params: { address: plugin.address, network: plugin.network, isHistorical: true },
@@ -67,17 +67,25 @@ const getIndexerCoreAddresses = async (networkName: string): Promise<string[] | 
 
   // CRITICAL FIX: Add all installed plugin addresses for this network
   try {
-    const installedPlugins = await Models.Plugin.find({ 
+    const installedPlugins = await Models.Plugin.find({
       network: networkName,
-      status: 'installed' 
-    }).select('address').lean().exec()
-    
+      status: 'installed',
+    })
+      .select('address')
+      .lean()
+      .exec()
+
     const pluginAddresses = installedPlugins
       .map(p => p.address?.toLowerCase())
-      .filter((addr): addr is string => typeof addr === 'string' && addr !== '0x0000000000000000000000000000000000000000')
-    
+      .filter(
+        (addr): addr is string => typeof addr === 'string' && addr !== '0x0000000000000000000000000000000000000000',
+      )
+
     if (pluginAddresses.length > 0) {
-      logger.info(`Added ${pluginAddresses.length} installed plugin addresses to indexer for ${networkName}`, llo({ pluginAddresses }))
+      logger.info(
+        `Added ${pluginAddresses.length} installed plugin addresses to indexer for ${networkName}`,
+        llo({ pluginAddresses }),
+      )
       addresses.push(...pluginAddresses)
     }
   } catch (error) {
