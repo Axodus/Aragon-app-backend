@@ -31,6 +31,7 @@ import { assert } from '@errors'
 import Web3Utils from '@helpers/web3Utils'
 import LockToVoteHelper from '@helpers/lockToVoteHelper'
 import { DaoRegistryHandler } from '@handlers/daoRegistryHandler'
+import { HarmonyIndexingMetrics } from '@metrics/harmonyIndexingMetrics'
 
 const llo = logger.logMeta.bind(null, { service: 'handlers:ProposalHandler' })
 export const ProposalHandler = {
@@ -376,25 +377,37 @@ export const ProposalHandler = {
   },
 
   harmonyProposalCreated: async (parsedEvent: LogDescription, info: ILogInfo) => {
+    const startTime = Date.now()
     try {
       const pluginAddress = info.address
 
       const relatedPlugin = await Models.Plugin.findByAddress(pluginAddress, info.network)
 
       if (!relatedPlugin) {
-        logger.warn('Plugin not found', llo(info))
+        logger.warn('HarmonyProposalCreated - Plugin not found', llo(info))
+        HarmonyIndexingMetrics.recordError(info.network, 'Plugin not found', { pluginAddress })
         return { newProposal: undefined, relatedPlugin: undefined }
       }
 
       info.interfaceType = relatedPlugin.interfaceType
 
       const proposalIndex = parsedEvent.args?.proposalId?.toString()
+      
+      // Idempotency check: verify if this exact log was already processed
       const existingLog = await Models.Proposal.findExistingLog({
         transactionHash: info.transactionHash,
         pluginAddress,
         proposalIndex,
       })
       if (existingLog) {
+        logger.debug('HarmonyProposalCreated - Already processed (idempotent check)', llo({ ...info, proposalIndex }))
+        return { newProposal: undefined, relatedPlugin: undefined }
+      }
+
+      // Additional idempotency: check by proposal index (in case of reorg)
+      const existingProposal = await Models.Proposal.findByProposalIndex(proposalIndex, pluginAddress, info.network)
+      if (existingProposal && existingProposal.blockNumber === info.blockNumber) {
+        logger.debug('HarmonyProposalCreated - Proposal already exists at this block', llo({ ...info, proposalIndex }))
         return { newProposal: undefined, relatedPlugin: undefined }
       }
 
@@ -425,6 +438,8 @@ export const ProposalHandler = {
       }
 
       const blockTimestamp = await Web3Helper.getBlockTimestamp(info.blockNumber, info.network)
+      const block = await Web3Helper.getBlock(info.blockNumber, info.network)
+      const blockHash = block?.hash
       const metadataHash = parsedEvent.args?.metadata
       const metadataUri = metadataHash ? metadataHash.toString() : null
 
@@ -445,6 +460,7 @@ export const ProposalHandler = {
       const document: Partial<Proposal> = {
         network: info.network,
         blockNumber: info.blockNumber,
+        blockHash,
         blockTimestamp,
         transactionHash: info.transactionHash,
         title: proposalMetadata?.title!,
@@ -480,11 +496,16 @@ export const ProposalHandler = {
 
       logger.verbose('New Harmony Proposal', llo({ ...info, logId: newProposal.id }))
 
+      // Record metrics
+      const processingTime = Date.now() - startTime
+      HarmonyIndexingMetrics.recordProposalIndexed(info.network, info.blockNumber, processingTime)
+
       await ProposalHandler.pairSppProposals(newProposal, relatedPlugin, info)
 
       await MemberGovernanceFactory.createBaseMember(newProposal.creatorAddress, info.blockNumber)
     } catch (error) {
       logger.error('Error Create harmony proposal', llo({ ...info, error, parsedEvent }))
+      HarmonyIndexingMetrics.recordError(info.network, error, { parsedEvent, info })
       return undefined
     }
   },
@@ -668,12 +689,14 @@ export const ProposalHandler = {
   },
 
   harmonyVoteCast: async (parsedEvent: LogDescription, info: ILogInfo) => {
+    const startTime = Date.now()
     try {
       const proposalIndex = parsedEvent.args.proposalId.toString()
 
       const plugin = await Models.Plugin.findByAddress(info.address, info.network)
       if (!plugin) {
         logger.warn('HarmonyVoteCast - Plugin not found', llo(info))
+        HarmonyIndexingMetrics.recordError(info.network, 'Plugin not found', { pluginAddress: info.address })
         return
       }
 
@@ -686,16 +709,24 @@ export const ProposalHandler = {
 
       if (!proposal) {
         logger.warn('HarmonyVoteCast - Proposal not found', llo(info))
+        HarmonyIndexingMetrics.recordError(info.network, 'Proposal not found', { proposalIndex, pluginAddress: info.address })
         return
       }
 
+      // Idempotency check: verify if this exact log was already processed
       const existingLog = await Models.Vote.findExistingLog({
         network: info.network,
         transactionHash: info.transactionHash,
         transactionIndex: info.transactionIndex,
         logIndex: info.logIndex,
       })
-      if (existingLog) return
+      if (existingLog) {
+        logger.debug('HarmonyVoteCast - Already processed (idempotent check)', llo({ ...info, proposalIndex }))
+        return
+      }
+
+      const block = await Web3Helper.getBlock(info.blockNumber, info.network)
+      const blockHash = block?.hash
 
       const document: Partial<Vote> = {
         network: info.network,
@@ -703,6 +734,7 @@ export const ProposalHandler = {
         transactionIndex: info.transactionIndex,
         logIndex: info.logIndex,
         blockNumber: info.blockNumber,
+        blockHash,
         blockTimestamp: (await Web3Helper.getBlockTimestamp(info.blockNumber, info.network)) || undefined,
         daoAddress: proposal.daoAddress,
         pluginAddress: info.address,
@@ -736,9 +768,14 @@ export const ProposalHandler = {
         logger.verbose(`Created new document - ${logName}`, llo({ ...info, documentId: logId.id }))
       })
 
+      // Record metrics
+      const processingTime = Date.now() - startTime
+      HarmonyIndexingMetrics.recordVoteIndexed(info.network, info.blockNumber, processingTime)
+
       await MemberGovernanceFactory.createBaseMember(document.memberAddress!, info.blockNumber)
     } catch (error) {
       logger.error('Error HarmonyVoteCast Proposal', llo({ ...info, error, parsedEvent }))
+      HarmonyIndexingMetrics.recordError(info.network, error, { parsedEvent, info })
     }
   },
 

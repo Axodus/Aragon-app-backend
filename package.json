@@ -17,6 +17,7 @@
     "service:aragon-rates": "ts-node -r tsconfig-paths/register runners/aragon-rates.ts",
     "service:aragon-requeue": "ts-node -r tsconfig-paths/register runners/aragon-requeue.ts",
     "plugin:approve": "ts-node -r tsconfig-paths/register scripts/approve-plugin-access.ts",
+    "backfill:harmony": "ts-node -r tsconfig-paths/register scripts/backfillHarmony.ts",
     "deploy:sand": "bash scripts/app-deploy.sh sand",
     "deploy:dev": "bash scripts/app-deploy.sh dev",
     "deploy:stg": "bash scripts/app-deploy.sh stg",

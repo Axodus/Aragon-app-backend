@@ -248,6 +248,9 @@ export default class Proposal extends Model {
   @prop({ type: () => Number, required: true })
   public blockNumber!: number
 
+  @prop({ type: () => String })
+  public blockHash?: string
+
   @prop({ type: () => Number })
   public blockTimestamp!: number
 
