@@ -79,7 +79,9 @@ async function disconnectDatabase() {
 }
 
 async function main() {
+  console.log('[BackfillHarmony] Script started')
   const args = parseArgs()
+  console.log('[BackfillHarmony] Args parsed:', args)
 
   if (!args.network) {
     console.error('Error: --network is required')
@@ -96,7 +98,9 @@ async function main() {
   }
 
   try {
+    console.log('[BackfillHarmony] Attempting database connection...')
     await connectDatabase()
+    console.log('[BackfillHarmony] Database connected successfully')
 
     logger.info('HarmonyBackfill CLI - Starting', llo({ args }))
 
