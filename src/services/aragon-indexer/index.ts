@@ -20,7 +20,7 @@ const llo = logger.logMeta.bind(null, { service: 'service:IndexerService' })
 
 type ContractsConfig = Record<string, Record<string, { address: string; blockNumber?: number; deploymentTx?: string }>>
 
-const getIndexerCoreAddresses = (networkName: string): string[] | undefined => {
+const getIndexerCoreAddresses = async (networkName: string): Promise<string[] | undefined> => {
   const configByNetwork: Partial<Record<string, ContractsConfig>> = {
     'harmony-mainnet': harmonyMainnetContracts as unknown as ContractsConfig,
     'harmony-testnet': harmonyTestnetContracts as unknown as ContractsConfig,
@@ -43,6 +43,25 @@ const getIndexerCoreAddresses = (networkName: string): string[] | undefined => {
     .filter((address): address is string => typeof address === 'string')
     .map(address => address.toLowerCase())
     .filter(address => address !== '0x0000000000000000000000000000000000000000')
+
+  // CRITICAL FIX: Add all installed plugin addresses for this network
+  try {
+    const installedPlugins = await Models.Plugin.find({ 
+      network: networkName,
+      status: 'installed' 
+    }).select('address').lean().exec()
+    
+    const pluginAddresses = installedPlugins
+      .map(p => p.address?.toLowerCase())
+      .filter((addr): addr is string => typeof addr === 'string' && addr !== '0x0000000000000000000000000000000000000000')
+    
+    if (pluginAddresses.length > 0) {
+      logger.info(`Added ${pluginAddresses.length} installed plugin addresses to indexer for ${networkName}`, llo({ pluginAddresses }))
+      addresses.push(...pluginAddresses)
+    }
+  } catch (error) {
+    logger.warn('Failed to fetch installed plugins for indexer', llo({ networkName, error }))
+  }
 
   return addresses.length > 0 ? addresses : undefined
 }
@@ -92,7 +111,7 @@ const AragonIndexerService: IService & { repeaters: any } = {
         // sync historical data
         if (!existingConfig) {
           logger.info('HistoricalCrawler start', llo({ networkName }))
-          const address = getIndexerCoreAddresses(networkName)
+          const address = await getIndexerCoreAddresses(networkName)
           const historicalCrawler = new BlockchainLogCrawler({
             onlyHistorical: true,
             network: networkName,
