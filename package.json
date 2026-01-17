@@ -10,7 +10,7 @@
     "service:aragon-gateway": "ts-node -r tsconfig-paths/register runners/aragon-gateway.ts",
     "service:aragon-api": "ts-node -r tsconfig-paths/register runners/aragon-api.ts",
     "service:aragon-admin-api": "ts-node -r tsconfig-paths/register runners/aragon-admin-api.ts",
-    "service:aragon-indexer": "ts-node -r tsconfig-paths/register runners/aragon-indexer.ts",
+    "service:aragon-indexer": "ts-node -r tsconfig-paths/register --transpile-only runners/aragon-indexer.ts",
     "service:aragon-transfers": "ts-node -r tsconfig-paths/register runners/aragon-transfers.ts",
     "service:aragon-dao": "ts-node -r tsconfig-paths/register runners/aragon-dao.ts",
     "service:aragon-plugins": "ts-node -r tsconfig-paths/register runners/aragon-plugins.ts",
