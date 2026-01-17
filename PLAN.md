@@ -21,23 +21,29 @@
 - No unrelated contract addresses are modified.
 
 ## E2E Indexing & Backfill (New Requirements)
-- [ ] Event handlers are idempotent (reprocessing same event produces same result)
+- [x] Event handlers are idempotent (reprocessing same event produces same result)
 - [ ] Reorg-safe handling with confirmations and retries
-- [ ] Backfill strategy from deployment block with checkpointing
-- [ ] Creator inference via tx.from when event doesn't include creator
-- [ ] bytes32 metadata handled correctly (stored as string for now, with future registry support)
-- [ ] Historical indexing enabled for all HarmonyVoting events
-- [ ] Monitoring/metrics for indexing gaps and failures
+- [x] Backfill strategy from deployment block with checkpointing
+- [x] Creator inference via tx.from when event doesn't include creator
+- [x] bytes32 metadata handled correctly (stored as string for now, with future registry support)
+- [x] Historical indexing enabled for all HarmonyVoting events
+- [x] Monitoring/metrics for indexing gaps and failures
 - [ ] Graceful handling of RPC failures with fallback RPCs
+
+## Ops: Forced Reindex (Production)
+- [ ] Document a safe reindex playbook (no volume removal)
+- [ ] Reset MongoDB checkpoints for Harmony (`ConfigIndexer`) to force historical sync from `NODES_HARMONY_*_FROM_BLOCK`
+- [ ] Reset `Plugin.isHistoricalSynced=false` for Harmony to re-run one-time historical plugin sync
+- [ ] Run a full reindex + validate DAO/proposal/vote counts in Mongo
 
 ## Task Breakdown (Expanded)
 - [x] Add HarmonyVoting event configs (ProposalCreated, VoteCast)
 - [x] Implement handlers with placeholder metadata
 - [x] Enable historical indexing
-- [ ] Add idempotency checks (event hash or unique key)
+- [x] Add idempotency checks (event hash or unique key)
 - [ ] Add reorg detection and recovery
-- [ ] Implement backfill job with start block configuration
-- [ ] Add metrics for indexing lag and success rates
+- [x] Implement backfill job with start block configuration
+- [x] Add metrics for indexing lag and success rates
 - [ ] Test with fresh sync and mid-history backfill
 - [ ] Validate proposals appear in UI after indexing
 

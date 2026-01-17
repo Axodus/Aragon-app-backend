@@ -13,6 +13,7 @@ import logger from '../src/logger'
 import mongoose from 'mongoose'
 import config from '../config'
 import { MongoMemoryServer } from 'mongodb-memory-server'
+import { ModelProxy } from '@dbModels'
 
 const llo = logger.logMeta.bind(null, { service: 'scripts:HarmonyBackfill' })
 let memoryServer: MongoMemoryServer | null = null
@@ -101,6 +102,10 @@ async function main() {
     console.log('[BackfillHarmony] Attempting database connection...')
     await connectDatabase()
     console.log('[BackfillHarmony] Database connected successfully')
+
+    console.log('[BackfillHarmony] Registering Mongo models...')
+    await ModelProxy.setMongoModels()
+    console.log('[BackfillHarmony] Mongo models ready')
 
     logger.info('HarmonyBackfill CLI - Starting', llo({ args }))
 
