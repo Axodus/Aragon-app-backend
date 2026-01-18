@@ -1,0 +1,37 @@
+name: Sync PLAN.md → Issues
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run without making changes'
+        required: false
+        default: 'true'
+  schedule:
+    - cron: '0 4 * * *'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          npm ci || true
+
+      - name: Ensure gh is available
+        uses: cli/gh-actions@v2
+
+      - name: Run sync script (dry-run by default)
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          chmod +x .github/scripts/sync-md-to-issues.sh
+          .github/scripts/sync-md-to-issues.sh --repo-root . --project-url "https://github.com/users/mzfshark/projects/15" --dry-run=${{ github.event.inputs.dry_run }}

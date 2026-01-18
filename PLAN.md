@@ -47,6 +47,27 @@
 - [ ] Test with fresh sync and mid-history backfill
 - [ ] Validate proposals appear in UI after indexing
 
+## Legacy DAO Sandbox (DAO 0x76B83B6148ccA891D768cE3129585F25d0104783)
+
+### Objectives
+- Reproduce the historical Harmony environment locally (API + indexer + Next.js UI) tied to the legacy DAO contracts so we can craft/execute migration actions.
+- Preserve the current production contract data by committing explicit backups before any rollback.
+
+### Tasks
+- [ ] Backup current Harmony contract metadata
+	- [ ] Copy `config/contracts/harmonyMainnet.json` to `bkp-harmonyMainnet-<timestamp>.json` (include DAOFactory, PSP, repo proxies, allowlists).
+	- [ ] Snapshot any `.env` / `dao.yml` values that reference the latest Harmony deployments.
+- [ ] Roll back contract references to the legacy deployment
+	- [ ] Replace DAOFactory, PluginSetupProcessor, repo proxy, allowlist, and vault addresses with the versions active for DAO `0x76B8…`.
+	- [ ] Document old ↔ new address mapping in the plan or a temporary README snippet for auditability.
+- [ ] Run backend services against the legacy config
+	- [ ] Start Mongo replica + `yarn service:aragon-indexer` using the rollback config and `FROM_BLOCK` aligned with the DAOFactory block for `0x76B8…`.
+	- [ ] Launch `yarn service:aragon-api` (dev mode) and confirm Harmony endpoints return data for the legacy DAO.
+	- [ ] Export CLI recipes to craft multisig proposals (create → approve → execute) that withdraw funds from the old DAO treasury.
+- [ ] Sync the local Next.js frontend with the legacy backend (depends on [../aragon-app/PLAN.md](../aragon-app/PLAN.md))
+	- [ ] Point `.env.local` to the local API/indexer stack and disable any cached CDN responses.
+	- [ ] Validate DAO detail, treasury balances, and proposal history render for DAO `0x76B8…` using the rolled-back data.
+
 ## Related Plans
 - [../AragonOSX/PLAN.md](../AragonOSX/PLAN.md) - E2E reliability epic
 - [../aragon-app/PLAN.md](../aragon-app/PLAN.md) - UI/UX updates
