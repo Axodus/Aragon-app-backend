@@ -18,6 +18,7 @@
     "service:aragon-requeue": "ts-node -r tsconfig-paths/register runners/aragon-requeue.ts",
     "plugin:approve": "ts-node -r tsconfig-paths/register scripts/approve-plugin-access.ts",
     "backfill:harmony": "ts-node --project tsconfig.scripts.json -r tsconfig-paths/register scripts/backfillHarmony.ts",
+    "reindex:dao": "ts-node --project tsconfig.scripts.json -r tsconfig-paths/register scripts/reindexDaoRegistry.ts",
     "deploy:sand": "bash scripts/app-deploy.sh sand",
     "deploy:dev": "bash scripts/app-deploy.sh dev",
     "deploy:stg": "bash scripts/app-deploy.sh stg",
