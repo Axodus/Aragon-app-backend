@@ -17,14 +17,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - name: Install dependencies
+      - name: Check Node
         run: |
-          npm ci || true
+          node --version
 
       - name: Ensure gh is available
         uses: cli/gh-actions@v2
