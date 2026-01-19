@@ -5,7 +5,7 @@ const fs = require('fs');
 const {execFileSync} = require('child_process');
 const crypto = require('crypto');
 
-function sleep(ms) { const start = Date.now(); while (Date.now() - start < ms) {} }
+function sleep(ms) { const start = Date.now(); while (Date.now() - start < ms) { 0; } }
 function runGh(args, maxRetries = 3) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try { return execFileSync('gh', args, {encoding: 'utf8'}); }
@@ -23,7 +23,12 @@ if (pIdx !== -1 && process.argv[pIdx+1]) projectNodeId = process.argv[pIdx+1];
 
 function getRepo(){
   if (process.env.GITHUB_REPOSITORY) return process.env.GITHUB_REPOSITORY;
-  try{const out = execFileSync('git',['config','--get','remote.origin.url'],{encoding:'utf8'}).trim(); const m = out.match(/github\.com[:/](.+)\/([^/.]+)(?:\.git)?$/); if(m) return `${m[1]}/${m[2]}`;}catch(e){ void e; }
+  try {
+    const out = execFileSync('git', ['config', '--get', 'remote.origin.url'], {encoding: 'utf8'}).trim();
+    const m = out.match(/github\.com[:/](.+)\/([^/.]+)(?:\.git)?$/);
+    if (m) return `${m[1]}/${m[2]}`;
+  } catch (e) { void e; }
+  try { const out = runGh(['repo', 'view', '--json', 'nameWithOwner', '--jq', '.nameWithOwner'], 1); if (out) return out.trim(); } catch (e) { void e; }
   throw new Error('Unable to determine repo (set GITHUB_REPOSITORY)');
 }
 
@@ -40,7 +45,7 @@ function findExistingIssueByTitleOrId(title, stableId){
 function createIssue(title, body, labels=[]){
   const repo = getRepo();
   const args = ['api',`repos/${repo}/issues`,'-f',`title=${title}`,'-f',`body=${body}`];
-  if(labels.length) args.push('-f',`labels=${JSON.stringify(labels)}`);
+  if(labels.length){ for(const lab of labels) args.push('-f', `labels[]=${lab}`); }
   const out = runGh(args, 3);
   return JSON.parse(out);
 }

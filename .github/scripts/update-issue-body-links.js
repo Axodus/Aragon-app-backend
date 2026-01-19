@@ -5,7 +5,7 @@ const fs = require('fs');
 const {execFileSync} = require('child_process');
 const crypto = require('crypto');
 
-function sleep(ms) { const start = Date.now(); while (Date.now() - start < ms) {} }
+function sleep(ms) { const start = Date.now(); while (Date.now() - start < ms) { 0; } }
 function runGh(args, maxRetries = 3) {
 	for (let attempt = 1; attempt <= maxRetries; attempt++) {
 		try { return execFileSync('gh', args, {encoding: 'utf8'}); }
@@ -17,7 +17,7 @@ const input = process.argv[2];
 if(!input){ console.error('Usage: update-issue-body-links.js <json-file>'); process.exit(2); }
 const json = JSON.parse(fs.readFileSync(input, 'utf8'));
 
-function getRepo(){ if(process.env.GITHUB_REPOSITORY) return process.env.GITHUB_REPOSITORY; try{ const out = execFileSync('git',['config','--get','remote.origin.url'],{encoding:'utf8'}).trim(); const m = out.match(/github\.com[:/](.+)\/([^/.]+)(?:\.git)?$/); if(m) return `${m[1]}/${m[2]}`;}catch(e){} throw new Error('Unable to determine repo'); }
+function getRepo(){ if(process.env.GITHUB_REPOSITORY) return process.env.GITHUB_REPOSITORY; try{ const out = execFileSync('git',['config','--get','remote.origin.url'],{encoding:'utf8'}).trim(); const m = out.match(/github\.com[:/](.+)\/([^/.]+)(?:\.git)?$/); if(m) return `${m[1]}/${m[2]}`;}catch(e){ void e; } throw new Error('Unable to determine repo'); }
 
 const repo = getRepo();
 

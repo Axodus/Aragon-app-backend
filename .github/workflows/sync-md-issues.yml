@@ -29,9 +29,21 @@ jobs:
       - name: Ensure gh is available
         uses: cli/gh-actions@v2
 
+      - name: Resolve Project node id
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          PROJECT_NODE_ID="$(gh api graphql \
+            -f query='query($number:Int!){ viewer { projectV2(number:$number){ id }}}' \
+            -F number=15 \
+            --jq '.data.viewer.projectV2.id')"
+          echo "PROJECT_NODE_ID=$PROJECT_NODE_ID" >> "$GITHUB_ENV"
+
       - name: Run sync script (dry-run by default)
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           chmod +x .github/scripts/sync-md-to-issues.sh
-          .github/scripts/sync-md-to-issues.sh --repo-root . --project-url "https://github.com/users/mzfshark/projects/15" --dry-run=${{ github.event.inputs.dry_run }}
+          .github/scripts/sync-md-to-issues.sh --repo-root . --project-node-id "$PROJECT_NODE_ID" --dry-run "${{ github.event.inputs.dry_run || 'true' }}"
