@@ -21,8 +21,9 @@ jobs:
         run: |
           node --version
 
-      - name: Ensure gh is available
-        uses: cli/gh-actions@v2
+      - name: Check gh
+        run: |
+          gh --version
 
       - name: Resolve Project node id
         env:
