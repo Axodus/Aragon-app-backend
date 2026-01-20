@@ -48,6 +48,14 @@ Related Plans
 ## Milestone: Tests & Operations
 
 - [ ] Unit tests for critical handlers [labels:type:test, area:backend] [status:TODO] [priority:medium] [estimate:6h] [start:2026-01-28] [end:2026-01-29]
+
+## Cross-Repo: Admin Grant Task (Related)
+
+- [x] **Admin grant task completed on AragonOSX repo** [labels:type:maintenance, area:infra, cross-repo] [status:DONE] [priority:high] [estimate:4h] [start:2026-01-20] [end:2026-01-20]
+  - See: `../AragonOSX/PLAN_admin_grant_closeout.md`
+  - Outcome: Direct `DAO.grant(...)` workaround verified on Harmony; admin permission now active on DAO `0x4e48...`.
+  - Verification script: `../AragonOSX/scripts/verify-grant.sh`
+  - Impact: Backend can now use admin-gated API endpoints; no blockers for indexing or permission checks.
 - [ ] Runbook: sync start block, reindex, rollback [labels:type:docs, area:ops] [status:TODO] [priority:low] [estimate:4h] [start:2026-02-05] [end:2026-02-05]
 
 ## Milestone: ProjectV2 Schema & Sync
