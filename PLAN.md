@@ -57,3 +57,9 @@ Related Plans
 - [ ] Generate .gitissue/metadata.generated.json from PLAN.md [labels:type:task, area:planning] [status:TODO] [priority:low] [estimate:0.5h] [start:2026-01-19] [end:2026-01-19]
 - [ ] Prepare gh issue create/edit commands for project sync (request approval before running) [labels:type:docs, area:planning] [status:TODO] [priority:low] [estimate:0.5h] [start:2026-01-19] [end:2026-01-19]
 - [ ] Document workaround for PARENT_ISSUE field limitation in GitHub ProjectV2 (manual UI linking or UI automation) [labels:type:docs, area:planning] [status:TODO] [priority:low] [estimate:0.5h] [start:2026-01-19] [end:2026-01-19]
+
+## Subtasks for Sprint Execution
+
+- See `PLAN_subtasks.md` for detailed checklists, acceptance criteria and estimates for the top-priority items (reorg-safe indexing, catch-up strategy, metadata redundancy, structured logs, E2E QA).
+
+Subtasks file: PLAN_subtasks.md
