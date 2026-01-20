@@ -22,30 +22,38 @@ Related Plans
 
 ## Milestone: Indexing Foundations
 
-- [x] Handlers cobrem ProposalCreated/VoteCast [labels:type:task, area:backend, area:indexing] [status:DONE] [priority:high] [estimate:6h] [start:2025-12-18] [end:2025-12-19]
-- [x] Indexação histórica habilitada (HarmonyVoting) [labels:type:task, area:indexing] [status:DONE] [priority:high] [estimate:4h] [start:2025-12-19] [end:2025-12-20]
-- [ ] Reorg-safe handling (confirmações, idempotência, retries) [labels:type:task, area:indexing] [status:TODO] [priority:high] [estimate:12h] [start:2026-01-20] [end:2026-01-22]
-- [ ] Estratégia de catch-up (backfill + checkpointing) [labels:type:task, area:indexing, area:infra] [status:TODO] [priority:high] [estimate:10h] [start:2026-01-22] [end:2026-01-23]
-- [ ] Validar cenários de indexação (fresh, mid, reorg) [labels:type:qa, area:indexing] [status:TODO] [priority:high] [estimate:12h] [start:2026-01-23] [end:2026-01-25]
+- [x] Handlers cover ProposalCreated/VoteCast [labels:type:task, area:backend, area:indexing] [status:DONE] [priority:high] [estimate:6h] [start:2025-12-18] [end:2025-12-19]
+- [x] Historical indexing enabled (HarmonyVoting) [labels:type:task, area:indexing, area:backend] [status:DONE] [priority:high] [estimate:4h] [start:2025-12-19] [end:2025-12-20]
+- [ ] Reorg-safe handling (confirmations, idempotency, retries) [labels:type:task, area:indexing] [status:TODO] [priority:high] [estimate:12h] [start:2026-01-20] [end:2026-01-22]
+- [ ] Catch-up strategy (backfill + checkpointing) [labels:type:task, area:indexing, area:infra] [status:TODO] [priority:high] [estimate:10h] [start:2026-01-22] [end:2026-01-23]
+- [ ] Validate indexing scenarios (fresh, mid-history, reorg) [labels:type:qa, area:indexing] [status:TODO] [priority:high] [estimate:12h] [start:2026-01-23] [end:2026-01-25]
 
-## Milestone: Observabilidade & UI Consistência
+## Milestone: Observability & UI Consistency
 
-- [ ] Logs/métricas estruturadas p/ gaps por evento [labels:type:task, area:backend, area:indexing] [status:TODO] [priority:medium] [estimate:6h] [start:2026-01-20] [end:2026-01-21]
-- [ ] Propostas visíveis na UI após criação (SLA pós-finalidade) [labels:type:qa, area:indexing, area:frontend] [status:TODO] [priority:high] [estimate:4h] [start:2026-01-27] [end:2026-01-27]
-- [ ] Estado "plugin removido" não exibe dados antigos [labels:type:task, area:backend, area:indexing] [status:TODO] [priority:high] [estimate:8h] [start:2026-01-29] [end:2026-01-29]
+- [ ] Structured logs/metrics for gaps per event type [labels:type:task, area:backend, area:indexing] [status:TODO] [priority:medium] [estimate:6h] [start:2026-01-20] [end:2026-01-21]
+- [ ] Proposals visible on UI shortly after creation (post-finality SLA) [labels:type:qa, area:indexing, area:frontend] [status:TODO] [priority:high] [estimate:4h] [start:2026-01-27] [end:2026-01-27]
+- [ ] “Plugin removed” state avoids stale data exposure [labels:type:task, area:backend, area:indexing] [status:TODO] [priority:high] [estimate:8h] [start:2026-01-29] [end:2026-01-29]
 
 ## Milestone: Metadata Redundancy
 
 - [ ] Fallback order (on-chain → cache → placeholder) [labels:type:task, area:backend] [status:TODO] [priority:medium] [estimate:3h] [start:2026-01-20] [end:2026-01-20]
-- [ ] Validação + TTL (evitar dados malformados) [labels:type:task, area:backend] [status:TODO] [priority:medium] [estimate:6h] [start:2026-01-21] [end:2026-01-22]
-- [ ] Integrity checks (formato, tamanho) [labels:type:task, area:backend, area:security] [status:TODO] [priority:medium] [estimate:4h] [start:2026-01-23] [end:2026-01-23]
+- [ ] Validation + TTL (prevent malformed data) [labels:type:task, area:backend] [status:TODO] [priority:medium] [estimate:6h] [start:2026-01-21] [end:2026-01-22]
+- [ ] Integrity checks (format, size limits) [labels:type:task, area:backend, area:security] [status:TODO] [priority:medium] [estimate:4h] [start:2026-01-23] [end:2026-01-23]
 
 ## Milestone: Native-Token Support
 
 - [ ] Power provider via RPC (wallet + staked) [labels:type:feature, area:backend, area:indexing] [status:TODO] [priority:high] [estimate:12h] [start:2026-01-28] [end:2026-01-30]
-- [ ] Marcar execuções com native token nos eventos [labels:type:task, area:indexing] [status:TODO] [priority:medium] [estimate:4h] [start:2026-02-02] [end:2026-02-02]
+- [ ] Mark native-token executions in indexed events [labels:type:task, area:indexing, area:backend] [status:TODO] [priority:medium] [estimate:4h] [start:2026-02-02] [end:2026-02-02]
 
-## Milestone: Testes & Operação
+## Milestone: Tests & Operations
 
-- [ ] Unit tests p/ handlers críticos [labels:type:test, area:backend] [status:TODO] [priority:medium] [estimate:6h] [start:2026-01-28] [end:2026-01-29]
-- [ ] Runbook: start block, reindex, rollback [labels:type:docs, area:ops] [status:TODO] [priority:low] [estimate:4h] [start:2026-02-05] [end:2026-02-05]
+- [ ] Unit tests for critical handlers [labels:type:test, area:backend] [status:TODO] [priority:medium] [estimate:6h] [start:2026-01-28] [end:2026-01-29]
+- [ ] Runbook: sync start block, reindex, rollback [labels:type:docs, area:ops] [status:TODO] [priority:low] [estimate:4h] [start:2026-02-05] [end:2026-02-05]
+
+## Milestone: ProjectV2 Schema & Sync
+
+- [ ] Verify .gitissue/metadata.config.json at repo root [labels:type:chore, area:planning] [status:TODO] [priority:low] [estimate:0.5h] [start:2026-01-19] [end:2026-01-19]
+- [ ] Capture org project schema to tmp/<org>-project-schema.json [labels:type:task, area:planning] [status:TODO] [priority:low] [estimate:0.5h] [start:2026-01-19] [end:2026-01-19]
+- [ ] Generate .gitissue/metadata.generated.json from PLAN.md [labels:type:task, area:planning] [status:TODO] [priority:low] [estimate:0.5h] [start:2026-01-19] [end:2026-01-19]
+- [ ] Prepare gh issue create/edit commands for project sync (request approval before running) [labels:type:docs, area:planning] [status:TODO] [priority:low] [estimate:0.5h] [start:2026-01-19] [end:2026-01-19]
+- [ ] Document workaround for PARENT_ISSUE field limitation in GitHub ProjectV2 (manual UI linking or UI automation) [labels:type:docs, area:planning] [status:TODO] [priority:low] [estimate:0.5h] [start:2026-01-19] [end:2026-01-19]
