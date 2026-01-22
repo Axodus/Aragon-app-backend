@@ -35,6 +35,12 @@ export default class ConfigIndexer extends Model {
   @prop({ type: () => Number, default: 0 })
   public lastSync!: number
 
+  @prop({ type: () => String })
+  public lastBlockHash?: string // Hash of the last processed block for reorg detection
+
+  @prop({ type: () => Number })
+  public lastBlockHashNumber?: number // Block number corresponding to lastBlockHash
+
   @prop({ type: () => Boolean, default: false })
   public end!: boolean
 

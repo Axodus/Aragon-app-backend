@@ -542,19 +542,39 @@ class BlockchainLogCrawler {
           )
 
           if (existingConfig) {
-            await existingConfig.update({ lastSync: blockNumber }, { session })
+            await existingConfig.update(
+              {
+                lastSync: blockNumber,
+                lastBlockHashNumber: blockNumber,
+              },
+              { session }
+            )
           } else {
             await Models.ConfigIndexer.create(
               {
                 network: this.crawlParams.network,
                 service: this.crawlParams.logService!,
                 lastSync: blockNumber,
+                lastBlockHashNumber: blockNumber,
               },
               { session },
             )
           }
           await DbTx.safeCommit(session)
         })
+
+        // Check for blockchain reorganization after successful progress save
+        // Import ReorgDetector dynamically to avoid circular dependencies
+        const { default: ReorgDetector } = await import('@services/reorgDetector')
+        const reorgResult = await ReorgDetector.detectReorg(this.crawlParams.network, blockNumber)
+
+        if (reorgResult.isReorg && reorgResult.reorgBlockNumber) {
+          logger.warn('Reorg detected, initiating rollback', llo({
+            ...this.parseCrawlerInfoLog(),
+            reorgBlockNumber: reorgResult.reorgBlockNumber,
+          }))
+          await ReorgDetector.rollbackFromBlock(this.crawlParams.network, reorgResult.reorgBlockNumber)
+        }
       } catch (error) {
         logger.error('Error saving progress', llo({ ...this.parseCrawlerInfoLog(), error }))
       }

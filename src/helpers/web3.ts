@@ -66,6 +66,19 @@ const Web3Helper = {
     }
   },
 
+  async getBlockHash(blockNumber: number, network: NetworksEnum): Promise<string | null> {
+    try {
+      const provider = ProviderModule.getAnyRpcProvider(network)
+      const block = await retryRequest(async () =>
+        BottleneckModule.getNodeLimiter(network).schedule(async () => provider.getBlock(blockNumber)),
+      )
+      return block?.hash ?? null
+    } catch (error) {
+      logger.error('Error getBlockHash', llo({ blockNumber, network, error }))
+      return null
+    }
+  },
+
   async getLogs(filter: { fromBlock: string; toBlock: string; topics: any }, network: NetworksEnum) {
     try {
       const provider = ProviderModule.getAnyRpcProvider(network)
