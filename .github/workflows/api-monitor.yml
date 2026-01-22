@@ -16,11 +16,11 @@ jobs:
     strategy:
       matrix:
         include:
-          - host: 'https://stg.backend.aragon.in'
+          - host: 'https://api.whostler.com'
             env_name: 'App Backend Staging'
-          - host: 'https://backend.aragon.in'
+          - host: 'https://api.whostler.com'
             env_name: 'App Backend Production'
-          - host: 'https://dev.backend.aragon.in'
+          - host: 'https://dev-api.whostler.com'
             env_name: 'App Backend Development'
       fail-fast: false
 
