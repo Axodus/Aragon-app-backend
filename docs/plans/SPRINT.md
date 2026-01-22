@@ -1,23 +1,9 @@
-# Sprint 1: Backend Indexing & API Production Release
+#  #SPRINT-003 - HarmonyVoting Backend Indexing & API Production Release
 
 **Repository:** Aragon-app-backend (Axodus/Aragon-app-backend)  
-**Branch:** develop  
-**Sprint Goal:** Deliver production-ready backend indexer with reorg safety, metadata fallbacks, and native-token power computation.
-
-**Sprint Start:** 2026-01-21  
-**Sprint End:** 2026-02-28  
-**Current Date:** 2026-01-21  
-**Status:** Active (Week 1 of 6)
-
----
-
-## Summary
-
-| Status | Count | Hours |
-|--------|-------|-------|
-| ✅ DONE | 2 | ~10% complete |
-| 🔄 TODO | 18 | ~130h remaining |
-| **Total** | **20** | **~140h** |
+**Sprint Duration:** 6 weeks (2026-01-21 → 2026-02-28)  
+**Priority Focus:** Event Handlers (CRITICAL) → Resilience (CRITICAL) → Observability (HIGH) → E2E Testing (CRITICAL)  
+**Total Capacity:** 165h
 
 ---
 

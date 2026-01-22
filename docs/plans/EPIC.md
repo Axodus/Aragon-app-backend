@@ -1,19 +1,20 @@
-# EPIC: Aragon-app-backend Strategic Initiatives — Aragon-app-backend
+#  #EPIC-003 - HarmonyVoting Indexing & API Production Release
 
-**Repository:** Aragon-app-backend  
-**Last Updated:** 2026-01-21  
-**Status:** 1 active epic | 2 backlog epics  
+**Repository:** Aragon-app-backend (Axodus/Aragon-app-backend)  
+**End Date Goal:** 2026-02-28  
+**Priority:** CRITICAL  
+**Estimative Hours:** 165h  
+**Status:** in progress
 
 ---
 
-## EPIC-001: HarmonyVoting Backend E2E (Foundation)
+## Executive Summary
 
-**Epic ID:** EPIC-001  
-**Status:** IN_PROGRESS 🟡  
-**Priority:** CRITICAL  
-**Effort:** 140h  
-**Timeline:** 2026-01-21 to 2026-02-28 (6 weeks)  
-**Progress:** 37% (2 DONE, 18 TODO)
+Deliver production-grade event indexing, resilient API handlers, observability, metadata redundancy, and native-token execution support for HarmonyVoting.
+
+**Vision:** Index Harmony blockchain events reliably, expose robust APIs with graceful degradation, enable metadata caching and observability for troubleshooting.
+
+**Timeline:** 6-week sprint (2026-01-21 → 2026-02-28)
 
 ### Vision
 
