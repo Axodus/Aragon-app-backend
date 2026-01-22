@@ -238,6 +238,7 @@ class TxInfo {
 @index({ network: 1 })
 @index({ isSubProposal: 1, 'executed.status': 1 })
 @index({ daoAddress: 1, createdAt: -1, transactionIndex: -1 })
+@index({ network: 1, blockHash: 1, logIndex: 1, eventType: 1 }, { unique: true })
 export default class Proposal extends Model {
   @prop({ type: () => String, required: true, unique: true })
   public id!: string
@@ -246,10 +247,28 @@ export default class Proposal extends Model {
   public transactionHash!: HexAddress
 
   @prop({ type: () => Number, required: true })
+  public transactionIndex?: number
+
+  @prop({ type: () => Number, required: true })
   public blockNumber!: number
 
   @prop({ type: () => String })
   public blockHash?: string
+
+  @prop({ type: () => Number })
+  public logIndex?: number
+
+  @prop({ type: () => String })
+  public eventType?: string // ProposalCreated, ProposalExecuted, etc.
+
+  @prop({ type: () => Number })
+  public logIndex?: number
+
+  @prop({ type: () => Number })
+  public transactionIndex?: number
+
+  @prop({ type: () => String })
+  public eventType?: string // ProposalCreated, etc.
 
   @prop({ type: () => Number })
   public blockTimestamp!: number

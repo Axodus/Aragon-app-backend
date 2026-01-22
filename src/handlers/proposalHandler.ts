@@ -309,7 +309,17 @@ export const ProposalHandler = {
 
       document.incrementalId = incrementalId
 
-      const newProposal = await Models.Proposal.create(document)
+      // Idempotent upsert: prevent duplicates on blockchain reorgs
+      // Use unique compound key: (network, transactionHash, logIndex)
+      const newProposal = await Models.Proposal.findOneAndUpdate(
+        {
+          network: info.network,
+          transactionHash: info.transactionHash,
+          logIndex: info.logIndex,
+        },
+        { $set: document },
+        { upsert: true, new: true }
+      )
 
       logger.verbose('New Proposal', llo({ ...info, logId: newProposal.id }))
 
@@ -494,7 +504,17 @@ export const ProposalHandler = {
 
       document.incrementalId = incrementalId
 
-      const newProposal = await Models.Proposal.create(document)
+      // Idempotent upsert: prevent duplicates on blockchain reorgs
+      // Use unique compound key: (network, transactionHash, logIndex)
+      const newProposal = await Models.Proposal.findOneAndUpdate(
+        {
+          network: info.network,
+          transactionHash: info.transactionHash,
+          logIndex: info.logIndex,
+        },
+        { $set: document },
+        { upsert: true, new: true }
+      )
 
       logger.verbose('New Harmony Proposal', llo({ ...info, logId: newProposal.id }))
 
@@ -652,7 +672,17 @@ export const ProposalHandler = {
       }
 
       await DbTx.executeTxFn(async ({ session }) => {
-        const logId = await Models.Vote.create(document, { session })
+        // Idempotent upsert: prevent duplicates on blockchain reorgs
+        // Use unique compound key: (network, transactionHash, logIndex)
+        const logId = await Models.Vote.findOneAndUpdate(
+          {
+            network: info.network,
+            transactionHash: info.transactionHash,
+            logIndex: info.logIndex,
+          },
+          { $set: document },
+          { upsert: true, new: true, session }
+        )
 
         if (isExistingVote) {
           await existingMemberVote.deleteOne({ session })
@@ -760,7 +790,17 @@ export const ProposalHandler = {
       }
 
       await DbTx.executeTxFn(async ({ session }) => {
-        const logId = await Models.Vote.create(document, { session })
+        // Idempotent upsert: prevent duplicates on blockchain reorgs
+        // Use unique compound key: (network, transactionHash, logIndex)
+        const logId = await Models.Vote.findOneAndUpdate(
+          {
+            network: info.network,
+            transactionHash: info.transactionHash,
+            logIndex: info.logIndex,
+          },
+          { $set: document },
+          { upsert: true, new: true, session }
+        )
 
         if (isExistingVote) {
           await existingMemberVote.deleteOne({ session })
