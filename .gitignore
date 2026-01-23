@@ -21,4 +21,4 @@ CLAUDE.md
 .vercel
 .env*.local
 .yarn
-.gitissuer/state.json
+.gitissuer
