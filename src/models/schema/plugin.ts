@@ -172,6 +172,13 @@ export default class Plugin extends Model {
   @prop({ type: () => Boolean, default: false })
   public isSubPlugin?: boolean
 
+  // Historical sync flags to ensure backlog events are processed once
+  @prop({ type: () => Boolean, default: false })
+  public isHistoricalSynced!: boolean
+
+  @prop({ type: () => Number, default: null })
+  public historicalSyncedAt!: number | null
+
   // SPP plugin
   @prop({ type: () => Number })
   public totalStages?: number

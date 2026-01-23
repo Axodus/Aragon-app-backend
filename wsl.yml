@@ -1,17 +1,19 @@
-version: '3.7'
-
 services:
-  ### Services
+  ### =========================
+  ### Core Services
+  ### =========================
 
   service-aragon-api:
     build:
       context: ./
+    container_name: service-api
     ports:
-      - ${SERVICE_API_PORT:-3000}:${SERVICE_API_PORT:-3000}
+      - "${SERVICE_API_PORT:-4000}:${SERVICE_API_PORT:-4000}"
     environment:
-      PORT: ${SERVICE_API_PORT:-3000}
+      SERVICES_ARAGON_API_PORT: ${SERVICE_API_PORT:-4000}
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
-      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:3000
+      RABBITMQ_URI: amqp://user:password@rabbitmq:5672
+      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
     depends_on:
       - mongo1
       - mongo2
@@ -19,12 +21,18 @@ services:
       - rabbitmq
     command: bash -c 'yarn wait:db & yarn wait:rabbitmq & wait && yarn service:aragon-api'
 
+
   service-aragon-indexer:
     build:
       context: ./
+    container_name: service-indexer
     environment:
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
-      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:3000
+      RABBITMQ_URI: amqp://user:password@rabbitmq:5672
+      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
+      # IMPORTANT: usado apenas no primeiro start (se não existir checkpoint no Mongo)
+      NODES_HARMONY_MAINNET_FROM_BLOCK: ${NODES_HARMONY_MAINNET_FROM_BLOCK:-82187187}
+      NODES_HARMONY_TESTNET_FROM_BLOCK: ${NODES_HARMONY_TESTNET_FROM_BLOCK:-52100000}
     depends_on:
       - mongo1
       - mongo2
@@ -32,12 +40,15 @@ services:
       - rabbitmq
     command: bash -c 'yarn wait:db & wait && yarn service:aragon-indexer'
 
+
   service-aragon-dao:
     build:
       context: ./
+    container_name: service-dao
     environment:
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
-      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:3000
+      RABBITMQ_URI: amqp://user:password@rabbitmq:5672
+      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
     depends_on:
       - mongo1
       - mongo2
@@ -45,25 +56,34 @@ services:
       - rabbitmq
     command: bash -c 'yarn wait:db & yarn wait:rabbitmq & wait && yarn service:aragon-dao'
 
+
   service-aragon-transfers:
     build:
       context: ./
+    container_name: service-transfers
     environment:
-      MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
-      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:3000
+      MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0
+      RABBITMQ_URI: amqp://user:password@rabbitmq:5672
+      SERVICES_ARAGON_API_BASE_URL: http://api:4000
     depends_on:
-      - mongo1
-      - mongo2
-      - mongo3
+      - mongo-init-replica
       - rabbitmq
-    command: bash -c 'yarn wait:db & yarn wait:rabbitmq & wait && yarn service:aragon-transfers'
+    restart: unless-stopped
+    command: >
+      bash -c "
+      bash scripts/waitUp.sh &&
+      bash scripts/waitUp.sh rabbitmq 5672 &&
+      yarn service:aragon-transfers
+      "
 
   service-aragon-gateway:
     build:
       context: ./
+    container_name: service-gateway
     environment:
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
-      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-gateway:3000
+      RABBITMQ_URI: amqp://user:password@rabbitmq:5672
+      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-gateway:4000
     depends_on:
       - mongo1
       - mongo2
@@ -71,12 +91,15 @@ services:
       - rabbitmq
     command: bash -c 'yarn wait:db & yarn wait:rabbitmq & wait && yarn service:aragon-gateway'
 
+
   service-aragon-rates:
     build:
       context: ./
+    container_name: service-rates
     environment:
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
-      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:3000
+      RABBITMQ_URI: amqp://user:password@rabbitmq:5672
+      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
     depends_on:
       - mongo1
       - mongo2
@@ -84,12 +107,18 @@ services:
       - rabbitmq
     command: bash -c 'yarn wait:db & wait && yarn service:aragon-rates'
 
+
   service-aragon-admin-api:
     build:
       context: ./
+    container_name: service-admin-api
+    ports:
+      - "${SERVICE_ADMIN_API_PORT:-4001}:${SERVICE_ADMIN_API_PORT:-4001}"
     environment:
+      SERVICES_ARAGON_ADMIN_API_PORT: ${SERVICE_ADMIN_API_PORT:-4001}
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
-      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:3000
+      RABBITMQ_URI: amqp://user:password@rabbitmq:5672
+      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
     depends_on:
       - mongo1
       - mongo2
@@ -97,12 +126,15 @@ services:
       - rabbitmq
     command: bash -c 'yarn wait:db & wait && yarn service:aragon-admin-api'
 
+
   service-aragon-plugins:
     build:
       context: ./
+    container_name: service-plugins
     environment:
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
-      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:3000
+      RABBITMQ_URI: amqp://user:password@rabbitmq:5672
+      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
     depends_on:
       - mongo1
       - mongo2
@@ -110,7 +142,10 @@ services:
       - rabbitmq
     command: bash -c 'yarn wait:db & wait && yarn service:aragon-plugins'
 
+  
+  ### =========================
   ### Tests
+  ### =========================
 
   unit:
     build:
@@ -122,7 +157,8 @@ services:
       context: ./
     environment:
       MONGO_DB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/db-aragon?replicaSet=rs0&authSource=admin
-      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:3000
+      RABBITMQ_URI: amqp://user:password@rabbitmq:5672
+      SERVICES_ARAGON_API_BASE_URL: http://service-aragon-api:4000
     depends_on:
       - mongo1
       - mongo2
@@ -133,8 +169,9 @@ services:
       - ./test/test.env
     command: bash -c 'yarn wait:db & yarn wait:rabbitmq & wait && yarn test:unit-dep'
 
-
+  ### =========================
   ### Dependencies
+  ### =========================
 
   rabbitmq:
     image: rabbitmq:management
@@ -150,9 +187,7 @@ services:
     image: mongo:8.0
     container_name: mongo1
     hostname: mongo1
-    command: [ "mongod", "--replSet", "rs0", "--bind_ip_all" ]
-    ports:
-      - "27017:27017"
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     volumes:
       - mongo1_data:/data/db
 
@@ -160,9 +195,7 @@ services:
     image: mongo:8.0
     container_name: mongo2
     hostname: mongo2
-    command: [ "mongod", "--replSet", "rs0", "--bind_ip_all" ]
-    ports:
-      - "27018:27017"
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     volumes:
       - mongo2_data:/data/db
 
@@ -170,9 +203,7 @@ services:
     image: mongo:8.0
     container_name: mongo3
     hostname: mongo3
-    command: [ "mongod", "--replSet", "rs0", "--bind_ip_all" ]
-    ports:
-      - "27019:27017"
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     volumes:
       - mongo3_data:/data/db
 
@@ -206,5 +237,3 @@ volumes:
   mongo1_data:
   mongo2_data:
   mongo3_data:
-
-

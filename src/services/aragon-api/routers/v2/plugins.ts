@@ -69,12 +69,27 @@ const PluginRouter = {
     ctx.body = await PluginsController.getLogPluginSetupProcessor(result.params as ILogPluginSetupProcessorParams)
   },
 
+  getInstallationHelpers: async function (ctx: RouterContext) {
+    const result = await ValidationSchema.validateRoute(ctx, {
+      params: {
+        network: ctx.params.network as NetworksEnum,
+        pluginAddress: ctx.params.pluginAddress,
+      },
+      schemas: {
+        params: PluginSchema.getInstallationHelpers,
+      },
+    })
+
+    ctx.body = await PluginsController.getInstallationHelpers(result.params as IPluginExtraParams)
+  },
+
   router(): Router {
     const router = new Router()
 
     router.get('/installation-data', PluginRouter.getInstallationData)
     router.get('/by-dao/:network/:daoAddress', PluginRouter.getPluginsByDao)
     router.get('/logs/:pluginAddress/:network/:event', PluginRouter.getLogPluginSetupProcessor)
+    router.get('/installation-helpers/:network/:pluginAddress', PluginRouter.getInstallationHelpers)
 
     return router
   },

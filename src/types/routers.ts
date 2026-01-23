@@ -114,6 +114,7 @@ export interface IDaoResponse {
   creatorAddress: HexAddress
   ens: ENS | undefined
   subdomain: ENS | null
+  primaryName: string | null
   members: number
   metadataIpfs: string | null
   name: string

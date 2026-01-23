@@ -36,6 +36,11 @@ export interface IService {
   name?: EnumServiceName
   options?: IOptionService
   NEED_CONNECTIONS: EnumConnection[]
+  /**
+   * Starts the service (e.g., binds HTTP port) before waiting for external connections.
+   * Useful in environments like Cloud Run where the container must listen on $PORT quickly.
+   */
+  START_BEFORE_CONNECTIONS?: boolean
   start: () => Promise<any>
 
   stop: () => void | Promise<void>

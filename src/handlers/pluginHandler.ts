@@ -9,7 +9,7 @@ import {
   IPluginRawStatus,
   IPluginStatus,
   type IQueryGetPlugin,
-  type NetworksEnum,
+  NetworksEnum,
   EnumQueueName,
 } from '@types'
 import type LogPluginSetupProcessor from '@models/schema/logPluginSetupProcessor'
@@ -29,11 +29,37 @@ import { ethers, Interface } from 'ethers'
 import { DAO } from '@artifacts/dao'
 import { IPermission } from '@src/types/permission'
 
+import harmonyMainnetContracts from '../../config/contracts/harmonyMainnet.json'
+
 const llo = logger.logMeta.bind(null, { service: 'handlers:PluginHandler' })
 
 const InstallationAppliedTopicHash = new Interface(PluginSetupProcessor.abi).getEvent('InstallationApplied')?.topicHash!
 const GrantedTopicHash = new Interface(DAO.abi).getEvent('Granted')?.topicHash!
 const RevokeTopicHash = new Interface(DAO.abi).getEvent('Revoke')?.topicHash!
+
+type ContractsConfig = Record<string, Record<string, { address: string; blockNumber?: number; deploymentTx?: string }>>
+
+const getHarmonyVotingInterfaceType = (
+  pluginSetupRepoAddress: string | undefined,
+  network: NetworksEnum,
+): IPluginInterfaceType | undefined => {
+  if (!pluginSetupRepoAddress) return undefined
+  if (network !== NetworksEnum.harmonyMainnet) return undefined
+
+  const cfg = harmonyMainnetContracts as unknown as ContractsConfig
+  const versionKey = Object.keys(cfg)[0]
+  const version = versionKey ? cfg[versionKey] : undefined
+  if (!version) return undefined
+
+  const normalizedRepo = pluginSetupRepoAddress.toLowerCase()
+  const hipRepo = version.HarmonyHIPVotingRepoProxy?.address?.toLowerCase()
+  const delegationRepo = version.HarmonyDelegationVotingRepoProxy?.address?.toLowerCase()
+
+  if (hipRepo && normalizedRepo === hipRepo) return IPluginInterfaceType.harmonyHipVoting
+  if (delegationRepo && normalizedRepo === delegationRepo) return IPluginInterfaceType.harmonyDelegationVoting
+
+  return undefined
+}
 
 export const PluginHandler = {
   async _queryGetPlugin({
@@ -290,7 +316,8 @@ export const PluginHandler = {
     }
 
     const pluginInfo = await PluginDetector.detectPluginType(plugin.address, plugin.network)
-    document.interfaceType = pluginInfo?.type
+    document.interfaceType =
+      getHarmonyVotingInterfaceType(plugin.pluginSetupRepoAddress, plugin.network) ?? pluginInfo?.type
 
     if (document.interfaceType === IPluginInterfaceType.tokenVoting) {
       // maybe the token is not a erc20 governance
@@ -367,7 +394,8 @@ export const PluginHandler = {
         }
 
         const pluginInfo = await PluginDetector.detectPluginType(pluginLog.pluginAddress, pluginLog.network)
-        document.interfaceType = pluginInfo?.type
+        document.interfaceType =
+          getHarmonyVotingInterfaceType(pluginLog.pluginSetupRepo, pluginLog.network) ?? pluginInfo?.type
 
         if (
           document.interfaceType === IPluginInterfaceType.tokenVoting ||
@@ -448,6 +476,8 @@ export const PluginHandler = {
         const document: Partial<Plugin> = {
           status: IPluginStatus.installed,
           pluginSetupRepoAddress: rawPlugin?.pluginSetupRepoAddress,
+          isHistoricalSynced: false,
+          historicalSyncedAt: null,
         }
 
         const plugin = await preInstalledPlugin.update(document, { session })
@@ -743,13 +773,25 @@ export const PluginHandler = {
         return
       }
 
-      const existingPlugin = await Models.Plugin.findOne({
+      // Alguns DAOs/Plugins legados (ou plugins de teste) podem ter divergência de
+      // pluginSetupRepoAddress entre o que foi persistido no install e o que aparece
+      // no fluxo de uninstall. Para não “travar” a remoção no UI, fazemos fallback.
+      let existingPlugin = await Models.Plugin.findOne({
         network: pluginLog.network,
         daoAddress: plugin.daoAddress,
-        pluginSetupRepoAddress: plugin.pluginSetupRepoAddress,
+        ...(plugin.pluginSetupRepoAddress ? { pluginSetupRepoAddress: plugin.pluginSetupRepoAddress } : {}),
         address: plugin.address,
         status: IPluginStatus.installed,
       })
+
+      if (!existingPlugin && plugin.pluginSetupRepoAddress) {
+        existingPlugin = await Models.Plugin.findOne({
+          network: pluginLog.network,
+          daoAddress: plugin.daoAddress,
+          address: plugin.address,
+          status: IPluginStatus.installed,
+        })
+      }
 
       if (!existingPlugin) return
 

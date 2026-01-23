@@ -92,6 +92,9 @@ export default class LogPluginSetupProcessor extends Model {
   @prop({ type: () => [Permission], _id: false, default: [] })
   public permissions!: Permission[]
 
+  @prop({ type: () => [String], default: [] })
+  public helpers!: string[] // helper addresses from preparedSetupData
+
   @prop({ type: () => String, default: null })
   public tokenAddress!: HexAddress // voting token address
 

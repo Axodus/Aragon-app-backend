@@ -126,6 +126,7 @@ export interface IExtraQueryData {
   daoAddresses?: HexAddress[]
   memberAddresses?: HexAddress[]
   tokenAddress?: HexAddress
+  onlyHidden?: boolean
 }
 
 export interface ISettingExtraParams {

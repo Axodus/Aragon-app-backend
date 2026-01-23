@@ -53,6 +53,8 @@ const ProviderModule = {
     ETHEREUM_MAINNET: NetworksEnum.ethereumMainnet,
     ETHEREUM_SEPOLIA: NetworksEnum.ethereumSepolia,
     POLYGON_MAINNET: NetworksEnum.polygonMainnet,
+    HARMONY_MAINNET: NetworksEnum.harmonyMainnet,
+    HARMONY_TESTNET: NetworksEnum.harmonyTestnet,
     BASE_MAINNET: NetworksEnum.baseMainnet,
     ARBITRUM_MAINNET: NetworksEnum.arbitrumMainnet,
     ZKSYNC_SEPOLIA: NetworksEnum.zksyncSepolia,
@@ -69,6 +71,8 @@ const ProviderModule = {
     [NetworksEnum.ethereumMainnet]: 1,
     [NetworksEnum.ethereumSepolia]: 11155111,
     [NetworksEnum.polygonMainnet]: 137,
+    [NetworksEnum.harmonyMainnet]: 1666600000,
+    [NetworksEnum.harmonyTestnet]: 1666700000,
     [NetworksEnum.baseMainnet]: 8453,
     [NetworksEnum.arbitrumMainnet]: 42161,
     [NetworksEnum.zksyncSepolia]: 300,
@@ -175,12 +179,14 @@ const ProviderModule = {
       const alchemyUrl = `https://${alchemyHost}/v2/${alchemyConfig.alchemyApiKey}`
       const rpcProvider = new JsonRpcProvider(alchemyUrl)
 
-      ProviderModule.providerProxies[network].alchemy = { rpc: rpcProvider }
+      // Keep the resolved URL on the proxy as a runtime fallback.
+      ProviderModule.providerProxies[network].alchemy = { rpc: rpcProvider, url: alchemyUrl } as any
     } else if (nodeConfig.providerType === IProviderType.ARAGON) {
       const aragonConfig = nodeConfig as IAragonNodeConfig
       const rpcProvider = new JsonRpcProvider(aragonConfig.rpcEndpoint)
 
-      ProviderModule.providerProxies[network].aragon = { rpc: rpcProvider }
+      // Keep the resolved URL on the proxy as a runtime fallback.
+      ProviderModule.providerProxies[network].aragon = { rpc: rpcProvider, url: aragonConfig.rpcEndpoint } as any
     } else if (nodeConfig.providerType === IProviderType.DRPC) {
       const drpcConfig = nodeConfig as IDrpcConfig
       const drpcNetwork = ProviderModule.parseDrpcNetwork(network)
@@ -193,7 +199,8 @@ const ProviderModule = {
       const drpcUrl = drpcNetworkToUrl(drpcNetwork, drpcConfig.drpcApiKey)
       const rpcProvider = new JsonRpcProvider(drpcUrl)
 
-      ProviderModule.providerProxies[network].drpc = { rpc: rpcProvider }
+      // Keep the resolved URL on the proxy as a runtime fallback.
+      ProviderModule.providerProxies[network].drpc = { rpc: rpcProvider, url: drpcUrl } as any
     }
   },
 
@@ -225,21 +232,23 @@ const ProviderModule = {
 
     const networkKey = utils.networkToAragon(network)
 
+    const fallbackUrlFromProxy = (proxy: any): string | undefined => {
+      return proxy?.url
+    }
+
     // Priority order: aragon → drpc → alchemy
     // Check if we have an Aragon provider first (priority)
     if (providerProxy.aragon) {
-      if (config.NODES?.[networkKey]) {
-        return config.NODES[networkKey].ARAGON_RPC
-      }
+      if (networkKey && config.NODES?.[networkKey]) return config.NODES[networkKey].ARAGON_RPC
+      return fallbackUrlFromProxy(providerProxy.aragon)
     }
 
     // Check if we have a DRPC provider
     if (providerProxy.drpc) {
       const drpcNetwork = ProviderModule.parseDrpcNetwork(network)
-      const apiKey = config.NODES?.[networkKey]?.DRPC_API_KEY
-      if (drpcNetwork && apiKey) {
-        return drpcNetworkToUrl(drpcNetwork, apiKey)
-      }
+      const apiKey = networkKey ? config.NODES?.[networkKey]?.DRPC_API_KEY : undefined
+      if (drpcNetwork && apiKey) return drpcNetworkToUrl(drpcNetwork, apiKey)
+      return fallbackUrlFromProxy(providerProxy.drpc)
     }
 
     // Check if we have an Alchemy provider
@@ -247,11 +256,11 @@ const ProviderModule = {
       const alchemyNetwork = ProviderModule.parseAlchemyNetwork(network)
       const alchemyHost = alchemyNetworkToUrl[alchemyNetwork]
       if (alchemyHost) {
-        const apiKey = config.NODES?.[networkKey]?.ALCHEMY_API_KEY
-        if (apiKey) {
-          return `https://${alchemyHost}/v2/${apiKey}`
-        }
+        const apiKey = networkKey ? config.NODES?.[networkKey]?.ALCHEMY_API_KEY : undefined
+        if (apiKey) return `https://${alchemyHost}/v2/${apiKey}`
       }
+
+      return fallbackUrlFromProxy(providerProxy.alchemy)
     }
 
     return undefined

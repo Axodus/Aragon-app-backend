@@ -1,7 +1,7 @@
 import * as sinon from 'sinon'
 import { SinonSandbox } from 'sinon'
 const { expect } = chai
-import { ErrorKeyEnum, IJwtTokenType } from '@types'
+import { ErrorKeyEnum, IJwtAuthType, IJwtTokenType } from '@types'
 import JwtHelper from '@helpers/jwt'
 import AuthMiddleware from '@middlewares/auth'
 import TwoFaHelper from '@helpers/2fa'
@@ -50,13 +50,13 @@ describe('middlewares: auth', () => {
     beforeEach(() => {
       ctx = {
         state: {
-          [JwtHelper.JWT_KEY]: { token: 'valid_token' },
+          [JwtHelper.JWT_KEY]: { token: 'valid_token', auth: 'aragon-admin' },
         },
       }
       next = sandbox.spy()
       findByValueStub = sandbox
         .stub(Models.Jwt, 'findByValue')
-        .resolves({ type: IJwtTokenType.admin, updateOnly: sinon.stub().resolves() })
+        .resolves({ type: IJwtAuthType.auth, updateOnly: sinon.stub().resolves() })
     })
 
     it('should allow access for a valid admin token', async () => {

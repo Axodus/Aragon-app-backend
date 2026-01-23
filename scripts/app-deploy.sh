@@ -62,6 +62,21 @@ echo "🔧 Project: $COMPOSE_PROJECT_NAME"
 echo "🔧 ENV_SUFFIX: $ENV_SUFFIX"
 echo "🔧 Compose file: $DOCKER_FILE"
 
+ensure_docker_network() {
+  local network_name="$1"
+
+  if docker network inspect "$network_name" >/dev/null 2>&1; then
+    return 0
+  fi
+
+  echo "🌐 Creating Docker network: $network_name"
+  docker network create "$network_name" >/dev/null
+}
+
+# docker-compose.yml declares these networks as external.
+ensure_docker_network "internal-net"
+ensure_docker_network "public-net"
+
 # List of microservice names (as defined in compose)
 MICROSERVICES=(
   #service-aragon-api done HA
@@ -217,7 +232,7 @@ run_migration() {
   # Remove any existing container (running or stopped)
   docker rm -f "$container_name" 2>/dev/null || true
 
-  # Also use docker-compose to ensure clean state
+  # Also use docker compose to ensure clean state
   docker compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" stop migration 2>/dev/null || true
   docker compose -f "$DOCKER_FILE" -p "$COMPOSE_PROJECT_NAME" rm -f migration 2>/dev/null || true
 

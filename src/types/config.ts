@@ -71,6 +71,8 @@ export interface IConfig {
     ETHEREUM_MAINNET: IRawNodeConfig
     ETHEREUM_SEPOLIA: IRawNodeConfig
     POLYGON_MAINNET: IRawNodeConfig
+    HARMONY_MAINNET?: IRawNodeConfig
+    HARMONY_TESTNET?: IRawNodeConfig
     BASE_MAINNET: IRawNodeConfig
     ARBITRUM_MAINNET: IRawNodeConfig
     ZKSYNC_SEPOLIA: IRawNodeConfig
@@ -152,6 +154,14 @@ export interface IConfig {
     API_KEY: string
   }
 
+  BAND: {
+    MAX_STALENESS_SECONDS: number
+    HARMONY_MAINNET: {
+      ORACLE_ADDRESS: string | null
+      ADAPTER_ADDRESS: string | null
+    }
+  }
+
   FOUR_BYTE: {
     URI: string
   }
@@ -174,6 +184,10 @@ export interface IConfig {
 
   CONTRACTS: {
     ENS_REGISTRY: string
+    COUNTRY_REGISTRY: {
+      HARMONY_MAINNET: string | null
+      HARMONY_TESTNET: string | null
+    }
   }
 
   IPFS: {
@@ -224,6 +238,7 @@ export interface IConfig {
       NAME: string
       PORT: number
       TIMEOUT: number
+      API_KEY: string | null
       JWT_KEY: string
       JWT_SECRET: string
     }
@@ -232,6 +247,16 @@ export interface IConfig {
       DAO_INTERVAL: number
       PLUGIN_INTERVAL: number
       SYNC_ALL: boolean
+      HARMONY_VOTING_FINALIZER: {
+        ENABLED: boolean
+        INTERVAL: number
+        CHECK_INTERVAL: number
+        PRIVATE_KEY: string | null
+        TARGETS_JSON: string
+        LOGS_CHUNK_SIZE: number
+        BLOCK_ON_MERKLE_MISMATCH: boolean
+        REVALIDATE_BLOCKED: boolean
+      }
     }
     ARAGON_RATES: {
       NAME: string

@@ -137,13 +137,20 @@ export const MemberInfo = {
   },
 
   _checkForAdmin: async (plugin: Plugin, _setting: PluginSetting, memberAddress: HexAddress) => {
+    const isMemberOnChain = await Web3Helper.isAdminMember(plugin.address, memberAddress, plugin.network)
+    if (isMemberOnChain) {
+      return true
+    }
+
+    // Fallback: legacy/indexed membership in Mongo
     const member = await Models.PluginMember.findOne({
       daoAddress: plugin.daoAddress,
+      pluginAddress: plugin.address,
       memberAddress,
       network: plugin.network,
     })
 
-    return !!member
+    return Boolean(member)
   },
 
   getLockVotingPowerBatch: async (

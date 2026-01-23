@@ -14,6 +14,9 @@ import {
 } from '@types'
 import { assertExposable } from '@errors'
 import PairDataModule from '@modules/pairData'
+import NameResolver from '@helpers/nameResolver'
+import DaoEnsHelper from '@helpers/daoEns'
+import { ethers } from 'ethers'
 
 const DaoController = {
   getDaosWithPagination: async (
@@ -39,8 +42,65 @@ const DaoController = {
 
   getDaoByEns: async (ens: string, network: NetworksEnum): Promise<IDaoResponse> => {
     const dao = await Models.Dao.findOne({ ens, network, isHidden: { $ne: true }, isActive: { $eq: true } })
+    if (dao) {
+      return await Models.Dao.getDaoDetails(dao.address, dao.network)
+    }
+
+    const resolvedAddress = await NameResolver.resolveNameToAddress(ens, network)
+    assertExposable(!!resolvedAddress, ErrorKeyEnum.notFound)
+
+    const daoByAddress = await Models.Dao.findByAddress(resolvedAddress!, network)
+    assertExposable(daoByAddress, ErrorKeyEnum.notFound)
+    return await Models.Dao.getDaoDetails(daoByAddress.address, daoByAddress.network)
+  },
+
+  setDaoEnsByDaoAdminSignature: async (params: {
+    address: HexAddress
+    network: NetworksEnum
+    ens?: string | null
+    signer: HexAddress
+    signature: string
+    issuedAt: number
+  }): Promise<{ ens: string | null }> => {
+    const dao = await Models.Dao.findByAddress(params.address, params.network)
     assertExposable(dao, ErrorKeyEnum.notFound)
-    return await Models.Dao.getDaoDetails(dao.address, dao.network)
+
+    const signer = ethers.getAddress(params.signer)
+    const daoAddress = ethers.getAddress(params.address)
+    const ens = typeof params.ens === 'string' ? params.ens.trim().toLowerCase() : ''
+
+    const issuedAtMs = Number(params.issuedAt)
+    assertExposable(Number.isFinite(issuedAtMs), ErrorKeyEnum.badParams)
+    const now = Date.now()
+    const maxSkewMs = 10 * 60 * 1000
+    assertExposable(Math.abs(now - issuedAtMs) <= maxSkewMs, ErrorKeyEnum.badParams)
+
+    const message = `Aragon DAO ENS update\nnetwork:${params.network}\ndao:${daoAddress}\nens:${ens}\nissuedAt:${issuedAtMs}`
+    const recovered = ethers.verifyMessage(message, params.signature)
+    assertExposable(ethers.getAddress(recovered) === signer, ErrorKeyEnum.accessDenied)
+
+    const plugins = await Models.Plugin.find({
+      daoAddress: dao.address,
+      network: dao.network,
+      status: IPluginStatus.installed,
+      interfaceType: { $in: [IPluginInterfaceType.admin, IPluginInterfaceType.multisig] },
+    })
+
+    const pluginAddresses = plugins.map(p => p.address)
+    assertExposable(pluginAddresses.length > 0, ErrorKeyEnum.accessDenied)
+
+    const isMember = await Models.PluginMember.exists({
+      memberAddress: signer,
+      network: dao.network,
+      pluginAddress: { $in: pluginAddresses },
+    })
+    assertExposable(!!isMember, ErrorKeyEnum.accessDenied)
+
+    return await DaoEnsHelper.setDaoEnsValidated({
+      address: dao.address,
+      network: dao.network,
+      ens: params.ens ?? null,
+    })
   },
 
   getDaosByMember: async (

@@ -19,6 +19,7 @@ export interface IAQueueProposal {
 
 export enum IJwtTokenType {
   admin = 'admin',
+  root = 'root',
 }
 
 export enum IJwtAuthType {

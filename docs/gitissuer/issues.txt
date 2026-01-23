@@ -1,0 +1,30 @@
+39	OPEN	Load test: index large number of events		2026-01-17T21:07:12Z
+38	OPEN	Chaos test: simulate RPC failures and recoveries		2026-01-17T21:07:08Z
+37	OPEN	Integration test: mid-history backfill		2026-01-17T21:07:04Z
+36	OPEN	Integration test: fresh sync from deployment block		2026-01-17T21:06:58Z
+35	OPEN	Unit tests for handler idempotency		2026-01-17T21:06:53Z
+34	OPEN	Document creator inference strategy		2026-01-17T21:06:46Z
+33	OPEN	Cache transaction data to reduce RPC calls		2026-01-17T21:06:41Z
+32	OPEN	Future: Request creator field in contract events		2026-01-17T21:06:35Z
+31	OPEN	Current: Use tx.from as creator (requires extra RPC call)		2026-01-17T21:06:29Z
+30	OPEN	Dashboard for indexing health		2026-01-17T21:06:24Z
+29	OPEN	Alert on prolonged indexing failures		2026-01-17T21:06:20Z
+28	OPEN	Track event processing success/failure rates		2026-01-17T21:06:14Z
+26	OPEN	Handle rate limiting and RPC failures gracefully		2026-01-17T21:06:04Z
+25	OPEN	Progress tracking and reporting		2026-01-17T21:05:59Z
+24	OPEN	Batch processing for historical events		2026-01-17T21:05:55Z
+23	OPEN	Add checkpointing for resumable backfills		2026-01-17T21:05:49Z
+22	OPEN	Implement configurable start block per plugin		2026-01-17T21:05:44Z
+21	OPEN	Test reorg scenarios on testnet		2026-01-17T21:05:39Z
+20	OPEN	Add rollback mechanism for reorged blocks		2026-01-17T21:05:32Z
+19	OPEN	Implement reorg detection (monitor block hashes)		2026-01-17T21:05:27Z
+18	OPEN	Add confirmation threshold before persisting events		2026-01-17T21:05:20Z
+17	OPEN	Handle edge cases (missing creator, invalid metadata)		2026-01-17T21:05:16Z
+16	OPEN	Add validation for event data completeness		2026-01-17T21:05:13Z
+14	OPEN	Add unique constraint or hash-based deduplication for events		2026-01-17T21:05:03Z
+12	OPEN	Backfill job implementation		2026-01-17T21:04:52Z
+11	OPEN	Reorg detection and recovery		2026-01-17T21:04:48Z
+10	OPEN	Idempotency checks		2026-01-17T21:04:45Z
+6	OPEN	Summarize changes for UI testing.		2026-01-17T20:47:42Z
+5	OPEN	Confirm handlers/indexer use updated config.		2026-01-17T20:47:36Z
+2	OPEN	[Backend] Harmony Voting Indexing + Automatic Backfill	enhancement, harmony, backend, indexing	2026-01-17T21:07:12Z

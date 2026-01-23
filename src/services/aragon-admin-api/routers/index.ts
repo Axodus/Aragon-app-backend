@@ -4,6 +4,7 @@ import SyncAdminRouter from './queue'
 import DaoAdminRouter from './dao'
 import CapitalDistributorAdminRouter from './capitalDistributor'
 import MetricsAdminRouter from './metrics'
+import HarmonyVotingAdminRouter from './harmonyVoting'
 
 const MainAdminRouter = {
   router(): Router {
@@ -12,6 +13,7 @@ const MainAdminRouter = {
     const daoAdminRouter = DaoAdminRouter.router()
     const capitalDistributorAdminRouter = CapitalDistributorAdminRouter.router()
     const metricsAdminRouter = MetricsAdminRouter.router()
+    const harmonyVotingAdminRouter = HarmonyVotingAdminRouter.router()
 
     const mainAdminRouter = new Router()
 
@@ -20,11 +22,15 @@ const MainAdminRouter = {
     mainAdminRouter.use('/metrics', metricsAdminRouter.routes(), metricsAdminRouter.allowedMethods())
     mainAdminRouter.use('/queue', syncAdminRouter.routes(), syncAdminRouter.allowedMethods())
     mainAdminRouter.use('/dao', daoAdminRouter.routes(), daoAdminRouter.allowedMethods())
+    // Compat: alguns reverse-proxies (ex.: Apache ProxyPass "/dao/" -> "http://.../") removem o prefixo "/dao".
+    // Montar também na raiz evita 404 quando a requisição chega como "/set-status/...".
+    mainAdminRouter.use(daoAdminRouter.routes(), daoAdminRouter.allowedMethods())
     mainAdminRouter.use(
       '/capital-distributor',
       capitalDistributorAdminRouter.routes(),
       capitalDistributorAdminRouter.allowedMethods(),
     )
+    mainAdminRouter.use('/harmony-voting', harmonyVotingAdminRouter.routes(), harmonyVotingAdminRouter.allowedMethods())
 
     return mainAdminRouter
   },

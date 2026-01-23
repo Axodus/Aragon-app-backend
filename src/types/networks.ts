@@ -1,7 +1,9 @@
 import { type WebSocketProvider } from 'ethers'
 export type HexAddress = `0x${string}` | string
-export type ENS = `${string}.eth`
-export type DAO_ENS = `${string}.dao.eth`
+export type ENS = `${string}.eth` | `${string}.country`
+// Mantém compatibilidade com o formato histórico `.dao.eth`, mas permite `.country`.
+// Em `.country` o domínio pode ter múltiplos labels (ex: `harmony-mainnet.country`).
+export type DAO_ENS = `${string}.dao.eth` | `${string}.country`
 
 export enum IWebSocketStatus {
   CONNECTING = 0,
@@ -23,6 +25,8 @@ export enum NetworksEnum {
   ethereumMainnet = 'ethereum-mainnet',
   ethereumSepolia = 'ethereum-sepolia',
   polygonMainnet = 'polygon-mainnet',
+  harmonyMainnet = 'harmony-mainnet',
+  harmonyTestnet = 'harmony-testnet',
   baseMainnet = 'base-mainnet',
   arbitrumMainnet = 'arbitrum-mainnet',
   zksyncSepolia = 'zksync-sepolia',

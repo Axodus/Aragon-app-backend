@@ -84,6 +84,21 @@ const DaoRouter = {
     ctx.body = await DaoController.getDaoByEns(result.params.ens, result.params.network)
   },
 
+  setEnsByDaoAdmin: async function (ctx: RouterContext) {
+    const body = ctx.request.body as any
+    const params = {
+      address: body?.address,
+      network: body?.network,
+      ens: body?.ens,
+      signer: body?.signer,
+      signature: body?.signature,
+      issuedAt: body?.issuedAt,
+    }
+
+    const formattedValues = await ValidationSchema.validateParams(DaoSchema.setDaoEnsByDaoAdmin, params)
+    ctx.body = await DaoController.setDaoEnsByDaoAdminSignature(formattedValues)
+  },
+
   router(): Router {
     const router = new Router()
 
@@ -138,6 +153,9 @@ const DaoRouter = {
      * @apiSampleRequest /daos/:network/ens/:ens
      */
     router.get('/:network/ens/:ens', DaoRouter.getDaoByEns)
+
+    // Body-based endpoint to avoid issues with '.' in ENS-like names
+    router.post('/set-ens', DaoRouter.setEnsByDaoAdmin)
 
     return router
   },

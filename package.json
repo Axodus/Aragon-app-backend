@@ -16,6 +16,9 @@
     "service:aragon-plugins": "ts-node -r tsconfig-paths/register runners/aragon-plugins.ts",
     "service:aragon-rates": "ts-node -r tsconfig-paths/register runners/aragon-rates.ts",
     "service:aragon-requeue": "ts-node -r tsconfig-paths/register runners/aragon-requeue.ts",
+    "plugin:approve": "ts-node -r tsconfig-paths/register scripts/approve-plugin-access.ts",
+    "backfill:harmony": "ts-node --project tsconfig.scripts.json -r tsconfig-paths/register scripts/backfillHarmony.ts",
+    "reindex:dao": "ts-node --project tsconfig.scripts.json -r tsconfig-paths/register scripts/reindexDaoRegistry.ts",
     "deploy:sand": "bash scripts/app-deploy.sh sand",
     "deploy:dev": "bash scripts/app-deploy.sh dev",
     "deploy:stg": "bash scripts/app-deploy.sh stg",
@@ -39,13 +42,15 @@
     "test:unit-dep": "ts-node -r tsconfig-paths/register test/test.config.ts --unit-dep",
     "test:unit:coverage": "rm -rf coverage .nyc_output && nyc --debug --no-clean --temp-dir=.nyc_output/ yarn test:unit",
     "test:coverage:check": "nyc check-coverage --temp-dir=.nyc_output/ --statements 98 --branches 90 --functions 98 --lines 98",
-    "docker:test:unit-dep": "docker-compose up -d --build unit-dep",
-    "docker:unit-dep-dependencies": "docker-compose up -d --build mongo1 mongo2 mongo3 mongo-init-replica rabbitmq",
-    "docker:mongo": "docker-compose up -d --build mongo1 mongo2 mongo3 mongo-init-replica",
+    "docker:test:unit-dep": "docker compose up -d --build unit-dep",
+    "docker:unit-dep-dependencies": "docker compose -f docker dao.yml up -d --build mongo1 mongo2 mongo3 mongo-init-replica rabbitmq",
+    "docker:mongo": "docker compose -f dao.yml up -d --build mongo1 mongo2 mongo3 mongo-init-replica",
     "docker:rabbitmq": "docker rm -f aragon-rabbit || true && docker run -d --hostname aragon-rabbit --name aragon-rabbit -p 5672:5672 -p 15672:15672 rabbitmq:3-management",
-    "docker:services": "docker-compose up --build -d service-aragon-api service-aragon-indexer service-aragon-rates service-aragon-admin-api",
+    "docker:services": "docker compose up --build -d service-aragon-api service-aragon-indexer service-aragon-rates service-aragon-admin-api",
     "wait:rabbitmq": "bash scripts/waitUp.sh rabbitmq 5672",
     "wait:db": "bash scripts/waitUp.sh mongo1 27017 && bash scripts/waitUp.sh mongo2 27017 && bash scripts/waitUp.sh mongo3 27017",
+    "wait:rabbitmq:local": "bash scripts/waitUp.sh localhost 5672",
+    "wait:db:local": "bash scripts/waitUp.sh localhost 27017 && bash scripts/waitUp.sh localhost 27018 && bash scripts/waitUp.sh localhost 27019",
     "prepare": "husky"
   },
   "repository": {
@@ -120,7 +125,7 @@
     "winston": "^3.18.3"
   },
   "devDependencies": {
-    "@commitlint/cli": "^19.8.1",
+    "@commitlint/cli": "20.2.0",
     "@commitlint/config-conventional": "^19.8.1",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/commit-analyzer": "^13.0.1",
@@ -168,5 +173,6 @@
     "ts-mocha": "^10.0.0",
     "ts-node-dev": "^2.0.0",
     "tsc-alias": "^1.8.16"
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

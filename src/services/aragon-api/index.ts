@@ -6,6 +6,7 @@ import config from '@config'
 const AragonAPIService: IService = {
   name: EnumServiceName.ARAGON_API,
   NEED_CONNECTIONS: [EnumConnection.MONGODB, EnumConnection.RABBITMQ],
+  START_BEFORE_CONNECTIONS: true,
   options: { mongoSync: config.MONGO_DB.SYNC_MODELS },
 
   async start() {

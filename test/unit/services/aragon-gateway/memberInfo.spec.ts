@@ -508,6 +508,8 @@ describe('AragonDao: memberInfo', () => {
 
       const settingsStub = sandbox.stub(Models.Setting, 'findActive').resolves({} as any)
 
+      const isAdminMemberStub = sandbox.stub(Web3Helper, 'isAdminMember').resolves(false)
+
       const pluginMemberStub = sandbox.stub(Models.PluginMember, 'findOne').resolves({
         daoAddress: '0xDaoAddress',
         memberAddress: '0xMemberAddress',
@@ -522,10 +524,12 @@ describe('AragonDao: memberInfo', () => {
 
       expect(pluginStub.calledOnce).to.be.true
       expect(settingsStub.calledOnce).to.be.true
+      expect(isAdminMemberStub.calledOnce).to.be.true
       expect(pluginMemberStub.calledOnce).to.be.true
       expect(
         pluginMemberStub.calledWith({
           daoAddress: '0xDaoAddress',
+          pluginAddress: '0xPluginAddress',
           memberAddress: '0xMemberAddress',
           network: NetworksEnum.ethereumSepolia,
         }),

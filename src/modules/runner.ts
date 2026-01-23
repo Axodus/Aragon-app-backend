@@ -1,3 +1,4 @@
+import 'dotenv/config'
 /* istanbul ignore file */
 import { TooBusyMonitor } from '@helpers/monitoring'
 import { type IService } from '@types'
@@ -70,23 +71,43 @@ async function runApp(app: IService) {
       }),
     )
 
-    // Open connections with service-specific options
-    await Connections.open(neededConnections, app.options)
+    if (app.START_BEFORE_CONNECTIONS) {
+      await app.start()
 
-    // Start the service
-    await app.start()
+      if (app.name) {
+        prometheusStore = PrometheusStore.getInstance(app.name)
+        await prometheusStore.start()
+      }
 
-    if (app.name) {
-      prometheusStore = PrometheusStore.getInstance(app.name)
-      await prometheusStore.start()
+      logger.info(
+        'Service started successfully',
+        llo({
+          service: app.name,
+          note: 'Listening started before external connections',
+        }),
+      )
+
+      // Open connections after service start.
+      await Connections.open(neededConnections, app.options)
+    } else {
+      // Open connections with service-specific options
+      await Connections.open(neededConnections, app.options)
+
+      // Start the service
+      await app.start()
+
+      if (app.name) {
+        prometheusStore = PrometheusStore.getInstance(app.name)
+        await prometheusStore.start()
+      }
+
+      logger.info(
+        'Service started successfully',
+        llo({
+          service: app.name,
+        }),
+      )
     }
-
-    logger.info(
-      'Service started successfully',
-      llo({
-        service: app.name,
-      }),
-    )
   } catch (error) {
     logger.error('Unable to start application', llo({ error }))
     logger.purge()

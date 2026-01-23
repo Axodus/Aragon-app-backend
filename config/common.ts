@@ -65,6 +65,7 @@ const getConfigObject = (sourceConfig: Record<string, any>): IConfig => {
         'The query timed out',
         'timeout',
         'eth_getLogs is limited',
+        'GetLogs query must be smaller than size 1024',
         'Response size is larger than 150MB limit',
         'Log response size exceeded',
         'Consider reducing your block range',
@@ -278,6 +279,71 @@ const getConfigObject = (sourceConfig: Record<string, any>): IConfig => {
           sourceConfig,
           'string',
           'NODES_POLYGON_MAINNET_BLOCKSCOUT_API_KEY',
+          null,
+        ),
+      },
+      HARMONY_MAINNET: {
+        ALCHEMY_API_KEY: utils.configParser(sourceConfig, 'string', 'NODES_HARMONY_MAINNET_ALCHEMY_API_KEY', null),
+        DRPC_API_KEY: utils.configParser(sourceConfig, 'string', 'NODES_HARMONY_MAINNET_DRPC_API_KEY', null),
+        ARAGON_RPC: utils.configParser(
+          sourceConfig,
+          'string',
+          'NODES_HARMONY_MAINNET_ARAGON_RPC',
+          'https://api.harmony.one',
+        ),
+        FROM_BLOCK: utils.configParser(sourceConfig, 'number', 'NODES_HARMONY_MAINNET_FROM_BLOCK', 0),
+        OFFSET_TO_BLOCK: utils.configParser(sourceConfig, 'number', 'NODES_HARMONY_MAINNET_OFFSET_TO_BLOCK', 0),
+        POOLING_INTERVAL: utils.configParser(
+          sourceConfig,
+          'number',
+          'NODES_HARMONY_MAINNET_POOLING_INTERVAL',
+          3 * 1000,
+        ),
+        CONFIRMATION_BLOCKS: utils.configParser(sourceConfig, 'number', 'NODES_HARMONY_MAINNET_CONFIRMATION_BLOCKS', 3),
+        INTERVAL_BLOCK_TIME: utils.configParser(sourceConfig, 'number', 'NODES_HARMONY_MAINNET_INTERVAL_BLOCK_TIME', 2),
+        BLOCKSCOUT_API_URL: utils.configParser(
+          sourceConfig,
+          'string',
+          'NODES_HARMONY_MAINNET_BLOCKSCOUT_API_URL',
+          'https://explorer.harmony.one/api/',
+        ),
+        BLOCKSCOUT_API_KEY: utils.configParser(
+          sourceConfig,
+          'string',
+          'NODES_HARMONY_MAINNET_BLOCKSCOUT_API_KEY',
+          null,
+        ),
+      },
+
+      HARMONY_TESTNET: {
+        ALCHEMY_API_KEY: utils.configParser(sourceConfig, 'string', 'NODES_HARMONY_TESTNET_ALCHEMY_API_KEY', null),
+        DRPC_API_KEY: utils.configParser(sourceConfig, 'string', 'NODES_HARMONY_TESTNET_DRPC_API_KEY', null),
+        ARAGON_RPC: utils.configParser(
+          sourceConfig,
+          'string',
+          'NODES_HARMONY_TESTNET_ARAGON_RPC',
+          'https://api.s0.b.hmny.io',
+        ),
+        FROM_BLOCK: utils.configParser(sourceConfig, 'number', 'NODES_HARMONY_TESTNET_FROM_BLOCK', 0),
+        OFFSET_TO_BLOCK: utils.configParser(sourceConfig, 'number', 'NODES_HARMONY_TESTNET_OFFSET_TO_BLOCK', 0),
+        POOLING_INTERVAL: utils.configParser(
+          sourceConfig,
+          'number',
+          'NODES_HARMONY_TESTNET_POOLING_INTERVAL',
+          3 * 1000,
+        ),
+        CONFIRMATION_BLOCKS: utils.configParser(sourceConfig, 'number', 'NODES_HARMONY_TESTNET_CONFIRMATION_BLOCKS', 3),
+        INTERVAL_BLOCK_TIME: utils.configParser(sourceConfig, 'number', 'NODES_HARMONY_TESTNET_INTERVAL_BLOCK_TIME', 2),
+        BLOCKSCOUT_API_URL: utils.configParser(
+          sourceConfig,
+          'string',
+          'NODES_HARMONY_TESTNET_BLOCKSCOUT_API_URL',
+          'https://explorer.pops.one/api/',
+        ),
+        BLOCKSCOUT_API_KEY: utils.configParser(
+          sourceConfig,
+          'string',
+          'NODES_HARMONY_TESTNET_BLOCKSCOUT_API_KEY',
           null,
         ),
       },
@@ -546,7 +612,7 @@ const getConfigObject = (sourceConfig: Record<string, any>): IConfig => {
         sourceConfig,
         'string',
         'MONGO_DB_URI',
-        'mongodb://localhost:27017,localhost:27018,localhost:27019?replicaSet=rs&retryWrites=true',
+        'mongodb://localhost:27017,localhost:27018,localhost:27019/db-aragon?replicaSet=rs0&retryWrites=true&w=majority',
       ),
       DEBUGGER: utils.configParser(sourceConfig, 'bool', 'MONGO_DB_DEBUGGER', false),
       RETRY_CONCURRENT_INTERVAL: utils.configParser(sourceConfig, 'number', 'MONGO_DB_RETRY_CONCURRENT_INTERVAL', 50),
@@ -575,6 +641,24 @@ const getConfigObject = (sourceConfig: Record<string, any>): IConfig => {
       API_KEY: utils.configParser(sourceConfig, 'string', 'COINGECKO_API_KEY', null),
     },
 
+    BAND: {
+      MAX_STALENESS_SECONDS: utils.configParser(sourceConfig, 'number', 'BAND_MAX_STALENESS_SECONDS', 4 * 60 * 60),
+      HARMONY_MAINNET: {
+        ORACLE_ADDRESS: utils.configParser(
+          sourceConfig,
+          'string',
+          'BAND_HARMONY_MAINNET_ORACLE_ADDRESS',
+          '0xA55d9ef16Af921b70Fed1421C1D298Ca5A3a18F1',
+        ),
+        ADAPTER_ADDRESS: utils.configParser(
+          sourceConfig,
+          'string',
+          'BAND_HARMONY_MAINNET_ADAPTER_ADDRESS',
+          '0x0A87139b65399102f5F9B9B245531CF1A04ec86d',
+        ),
+      },
+    },
+
     FOUR_BYTE: {
       URI: utils.configParser(sourceConfig, 'string', 'FOUR_BYTE_URI', 'https://www.4byte.directory/api/v1'),
     },
@@ -585,7 +669,7 @@ const getConfigObject = (sourceConfig: Record<string, any>): IConfig => {
         sourceConfig,
         'string',
         'PINATA_GATEWAY_URI',
-        'https://aragon-1.mypinata.cloud/ipfs',
+        'https://amethyst-blank-puma-863.mypinata.cloud/ipfs',
       ),
     },
 
@@ -607,6 +691,14 @@ const getConfigObject = (sourceConfig: Record<string, any>): IConfig => {
         'CONTRACTS_ENS_REGISTRY',
         '0x00000000000c2e074ec69a0dfb2997ba6c7d2e1e',
       ),
+      COUNTRY_REGISTRY: {
+        HARMONY_MAINNET:
+          utils.configParser(sourceConfig, 'string', 'HARMONY_MAINNET_COUNTRY_REGISTRY', null) ||
+          utils.configParser(sourceConfig, 'string', 'HARMONY_COUNTRY_REGISTRY', null),
+        HARMONY_TESTNET:
+          utils.configParser(sourceConfig, 'string', 'HARMONY_TESTNET_COUNTRY_REGISTRY', null) ||
+          utils.configParser(sourceConfig, 'string', 'HARMONYTESTNET_COUNTRY_REGISTRY', null),
+      },
     },
 
     IPFS: {
@@ -645,6 +737,7 @@ const getConfigObject = (sourceConfig: Record<string, any>): IConfig => {
         ),
         PORT: utils.configParser(sourceConfig, 'number', 'SERVICES_ARAGON_ADMIN_API_PORT', 3001),
         TIMEOUT: utils.configParser(sourceConfig, 'number', 'SERVICES_ARAGON_ADMIN_API_TIMEOUT', 30), // 30 seconds
+        API_KEY: utils.configParser(sourceConfig, 'string', 'SERVICES_ARAGON_ADMIN_API_API_KEY', null),
         JWT_KEY: utils.configParser(sourceConfig, 'string', 'SERVICES_ARAGON_ADMIN_API_JWT_KEY', 'JWT'),
         JWT_SECRET: utils.configParser(
           sourceConfig,
@@ -669,6 +762,56 @@ const getConfigObject = (sourceConfig: Record<string, any>): IConfig => {
           6 * 60 * 60 * 1000,
         ), // 6 hours
         SYNC_ALL: utils.configParser(sourceConfig, 'bool', 'SERVICES_ARAGON_INDEXER_SYNC_ALL', false),
+        HARMONY_VOTING_FINALIZER: {
+          ENABLED: utils.configParser(
+            sourceConfig,
+            'bool',
+            'SERVICES_ARAGON_INDEXER_HARMONY_VOTING_FINALIZER_ENABLED',
+            false,
+          ),
+          INTERVAL: utils.configParser(
+            sourceConfig,
+            'number',
+            'SERVICES_ARAGON_INDEXER_HARMONY_VOTING_FINALIZER_INTERVAL',
+            60 * 1000,
+          ),
+          CHECK_INTERVAL: utils.configParser(
+            sourceConfig,
+            'number',
+            'SERVICES_ARAGON_INDEXER_HARMONY_VOTING_FINALIZER_CHECK_INTERVAL',
+            30 * 1000,
+          ),
+          PRIVATE_KEY: utils.configParser(
+            sourceConfig,
+            'string',
+            'SERVICES_ARAGON_INDEXER_HARMONY_VOTING_FINALIZER_PRIVATE_KEY',
+            null,
+          ),
+          TARGETS_JSON: utils.configParser(
+            sourceConfig,
+            'string',
+            'SERVICES_ARAGON_INDEXER_HARMONY_VOTING_FINALIZER_TARGETS_JSON',
+            '[]',
+          ),
+          LOGS_CHUNK_SIZE: utils.configParser(
+            sourceConfig,
+            'number',
+            'SERVICES_ARAGON_INDEXER_HARMONY_VOTING_FINALIZER_LOGS_CHUNK_SIZE',
+            1000,
+          ),
+          BLOCK_ON_MERKLE_MISMATCH: utils.configParser(
+            sourceConfig,
+            'bool',
+            'SERVICES_ARAGON_INDEXER_HARMONY_VOTING_FINALIZER_BLOCK_ON_MERKLE_MISMATCH',
+            true,
+          ),
+          REVALIDATE_BLOCKED: utils.configParser(
+            sourceConfig,
+            'bool',
+            'SERVICES_ARAGON_INDEXER_HARMONY_VOTING_FINALIZER_REVALIDATE_BLOCKED',
+            false,
+          ),
+        },
       },
 
       ARAGON_RATES: {

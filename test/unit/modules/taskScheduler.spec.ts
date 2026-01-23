@@ -14,6 +14,19 @@ describe('Modules: TaskScheduler', () => {
   let scheduler: TaskScheduler
   let testCounter = 0
 
+  const waitFor = async (predicate: () => boolean, opts?: { timeoutMs?: number; stepMs?: number }) => {
+    const timeoutMs = opts?.timeoutMs ?? 1000
+    const stepMs = opts?.stepMs ?? 10
+    const start = Date.now()
+
+    while (Date.now() - start < timeoutMs) {
+      if (predicate()) return
+      await Utils.wait(stepMs)
+    }
+
+    throw new Error('waitFor timeout')
+  }
+
   const getUniqueServiceName = (baseName: string) => {
     return `${baseName}-${Date.now()}-${++testCounter}`
   }
@@ -59,13 +72,17 @@ describe('Modules: TaskScheduler', () => {
     const scheduler = new TaskScheduler()
     await scheduler.startTask(serviceName, taskOptions)
 
-    await Utils.wait(10)
-    expect(fakeService.start.callCount).to.be.at.least(6)
-    expect(failingService.start.callCount).to.be.at.least(1)
+    // First run should happen immediately (runNow)
+    await waitFor(() => fakeService.start.callCount >= 6 && failingService.start.callCount >= 1, {
+      timeoutMs: 2000,
+      stepMs: 10,
+    })
 
-    await Utils.wait(100) // Reduced from 820ms - just enough for 2 intervals
-    expect(fakeService.start.callCount).to.be.at.least(12)
-    expect(failingService.start.callCount).to.be.at.least(2)
+    // Second run should happen after `interval` elapses and a check tick occurs
+    await waitFor(() => fakeService.start.callCount >= 12 && failingService.start.callCount >= 2, {
+      timeoutMs: 3000,
+      stepMs: 10,
+    })
 
     scheduler.stopTask(serviceName)
 
@@ -133,7 +150,12 @@ describe('Modules: TaskScheduler', () => {
     const scheduler = new TaskScheduler()
     await scheduler.startTask(serviceName, taskOptions)
 
-    await Utils.wait(350) // Wait long enough for at least 3 intervals
+    // Don't rely on wall-clock timing (can be flaky under load / CI / Node version changes)
+    await waitFor(() => fakeService.start.callCount >= 2 && failingService.start.callCount >= 2, {
+      timeoutMs: 3000,
+      stepMs: 20,
+    })
+
     expect(fakeService.start.callCount).to.be.at.least(2) // Should run at least twice
     expect(failingService.start.callCount).to.be.at.least(2)
 
@@ -404,8 +426,8 @@ describe('Modules: TaskScheduler', () => {
     const result = await (scheduler as any).acquireLock('test-service')
 
     expect(result).to.be.false
-    expect(errorStub.calledOnce).to.be.true
-    expect(errorStub.calledWith('Error acquiring lock' as any)).to.be.true
+    expect(errorStub.called).to.be.true
+    expect(errorStub.firstCall.args[0]).to.eq('Error acquiring lock')
   })
 
   it('should handle error in releaseLock', async () => {

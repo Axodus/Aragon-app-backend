@@ -9,6 +9,9 @@ WORKDIR /usr/src/app
 # Copy dependency manifests
 COPY package.json yarn.lock ./
 
+# Avoid downloading MongoDB binaries during install (mongodb-memory-server postinstall)
+ENV MONGOMS_DISABLE_POSTINSTALL=1
+
 # Install ALL dependencies (ignore NODE_ENV for installation)
 RUN NODE_ENV=development yarn install --frozen-lockfile
 
@@ -37,4 +40,4 @@ COPY --from=builder /usr/src/app/node_modules ./node_modules
 # Copy application source
 COPY --from=builder /usr/src/app ./
 
-# CMD ["yarn", "start"]
+CMD ["yarn", "start"]

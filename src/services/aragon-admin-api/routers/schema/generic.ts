@@ -26,6 +26,25 @@ const GenericSchema = {
     status: Joi.boolean().required(),
   }),
 
+  setDaoEnsParams: Joi.object({
+    network: Joi.string()
+      .valid(...Object.values(NetworksEnum))
+      .required(),
+    address: ValidationSchema.joiAddress.required(),
+    ens: ValidationSchema.joiEns.allow(null, '').optional(),
+  }),
+
+  setDaoPrimaryNameParams: Joi.object({
+    network: Joi.string()
+      .valid(...Object.values(NetworksEnum))
+      .required(),
+    address: ValidationSchema.joiAddress.required(),
+    primaryName: Joi.string()
+      .pattern(/^[a-z0-9-]+\.country$/i)
+      .allow(null, '')
+      .optional(),
+  }),
+
   queueProposalMetrics: Joi.object({
     network: Joi.string()
       .valid(...Object.values(NetworksEnum))

@@ -122,6 +122,9 @@ export default class Dao extends Model {
   public subdomain!: string
 
   @prop({ type: () => String, default: null })
+  public primaryName!: string
+
+  @prop({ type: () => String, default: null })
   public metadataIpfs!: string
 
   @prop({ type: () => String, default: null })
@@ -207,7 +210,7 @@ export default class Dao extends Model {
       ...dynamicFilter,
     }
 
-    filter.isHidden = { $ne: true }
+    filter.isHidden = extraQueryData.onlyHidden ? { $eq: true } : { $ne: true }
     filter.isActive = { $eq: true }
 
     if (extraQueryData.daoAddresses && extraQueryData.daoAddresses.length > 0) {
@@ -803,6 +806,7 @@ export default class Dao extends Model {
           creator: 1,
           ens: 1,
           subdomain: 1,
+          primaryName: 1,
           metadataIpfs: 1,
           name: 1,
           description: 1,

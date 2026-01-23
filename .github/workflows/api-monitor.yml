@@ -1,9 +1,9 @@
 name: API Monitoring
 
-on:
-  schedule:
-    # - cron: '0 * * * *' # Run performance tests every hour
-    - cron: '*/15 * * * *' # Runs every 15 mins
+#on:
+#  schedule:
+#    # - cron: '0 * * * *' # Run performance tests every hour
+#    - cron: '*/15 * * * *' # Runs every 15 mins
   workflow_dispatch:
 
 env:
@@ -16,11 +16,11 @@ jobs:
     strategy:
       matrix:
         include:
-          - host: 'https://stg.backend.aragon.in'
+          - host: 'https://api.whostler.com'
             env_name: 'App Backend Staging'
-          - host: 'https://backend.aragon.in'
+          - host: 'https://api.whostler.com'
             env_name: 'App Backend Production'
-          - host: 'https://dev.backend.aragon.in'
+          - host: 'https://dev-api.whostler.com'
             env_name: 'App Backend Development'
       fail-fast: false
 

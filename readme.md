@@ -24,6 +24,7 @@ The AragonX App Backend is a core component of the Aragon ecosystem, designed to
 - MongoDB v7 (prefer install with [https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-os-x/))
 - IDE (prefer [https://www.jetbrains.com/webstorm/download](https://www.jetbrains.com/webstorm/download))
 
+
 ## Getting Started
 
 Follow these steps to set up the Aragon App-Backend locally:
