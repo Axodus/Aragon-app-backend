@@ -1,0 +1,146 @@
+[
+  {
+    "stableId": "765bafbe1e90cb2da3a102a885e40a2c580b4468",
+    "explicitId": null,
+    "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
+    "line": 1,
+    "text": "#PLAN-003 - Backend Architecture & Indexing — HarmonyVoting",
+    "checked": false,
+    "labels": [
+      "harmony",
+      "governance",
+      "ui"
+    ],
+    "priority": "NORMAL",
+    "status": "Backlog",
+    "startDate": "2026-01-23",
+    "endDate": "TBD",
+    "estimateHours": 0
+  },
+  {
+    "stableId": "9b53703c3dfa58fcd50ba67c4c1bee57c0de5dc0",
+    "explicitId": "FEATURE-001",
+    "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
+    "line": 44,
+    "text": "FEATURE-001: Event Handler Foundation ✅ SPRINT #1 COMPLETE",
+    "checked": false,
+    "labels": [
+      "harmony",
+      "governance",
+      "ui"
+    ],
+    "priority": "NORMAL",
+    "status": "Backlog",
+    "startDate": "2026-01-23",
+    "endDate": "TBD",
+    "estimateHours": 40
+  },
+  {
+    "stableId": "33af12251ffdaf6f29dd1459f126cabe2c4fd57b",
+    "explicitId": "FEATURE-002",
+    "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
+    "line": 53,
+    "text": "FEATURE-002: Indexing Resilience ✅ SPRINT #1 COMPLETE (PARTIAL)",
+    "checked": false,
+    "labels": [
+      "harmony",
+      "governance",
+      "ui"
+    ],
+    "priority": "NORMAL",
+    "status": "Backlog",
+    "startDate": "2026-01-23",
+    "endDate": "TBD",
+    "estimateHours": 35
+  },
+  {
+    "stableId": "4b23588cdcafed7e55e0fd4ff450812486c528b3",
+    "explicitId": "FEATURE-003",
+    "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
+    "line": 62,
+    "text": "FEATURE-003: Observability",
+    "checked": false,
+    "labels": [
+      "harmony",
+      "governance",
+      "ui"
+    ],
+    "priority": "NORMAL",
+    "status": "Backlog",
+    "startDate": "2026-01-23",
+    "endDate": "TBD",
+    "estimateHours": 30
+  },
+  {
+    "stableId": "a7d19bb64072a467490dc52382401b88eff5f187",
+    "explicitId": "FEATURE-004",
+    "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
+    "line": 70,
+    "text": "FEATURE-004: Metadata Indexing",
+    "checked": false,
+    "labels": [
+      "harmony",
+      "governance",
+      "ui"
+    ],
+    "priority": "NORMAL",
+    "status": "Backlog",
+    "startDate": "2026-01-23",
+    "endDate": "TBD",
+    "estimateHours": 25
+  },
+  {
+    "stableId": "80ef4bb7a513f9a8e1f9722df536c6dbf6ceeca4",
+    "explicitId": "FEATURE-005",
+    "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
+    "line": 79,
+    "text": "FEATURE-005: Native-Token Support",
+    "checked": false,
+    "labels": [
+      "harmony",
+      "governance",
+      "ui"
+    ],
+    "priority": "NORMAL",
+    "status": "Backlog",
+    "startDate": "2026-01-23",
+    "endDate": "TBD",
+    "estimateHours": 20
+  },
+  {
+    "stableId": "a9b8f83d25cad7c79b5c2eb936e38b8ca71cdd8b",
+    "explicitId": "FEATURE-006",
+    "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
+    "line": 86,
+    "text": "FEATURE-006: E2E Testing & Deploy",
+    "checked": false,
+    "labels": [
+      "harmony",
+      "governance",
+      "ui"
+    ],
+    "priority": "NORMAL",
+    "status": "Backlog",
+    "startDate": "2026-01-23",
+    "endDate": "TBD",
+    "estimateHours": 15
+  },
+  {
+    "stableId": "e7fb19d86c872e796399c99d9ed93623d6be1b32",
+    "explicitId": "TASK-001",
+    "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
+    "line": 94,
+    "text": "TASK-001: Acceptance Criteria Validation",
+    "checked": false,
+    "labels": [
+      "harmony",
+      "governance",
+      "ui"
+    ],
+    "priority": "NORMAL",
+    "status": "Backlog",
+    "startDate": "2026-01-23",
+    "endDate": "TBD",
+    "estimateHours": 12
+  }
+]
