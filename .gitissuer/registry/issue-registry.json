@@ -1,614 +1,89 @@
 {
   "version": "1.0",
   "repo": "Axodus/Aragon-app-backend",
-  "updatedAt": "2026-01-25T13:09:01.957Z",
-  "planFingerprint": "235d8d97e050bef2e41472640f4a563f8cad5783",
+  "updatedAt": "2026-01-25T22:44:24.336Z",
+  "planFingerprint": "a392654744d5cab8cc9685ea88394121bd2a5ecc",
   "planFiles": [
     {
-      "path": "docs/plans/PLAN.md",
-      "sha1": "1c08751d6ba90a11769f8dcef3921e54f02ecb0c"
+      "path": "PLAN.md",
+      "sha1": "934cf9cc782da8331abec4e022a32d0c69b743a2"
     }
   ],
   "items": [
     {
-      "stableId": "0091bc7fe3aa973f0ccb1a2d3989e721797f447f",
-      "explicitId": null,
-      "kind": "task",
-      "issueNumber": 243,
-      "issueNodeId": "I_kwDOQmHY_M7lq40I",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/243",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGHY",
-      "title": "#PLAN-003 - Backend Architecture & Indexing — HarmonyVoting",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 1
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.946Z"
-    },
-    {
-      "stableId": "11448e119b730372d735749488e28fc8cc62cae7",
-      "explicitId": "FEATURE-001",
-      "kind": "task",
-      "issueNumber": 244,
-      "issueNodeId": "I_kwDOQmHY_M7lq403",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/244",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGHo",
-      "title": "FEATURE-001: Event Handler Foundation ✅ SPRINT #1 COMPLETE",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 44
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.946Z"
-    },
-    {
-      "stableId": "99fd03a09bbee9537fdb57ee99f2d92d7c9220d6",
-      "explicitId": "FEATURE-002",
-      "kind": "task",
-      "issueNumber": 245,
-      "issueNodeId": "I_kwDOQmHY_M7lq43_",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/245",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGII",
-      "title": "FEATURE-002: Indexing Resilience ✅ SPRINT #1 COMPLETE (PARTIAL)",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 53
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.946Z"
-    },
-    {
-      "stableId": "d533ddc098b141fcea1c86532ee3a82bb40ac9d9",
-      "explicitId": "FEATURE-003",
-      "kind": "task",
-      "issueNumber": 246,
-      "issueNodeId": "I_kwDOQmHY_M7lq44-",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/246",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGIw",
-      "title": "FEATURE-003: Observability",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 62
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.946Z"
-    },
-    {
-      "stableId": "8a052000bb663da4f51c836b5577a60a2efbca36",
-      "explicitId": "FEATURE-004",
-      "kind": "task",
-      "issueNumber": 247,
-      "issueNodeId": "I_kwDOQmHY_M7lq456",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/247",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGJE",
-      "title": "FEATURE-004: Metadata Indexing",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 70
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.946Z"
-    },
-    {
-      "stableId": "c596412895fe8a4f09d63348a618caac452e176b",
-      "explicitId": "FEATURE-005",
-      "kind": "task",
-      "issueNumber": 248,
-      "issueNodeId": "I_kwDOQmHY_M7lq469",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/248",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGJ8",
-      "title": "FEATURE-005: Native-Token Support",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 79
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.946Z"
-    },
-    {
-      "stableId": "e0f69ee0fbd94e16d9554d16a531af55531385d0",
-      "explicitId": "FEATURE-006",
-      "kind": "task",
-      "issueNumber": 249,
-      "issueNodeId": "I_kwDOQmHY_M7lq4-O",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/249",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGKs",
-      "title": "FEATURE-006: E2E Testing & Deploy",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 86
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.946Z"
-    },
-    {
-      "stableId": "29cd13290e8f2b9c0ee9e104825c8b2ec95cd329",
+      "stableId": "a014fabeef8a546bd55d1dffdd9354791c3ec9b8",
       "explicitId": "TASK-001",
       "kind": "task",
-      "issueNumber": 250,
-      "issueNodeId": "I_kwDOQmHY_M7lq4-2",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/250",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGLg",
-      "title": "TASK-001: Acceptance Criteria Validation",
+      "issueNumber": 283,
+      "issueNodeId": "I_kwDOQmHY_M7ls8y5",
+      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/283",
+      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNoAw",
+      "title": "TASK-001: Reorg Tests & Simulation. (Issue #57)",
       "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 94
+        "file": "PLAN.md",
+        "line": 13
       },
-      "lastSyncedAt": "2026-01-25T13:09:01.946Z"
+      "lastSyncedAt": "2026-01-25T22:44:24.325Z"
     },
     {
-      "stableId": "53cceb32a76fe8fd756565de68a5c1dc612894e2",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 251,
-      "issueNodeId": "I_kwDOQmHY_M7lq4_x",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/251",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGLw",
-      "title": "VoteCast event ingestion (→ votes table)",
+      "stableId": "12b7340c06524c7352a32185d40272000aaaebbe",
+      "explicitId": "TASK-002",
+      "kind": "task",
+      "issueNumber": 284,
+      "issueNodeId": "I_kwDOQmHY_M7ls80F",
+      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/284",
+      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNoA8",
+      "title": "TASK-002: Connection Pooling & RPC Failover. (Issue #58)",
       "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 47
+        "file": "PLAN.md",
+        "line": 14
       },
-      "lastSyncedAt": "2026-01-25T13:09:01.946Z"
+      "lastSyncedAt": "2026-01-25T22:44:24.326Z"
     },
     {
-      "stableId": "f5bbf54c501dd862a79f23aecacc0d1cdc3bdef2",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 252,
-      "issueNodeId": "I_kwDOQmHY_M7lq5Ad",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/252",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGMM",
-      "title": "ProposalCreated event ingestion (→ proposals table)",
+      "stableId": "eb0aca5545f84d2ee2a39f6364f2216818a2f98c",
+      "explicitId": "TASK-003",
+      "kind": "task",
+      "issueNumber": 285,
+      "issueNodeId": "I_kwDOQmHY_M7ls81H",
+      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/285",
+      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNoBA",
+      "title": "TASK-003: Backfill & Replay Logic. (Issue #59)",
       "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 48
+        "file": "PLAN.md",
+        "line": 15
       },
-      "lastSyncedAt": "2026-01-25T13:09:01.946Z"
+      "lastSyncedAt": "2026-01-25T22:44:24.326Z"
     },
     {
-      "stableId": "13524b6e7ec941c862d53617dae0b0028973f885",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 253,
-      "issueNodeId": "I_kwDOQmHY_M7lq5EX",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/253",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGMk",
-      "title": "ProposalExecuted event ingestion (→ executions table)",
+      "stableId": "bc4599842336f2d5c085c5f3214bbf527f0d8cb5",
+      "explicitId": "TASK-004",
+      "kind": "task",
+      "issueNumber": 286,
+      "issueNodeId": "I_kwDOQmHY_M7ls82C",
+      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/286",
+      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNoBE",
+      "title": "TASK-004: Observability Metrics & Alerts. (Issue #60)",
       "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 49
+        "file": "PLAN.md",
+        "line": 16
       },
-      "lastSyncedAt": "2026-01-25T13:09:01.946Z"
+      "lastSyncedAt": "2026-01-25T22:44:24.326Z"
     },
     {
-      "stableId": "6dbb4f5ce1f23cadf6aeee39f3e87e5d8a257f46",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 254,
-      "issueNodeId": "I_kwDOQmHY_M7lq5FX",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/254",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGM8",
-      "title": "Reorg detection and block rollback",
+      "stableId": "919345533570ac5078320deaffb3bff6241ba2cf",
+      "explicitId": "TASK-005",
+      "kind": "task",
+      "issueNumber": 287,
+      "issueNodeId": "I_kwDOQmHY_M7ls83B",
+      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/287",
+      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNoBU",
+      "title": "TASK-005: Tests, Docs & Migration Scripts. (Issue #61)",
       "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 50
+        "file": "PLAN.md",
+        "line": 17
       },
-      "lastSyncedAt": "2026-01-25T13:09:01.946Z"
-    },
-    {
-      "stableId": "9fe7430ef1ef7a68358c5c1a7aafe8a9c382369a",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 255,
-      "issueNodeId": "I_kwDOQmHY_M7lq5GM",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/255",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGNM",
-      "title": "Unique constraints on (blockHash, logIndex, eventType) for idempotency",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 51
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.946Z"
-    },
-    {
-      "stableId": "dff5c641dbb479c959bf7e43b46dcd274e26cafd",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 256,
-      "issueNodeId": "I_kwDOQmHY_M7lq5JK",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/256",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGOM",
-      "title": "Retry strategy for failed events (exponential backoff, max 5 retries)",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 56
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.947Z"
-    },
-    {
-      "stableId": "8d937488ec80bf3e49425d4605cff3a0bcaccfd1",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 257,
-      "issueNodeId": "I_kwDOQmHY_M7lq5LA",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/257",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGO8",
-      "title": "Circuit breaker for RPC outages (threshold: 5 consecutive failures)",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 57
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.947Z"
-    },
-    {
-      "stableId": "970c4d8d3c21ce955414e25a30ae2a9d3bb2c52c",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 258,
-      "issueNodeId": "I_kwDOQmHY_M7lq5Mu",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/258",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGPw",
-      "title": "Error recovery and handler restart logic",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 58
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.947Z"
-    },
-    {
-      "stableId": "f5bcace37937610f2df559d863402c99155771e2",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 259,
-      "issueNodeId": "I_kwDOQmHY_M7lq5Np",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/259",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGQE",
-      "title": "Comprehensive reorg tests (simulating 1-10 block reorgs)",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 59
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.947Z"
-    },
-    {
-      "stableId": "ad96ca6b3f6350af86951a7ea3472b4df8a47475",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 260,
-      "issueNodeId": "I_kwDOQmHY_M7lq5QV",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/260",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGQQ",
-      "title": "Database connection pooling and health checks",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 60
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.947Z"
-    },
-    {
-      "stableId": "b3476ffbd709d46eb021a2fa1aec4183e057a0ab",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 261,
-      "issueNodeId": "I_kwDOQmHY_M7lq5Q8",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/261",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGQc",
-      "title": "Prometheus metrics (indexing lag, event count, error rate)",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 65
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.947Z"
-    },
-    {
-      "stableId": "83a6e1df5170392beabd53c2618fca221de1e17a",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 262,
-      "issueNodeId": "I_kwDOQmHY_M7lq5Rv",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/262",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGQ0",
-      "title": "Structured logging with winston (debug, info, warn, error levels)",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 66
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.947Z"
-    },
-    {
-      "stableId": "663e95ae2ea3444cace95142d20d1b0bf4f6a42a",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 263,
-      "issueNodeId": "I_kwDOQmHY_M7lq5Su",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/263",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGRA",
-      "title": "Grafana dashboards (indexing status, RPC health, database performance)",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 67
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.947Z"
-    },
-    {
-      "stableId": "13b770dc8ebd00cab3325f2852c0898f4e8717a3",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 264,
-      "issueNodeId": "I_kwDOQmHY_M7lq5Td",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/264",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGRU",
-      "title": "Alert rules (indexing lag >60s, error rate >0.1%, RPC unavailable)",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 68
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.947Z"
-    },
-    {
-      "stableId": "c6216129f7472973907b171000d978ef552aa0c1",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 265,
-      "issueNodeId": "I_kwDOQmHY_M7lq5UN",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/265",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGRY",
-      "title": "Metadata fetch with 5s timeout (IPFS gateway)",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 73
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.947Z"
-    },
-    {
-      "stableId": "ef942bc40c0b911d944a40a3efcdcd2ee8d2a362",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 266,
-      "issueNodeId": "I_kwDOQmHY_M7lq5VB",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/266",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGRo",
-      "title": "Fallback chain: on-chain metadata → local cache → placeholder",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 74
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.947Z"
-    },
-    {
-      "stableId": "e8fbad9287f2664033dd8ddf6143ccae65bdad87",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 267,
-      "issueNodeId": "I_kwDOQmHY_M7lq5WA",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/267",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGR8",
-      "title": "IPFS gateway rotation (multiple gateway URLs)",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 75
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.947Z"
-    },
-    {
-      "stableId": "a0095e1385916e6e69bd87b3d1976b4d78ee63fb",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 268,
-      "issueNodeId": "I_kwDOQmHY_M7lq5W3",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/268",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGSU",
-      "title": "Caching strategy (TTL: 24h for valid metadata, 1h for failures)",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 76
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.947Z"
-    },
-    {
-      "stableId": "9f62aa14e6cb19ca2ce8f6e8a1267fe5b9fd34ac",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 269,
-      "issueNodeId": "I_kwDOQmHY_M7lq5Xr",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/269",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGSk",
-      "title": "Metadata validation and integrity checks",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 77
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.947Z"
-    },
-    {
-      "stableId": "8cfc363e19ea7d503208176e44f9b9edc671605c",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 270,
-      "issueNodeId": "I_kwDOQmHY_M7lq5YV",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/270",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGTA",
-      "title": "Native token execution detection and marking",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 82
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.947Z"
-    },
-    {
-      "stableId": "61f89c5bad02342f206b45f8f499aa92bd68f950",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 271,
-      "issueNodeId": "I_kwDOQmHY_M7lq5ZJ",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/271",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGTQ",
-      "title": "Native token vote tracking",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 83
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.947Z"
-    },
-    {
-      "stableId": "bbde17d45016e151eae18209cb5f2ec1472cc9ab",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 272,
-      "issueNodeId": "I_kwDOQmHY_M7lq5aX",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/272",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGTo",
-      "title": "API exposure of native token execution metadata",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 84
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.947Z"
-    },
-    {
-      "stableId": "34ee17f8fed5917d09271984a73b19b991e455b7",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 273,
-      "issueNodeId": "I_kwDOQmHY_M7lq5bW",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/273",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGUI",
-      "title": "Integration tests: proposal lifecycle (create → vote → execute)",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 89
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.947Z"
-    },
-    {
-      "stableId": "a245117ea3d07e0a42d9731804008365bc40674b",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 274,
-      "issueNodeId": "I_kwDOQmHY_M7lq5b9",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/274",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGUg",
-      "title": "Load testing: peak traffic simulation (1000+ events/block)",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 90
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.947Z"
-    },
-    {
-      "stableId": "3373fe7f312cffdfded279c69a1d9667bfe8f9ef",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 275,
-      "issueNodeId": "I_kwDOQmHY_M7lq5cw",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/275",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGUo",
-      "title": "Production runbook and escalation procedures",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 91
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.947Z"
-    },
-    {
-      "stableId": "58a734dee0cac0e90bf4a279f6229560cad234fa",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 276,
-      "issueNodeId": "I_kwDOQmHY_M7lq5du",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/276",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGVE",
-      "title": "Deployment and smoke tests on Harmony mainnet",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 92
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.947Z"
-    },
-    {
-      "stableId": "9c707ac7ae07f1898705d6741941b4fa16345d3d",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 277,
-      "issueNodeId": "I_kwDOQmHY_M7lq5eQ",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/277",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGVM",
-      "title": "Event Handling: All events captured and deduplicated",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 97
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.947Z"
-    },
-    {
-      "stableId": "d88edb9b7dbbb8aa077aa8ca75ea26450f938370",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 278,
-      "issueNodeId": "I_kwDOQmHY_M7lq5e4",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/278",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGVY",
-      "title": "Reorg Recovery: Tested with 1-10 block reorgs; no duplicates",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 98
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.947Z"
-    },
-    {
-      "stableId": "e746d22d8039b47539d54dc81856d304fcd555f1",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 279,
-      "issueNodeId": "I_kwDOQmHY_M7lq5ff",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/279",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGVk",
-      "title": "API Endpoints: Status, events, proposals, metadata endpoints operational",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 99
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.947Z"
-    },
-    {
-      "stableId": "714dc83450f087cbd10dc7e00b99db95f99bc904",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 280,
-      "issueNodeId": "I_kwDOQmHY_M7lq5gP",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/280",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGV4",
-      "title": "Error Handling: Retry logic + circuit breaker tested",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 100
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.947Z"
-    },
-    {
-      "stableId": "5b9c5901f6081ad98e83312dd17b5d9a4f57cc28",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 281,
-      "issueNodeId": "I_kwDOQmHY_M7lq5hB",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/281",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGWI",
-      "title": "Database Health: Connection pooling, indices, query performance",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 101
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.947Z"
-    },
-    {
-      "stableId": "34fd88f17fe6bf560b32714ad8fc8ddfd7b857a7",
-      "explicitId": null,
-      "kind": "subtask",
-      "issueNumber": 282,
-      "issueNodeId": "I_kwDOQmHY_M7lq5hl",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/282",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNGWU",
-      "title": "Production Deployment: Smoke tests passed on Harmony mainnet",
-      "source": {
-        "file": "docs/plans/PLAN.md",
-        "line": 102
-      },
-      "lastSyncedAt": "2026-01-25T13:09:01.947Z"
+      "lastSyncedAt": "2026-01-25T22:44:24.326Z"
     }
   ]
 }
