@@ -14,7 +14,7 @@
 - [x] TASK-002: Connection Pooling & RPC Failover. (Issue #58)
 - [x] TASK-003: Backfill & Replay Logic. (Issue #59)
 - [x] TASK-004: Observability Metrics & Alerts. (Issue #60)
-- [ ] TASK-005: Tests, Docs & Migration Scripts. (Issue #61)
+- [x] TASK-005: Tests, Docs & Migration Scripts. (Issue #61)
 
 ## Implementation Steps & Guidelines
 1. Build deterministic reorg simulation tests and validate rollback.

@@ -314,10 +314,10 @@ describe('RpcPool', () => {
       mockDrpcProvider.getBlockNumber.resolves(100000)
 
       // Execute 10 rapid requests
-      const promises = []
+      const promises: Promise<number>[] = []
       for (let i = 0; i < 10; i++) {
         promises.push(
-          rpcPool.executeWithFailover(
+          rpcPool.executeWithFailover<number>(
             NetworksEnum.harmonyMainnet,
             (provider) => provider.getBlockNumber(),
             'getBlockNumber',
