@@ -1,0 +1,154 @@
+[
+  {
+    "stableId": "0091bc7fe3aa973f0ccb1a2d3989e721797f447f",
+    "canonicalKey": "01KFRC0WDE64T621Q53MJSYQ4J",
+    "explicitId": null,
+    "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
+    "line": 1,
+    "text": "#PLAN-003 - Backend Architecture & Indexing — HarmonyVoting",
+    "checked": false,
+    "labels": [
+      "harmony",
+      "governance",
+      "ui"
+    ],
+    "priority": "NORMAL",
+    "status": "Backlog",
+    "startDate": "2026-01-23",
+    "endDate": "TBD",
+    "estimateHours": 0
+  },
+  {
+    "stableId": "11448e119b730372d735749488e28fc8cc62cae7",
+    "canonicalKey": "01KFRC0WDFD8Z2F8Y0ZZ7E6VDY",
+    "explicitId": "FEATURE-001",
+    "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
+    "line": 44,
+    "text": "FEATURE-001: Event Handler Foundation ✅ SPRINT #1 COMPLETE",
+    "checked": false,
+    "labels": [
+      "harmony",
+      "governance",
+      "ui"
+    ],
+    "priority": "NORMAL",
+    "status": "Backlog",
+    "startDate": "2026-01-23",
+    "endDate": "TBD",
+    "estimateHours": 40
+  },
+  {
+    "stableId": "99fd03a09bbee9537fdb57ee99f2d92d7c9220d6",
+    "canonicalKey": "01KFRC0WDFD8Z2F8Y0ZZ7E6VE4",
+    "explicitId": "FEATURE-002",
+    "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
+    "line": 53,
+    "text": "FEATURE-002: Indexing Resilience ✅ SPRINT #1 COMPLETE (PARTIAL)",
+    "checked": false,
+    "labels": [
+      "harmony",
+      "governance",
+      "ui"
+    ],
+    "priority": "NORMAL",
+    "status": "Backlog",
+    "startDate": "2026-01-23",
+    "endDate": "TBD",
+    "estimateHours": 35
+  },
+  {
+    "stableId": "d533ddc098b141fcea1c86532ee3a82bb40ac9d9",
+    "canonicalKey": "01KFRC0WDFD8Z2F8Y0ZZ7E6VEA",
+    "explicitId": "FEATURE-003",
+    "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
+    "line": 62,
+    "text": "FEATURE-003: Observability",
+    "checked": false,
+    "labels": [
+      "harmony",
+      "governance",
+      "ui"
+    ],
+    "priority": "NORMAL",
+    "status": "Backlog",
+    "startDate": "2026-01-23",
+    "endDate": "TBD",
+    "estimateHours": 30
+  },
+  {
+    "stableId": "8a052000bb663da4f51c836b5577a60a2efbca36",
+    "canonicalKey": "01KFRC0WDGRWM3Q9FX7WX3RWYN",
+    "explicitId": "FEATURE-004",
+    "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
+    "line": 70,
+    "text": "FEATURE-004: Metadata Indexing",
+    "checked": false,
+    "labels": [
+      "harmony",
+      "governance",
+      "ui"
+    ],
+    "priority": "NORMAL",
+    "status": "Backlog",
+    "startDate": "2026-01-23",
+    "endDate": "TBD",
+    "estimateHours": 25
+  },
+  {
+    "stableId": "c596412895fe8a4f09d63348a618caac452e176b",
+    "canonicalKey": "01KFRC0WDGRWM3Q9FX7WX3RWYV",
+    "explicitId": "FEATURE-005",
+    "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
+    "line": 79,
+    "text": "FEATURE-005: Native-Token Support",
+    "checked": false,
+    "labels": [
+      "harmony",
+      "governance",
+      "ui"
+    ],
+    "priority": "NORMAL",
+    "status": "Backlog",
+    "startDate": "2026-01-23",
+    "endDate": "TBD",
+    "estimateHours": 20
+  },
+  {
+    "stableId": "e0f69ee0fbd94e16d9554d16a531af55531385d0",
+    "canonicalKey": "01KFRC0WDGRWM3Q9FX7WX3RWYZ",
+    "explicitId": "FEATURE-006",
+    "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
+    "line": 86,
+    "text": "FEATURE-006: E2E Testing & Deploy",
+    "checked": false,
+    "labels": [
+      "harmony",
+      "governance",
+      "ui"
+    ],
+    "priority": "NORMAL",
+    "status": "Backlog",
+    "startDate": "2026-01-23",
+    "endDate": "TBD",
+    "estimateHours": 15
+  },
+  {
+    "stableId": "29cd13290e8f2b9c0ee9e104825c8b2ec95cd329",
+    "canonicalKey": "01KFRC0WDGRWM3Q9FX7WX3RWZ4",
+    "explicitId": "TASK-001",
+    "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
+    "line": 94,
+    "text": "TASK-001: Acceptance Criteria Validation",
+    "checked": false,
+    "labels": [
+      "harmony",
+      "governance",
+      "ui"
+    ],
+    "priority": "NORMAL",
+    "status": "Backlog",
+    "startDate": "2026-01-23",
+    "endDate": "TBD",
+    "estimateHours": 12
+  }
+]
