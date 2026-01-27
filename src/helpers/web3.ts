@@ -12,6 +12,7 @@ import { ERC20 } from '@artifacts/ERC20'
 import BottleneckModule from '@modules/bottleneck'
 import { retryRequest } from '@helpers/retryRequest'
 import ProviderModule from '@modules/provider'
+import rpcPool from '@modules/rpcPool'
 import { Multisig } from '@artifacts/Multisig'
 import { VotingEscrow } from '@artifacts/VotingEscrow'
 import { GaugeVoter } from '@artifacts/GaugeVoter'
@@ -26,7 +27,8 @@ const llo = logger.logMeta.bind(null, { service: 'helpers:Web3Helper' })
 
 const Web3Helper = {
   async supportsInterface(tokenAddress: HexAddress, interfaceId: string, network: NetworksEnum): Promise<boolean> {
-    const provider = ProviderModule.getAnyRpcProvider(network)
+    // Use RPC pool with automatic failover
+    const provider = rpcPool.getProvider(network) || ProviderModule.getAnyRpcProvider(network)
     const contract = new Contract(tokenAddress, ERC721.abi, provider)
     try {
       return await retryRequest(async () =>
@@ -40,11 +42,17 @@ const Web3Helper = {
   async getBlockNumber(blockNumber: string | number | undefined | BlockTag, network: NetworksEnum): Promise<number> {
     if (blockNumber === 'latest' || blockNumber === undefined) {
       try {
-        const provider = ProviderModule.getAnyRpcProvider(network)
-        const blockNumber = await retryRequest(async () =>
-          BottleneckModule.getNodeLimiter(network).schedule(async () => provider.getBlockNumber()),
+        // Use RPC pool with automatic failover
+        return await rpcPool.executeWithFailover(
+          network,
+          async (provider) => {
+            const bn = await retryRequest(async () =>
+              BottleneckModule.getNodeLimiter(network).schedule(async () => provider.getBlockNumber()),
+            )
+            return Number(bn)
+          },
+          'getBlockNumber',
         )
-        return Number(blockNumber)
       } catch (error) {
         logger.error('Error getBlockNumber', llo({ blockNumber, network, error }))
         return -1
@@ -56,9 +64,14 @@ const Web3Helper = {
 
   async getBlock(blockNumber: number, network: NetworksEnum): Promise<Block | null> {
     try {
-      const provider = ProviderModule.getAnyRpcProvider(network)
-      return await retryRequest(async () =>
-        BottleneckModule.getNodeLimiter(network).schedule(async () => provider.getBlock(blockNumber)),
+      // Use RPC pool with automatic failover
+      return await rpcPool.executeWithFailover(
+        network,
+        (provider) =>
+          retryRequest(async () =>
+            BottleneckModule.getNodeLimiter(network).schedule(async () => provider.getBlock(blockNumber)),
+          ),
+        'getBlock',
       )
     } catch (error) {
       logger.error('Error getBlock', llo({ blockNumber, network, error }))
@@ -68,11 +81,17 @@ const Web3Helper = {
 
   async getBlockHash(blockNumber: number, network: NetworksEnum): Promise<string | null> {
     try {
-      const provider = ProviderModule.getAnyRpcProvider(network)
-      const block = await retryRequest(async () =>
-        BottleneckModule.getNodeLimiter(network).schedule(async () => provider.getBlock(blockNumber)),
+      // Use RPC pool with automatic failover
+      return await rpcPool.executeWithFailover(
+        network,
+        async (provider) => {
+          const block = await retryRequest(async () =>
+            BottleneckModule.getNodeLimiter(network).schedule(async () => provider.getBlock(blockNumber)),
+          )
+          return block?.hash ?? null
+        },
+        'getBlockHash',
       )
-      return block?.hash ?? null
     } catch (error) {
       logger.error('Error getBlockHash', llo({ blockNumber, network, error }))
       return null
@@ -81,9 +100,14 @@ const Web3Helper = {
 
   async getLogs(filter: { fromBlock: string; toBlock: string; topics: any }, network: NetworksEnum) {
     try {
-      const provider = ProviderModule.getAnyRpcProvider(network)
-      return await retryRequest(async () =>
-        BottleneckModule.getNodeLimiter(network).schedule(async () => provider.getLogs(filter)),
+      // Use RPC pool with automatic failover
+      return await rpcPool.executeWithFailover(
+        network,
+        (provider) =>
+          retryRequest(async () =>
+            BottleneckModule.getNodeLimiter(network).schedule(async () => provider.getLogs(filter)),
+          ),
+        'getLogs',
       )
     } catch (error) {
       logger.error('Error getLogs', llo({ filter, network, error }))
@@ -93,13 +117,17 @@ const Web3Helper = {
 
   async getBlockTimestamp(blockNumber: number, network: NetworksEnum): Promise<number> {
     try {
-      const provider = ProviderModule.getAnyRpcProvider(network)
-
-      const block = await retryRequest(async () =>
-        BottleneckModule.getNodeLimiter(network).schedule(async () => provider.getBlock(blockNumber)),
+      // Use RPC pool with automatic failover
+      return await rpcPool.executeWithFailover(
+        network,
+        async (provider) => {
+          const block = await retryRequest(async () =>
+            BottleneckModule.getNodeLimiter(network).schedule(async () => provider.getBlock(blockNumber)),
+          )
+          return block?.timestamp ?? 0
+        },
+        'getBlockTimestamp',
       )
-
-      return block?.timestamp ?? 0
     } catch (error) {
       logger.error('Error getBlockTimestamp', llo({ blockNumber, network, error }))
       return 0

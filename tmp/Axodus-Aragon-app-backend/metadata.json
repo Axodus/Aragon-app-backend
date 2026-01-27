@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-01-27T09:56:40.743Z",
+  "generatedAt": "2026-01-25T22:47:36.335Z",
   "repo": "Axodus/Aragon-app-backend",
   "planFiles": [
     {
-      "path": "docs/plans/PLAN.md",
-      "absPath": "/mnt/d/Rede/Github/mzfshark/Aragon-app-backend/docs/plans/PLAN.md",
-      "sha1": "350f1980d7f5e939c85cefdec397d8d67cdbff0a"
+      "path": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
+      "absPath": "/opt/Aragon-app-backend/docs/plans/PLAN.md",
+      "sha1": "1c08751d6ba90a11769f8dcef3921e54f02ecb0c"
     }
   ],
   "labels": {
@@ -48,33 +48,10 @@
   },
   "tasks": [
     {
-      "stableId": "c54dd7667d56a20d33d430d555515e89a78cf1a3",
-      "canonicalKey": null,
-      "explicitId": "PLAN",
-      "file": "docs/plans/PLAN.md",
-      "line": 1,
-      "text": "#PLAN-003 - Backend Architecture & Indexing — HarmonyVoting",
-      "checked": false,
-      "labels": [
-        "harmony",
-        "governance",
-        "ui",
-        "plan-parent"
-      ],
-      "priority": "HIGH",
-      "status": "in progress",
-      "startDate": "2026-01-23",
-      "endDate": "2026-02-28",
-      "estimateHours": 8
-    }
-  ],
-  "subtasks": [
-    {
-      "stableId": "3319dfb60c2c8a8305dd26c83718e68e21defe25",
-      "canonicalKey": null,
+      "stableId": "0091bc7fe3aa973f0ccb1a2d3989e721797f447f",
+      "canonicalKey": "01KFRC0WDE64T621Q53MJSYQ4J",
       "explicitId": null,
-      "parentStableId": "c54dd7667d56a20d33d430d555515e89a78cf1a3",
-      "file": "docs/plans/PLAN.md",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 1,
       "text": "#PLAN-003 - Backend Architecture & Indexing — HarmonyVoting",
       "checked": false,
@@ -87,14 +64,13 @@
       "status": "Backlog",
       "startDate": "2026-01-23",
       "endDate": "TBD",
-      "estimateHours": 1
+      "estimateHours": 0
     },
     {
-      "stableId": "29d760b9e8080a31dfd20303e2449d6e4bfef06a",
-      "canonicalKey": null,
+      "stableId": "11448e119b730372d735749488e28fc8cc62cae7",
+      "canonicalKey": "01KFRC0WDFD8Z2F8Y0ZZ7E6VDY",
       "explicitId": "FEATURE-001",
-      "parentStableId": "c54dd7667d56a20d33d430d555515e89a78cf1a3",
-      "file": "docs/plans/PLAN.md",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 44,
       "text": "FEATURE-001: Event Handler Foundation ✅ SPRINT #1 COMPLETE",
       "checked": false,
@@ -107,14 +83,13 @@
       "status": "Backlog",
       "startDate": "2026-01-23",
       "endDate": "TBD",
-      "estimateHours": 1
+      "estimateHours": 40
     },
     {
-      "stableId": "c75245479f8b82d19ababfa776c72feb5b046e28",
-      "canonicalKey": null,
+      "stableId": "99fd03a09bbee9537fdb57ee99f2d92d7c9220d6",
+      "canonicalKey": "01KFRC0WDFD8Z2F8Y0ZZ7E6VE4",
       "explicitId": "FEATURE-002",
-      "parentStableId": "c54dd7667d56a20d33d430d555515e89a78cf1a3",
-      "file": "docs/plans/PLAN.md",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 53,
       "text": "FEATURE-002: Indexing Resilience ✅ SPRINT #1 COMPLETE (PARTIAL)",
       "checked": false,
@@ -127,14 +102,13 @@
       "status": "Backlog",
       "startDate": "2026-01-23",
       "endDate": "TBD",
-      "estimateHours": 1
+      "estimateHours": 35
     },
     {
-      "stableId": "d3488b3d5d221ce624da7863caf997e121ef7ac4",
-      "canonicalKey": null,
+      "stableId": "d533ddc098b141fcea1c86532ee3a82bb40ac9d9",
+      "canonicalKey": "01KFRC0WDFD8Z2F8Y0ZZ7E6VEA",
       "explicitId": "FEATURE-003",
-      "parentStableId": "c54dd7667d56a20d33d430d555515e89a78cf1a3",
-      "file": "docs/plans/PLAN.md",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 62,
       "text": "FEATURE-003: Observability",
       "checked": false,
@@ -147,14 +121,13 @@
       "status": "Backlog",
       "startDate": "2026-01-23",
       "endDate": "TBD",
-      "estimateHours": 1
+      "estimateHours": 30
     },
     {
-      "stableId": "988fd3c38444e5b8b092d9bb99f31a475ec0d15d",
-      "canonicalKey": null,
+      "stableId": "8a052000bb663da4f51c836b5577a60a2efbca36",
+      "canonicalKey": "01KFRC0WDGRWM3Q9FX7WX3RWYN",
       "explicitId": "FEATURE-004",
-      "parentStableId": "c54dd7667d56a20d33d430d555515e89a78cf1a3",
-      "file": "docs/plans/PLAN.md",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 70,
       "text": "FEATURE-004: Metadata Indexing",
       "checked": false,
@@ -167,14 +140,13 @@
       "status": "Backlog",
       "startDate": "2026-01-23",
       "endDate": "TBD",
-      "estimateHours": 1
+      "estimateHours": 25
     },
     {
-      "stableId": "c5600a562ab684b22a2ab577cc10afbcece26066",
-      "canonicalKey": null,
+      "stableId": "c596412895fe8a4f09d63348a618caac452e176b",
+      "canonicalKey": "01KFRC0WDGRWM3Q9FX7WX3RWYV",
       "explicitId": "FEATURE-005",
-      "parentStableId": "c54dd7667d56a20d33d430d555515e89a78cf1a3",
-      "file": "docs/plans/PLAN.md",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 79,
       "text": "FEATURE-005: Native-Token Support",
       "checked": false,
@@ -187,14 +159,13 @@
       "status": "Backlog",
       "startDate": "2026-01-23",
       "endDate": "TBD",
-      "estimateHours": 1
+      "estimateHours": 20
     },
     {
-      "stableId": "f9d1367b09f92bcf6a6c850e6359d807d2a1a401",
-      "canonicalKey": null,
+      "stableId": "e0f69ee0fbd94e16d9554d16a531af55531385d0",
+      "canonicalKey": "01KFRC0WDGRWM3Q9FX7WX3RWYZ",
       "explicitId": "FEATURE-006",
-      "parentStableId": "c54dd7667d56a20d33d430d555515e89a78cf1a3",
-      "file": "docs/plans/PLAN.md",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 86,
       "text": "FEATURE-006: E2E Testing & Deploy",
       "checked": false,
@@ -207,14 +178,13 @@
       "status": "Backlog",
       "startDate": "2026-01-23",
       "endDate": "TBD",
-      "estimateHours": 1
+      "estimateHours": 15
     },
     {
-      "stableId": "5008db32c977c3c032dea18b080c98b3c1065970",
-      "canonicalKey": null,
+      "stableId": "29cd13290e8f2b9c0ee9e104825c8b2ec95cd329",
+      "canonicalKey": "01KFRC0WDGRWM3Q9FX7WX3RWZ4",
       "explicitId": "TASK-001",
-      "parentStableId": "c54dd7667d56a20d33d430d555515e89a78cf1a3",
-      "file": "docs/plans/PLAN.md",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 94,
       "text": "TASK-001: Acceptance Criteria Validation",
       "checked": false,
@@ -227,14 +197,16 @@
       "status": "Backlog",
       "startDate": "2026-01-23",
       "endDate": "TBD",
-      "estimateHours": 1
-    },
+      "estimateHours": 12
+    }
+  ],
+  "subtasks": [
     {
-      "stableId": "fe8636e29ee26ce4f3bda93385c88994d083f84b",
-      "canonicalKey": null,
+      "stableId": "53cceb32a76fe8fd756565de68a5c1dc612894e2",
+      "canonicalKey": "01KFRC0WDFD8Z2F8Y0ZZ7E6VDZ",
       "explicitId": null,
-      "parentStableId": "29d760b9e8080a31dfd20303e2449d6e4bfef06a",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "11448e119b730372d735749488e28fc8cc62cae7",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 47,
       "text": "VoteCast event ingestion (→ votes table)",
       "checked": true,
@@ -252,11 +224,11 @@
       "estimateHours": 8
     },
     {
-      "stableId": "3fac701f314f0a784174685be1ee870a4a11c95d",
-      "canonicalKey": null,
+      "stableId": "f5bbf54c501dd862a79f23aecacc0d1cdc3bdef2",
+      "canonicalKey": "01KFRC0WDFD8Z2F8Y0ZZ7E6VE0",
       "explicitId": null,
-      "parentStableId": "29d760b9e8080a31dfd20303e2449d6e4bfef06a",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "11448e119b730372d735749488e28fc8cc62cae7",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 48,
       "text": "ProposalCreated event ingestion (→ proposals table)",
       "checked": true,
@@ -274,11 +246,11 @@
       "estimateHours": 8
     },
     {
-      "stableId": "acd9bd6bf35e10034e4fd8424d67f7f3587c939c",
-      "canonicalKey": null,
+      "stableId": "13524b6e7ec941c862d53617dae0b0028973f885",
+      "canonicalKey": "01KFRC0WDFD8Z2F8Y0ZZ7E6VE1",
       "explicitId": null,
-      "parentStableId": "29d760b9e8080a31dfd20303e2449d6e4bfef06a",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "11448e119b730372d735749488e28fc8cc62cae7",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 49,
       "text": "ProposalExecuted event ingestion (→ executions table)",
       "checked": true,
@@ -296,11 +268,11 @@
       "estimateHours": 8
     },
     {
-      "stableId": "03474c0fc79462df037674a7238f952cadefb400",
-      "canonicalKey": null,
+      "stableId": "6dbb4f5ce1f23cadf6aeee39f3e87e5d8a257f46",
+      "canonicalKey": "01KFRC0WDFD8Z2F8Y0ZZ7E6VE2",
       "explicitId": null,
-      "parentStableId": "29d760b9e8080a31dfd20303e2449d6e4bfef06a",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "11448e119b730372d735749488e28fc8cc62cae7",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 50,
       "text": "Reorg detection and block rollback",
       "checked": true,
@@ -319,11 +291,11 @@
       "estimateHours": 8
     },
     {
-      "stableId": "c832392ecf48f7fd3f9801f6881482b5cfa7e46d",
-      "canonicalKey": null,
+      "stableId": "9fe7430ef1ef7a68358c5c1a7aafe8a9c382369a",
+      "canonicalKey": "01KFRC0WDFD8Z2F8Y0ZZ7E6VE3",
       "explicitId": null,
-      "parentStableId": "29d760b9e8080a31dfd20303e2449d6e4bfef06a",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "11448e119b730372d735749488e28fc8cc62cae7",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 51,
       "text": "Unique constraints on (blockHash, logIndex, eventType) for idempotency",
       "checked": true,
@@ -341,11 +313,11 @@
       "estimateHours": 8
     },
     {
-      "stableId": "f70e8937587628ac53d5129144adcf841cfb351f",
-      "canonicalKey": null,
+      "stableId": "dff5c641dbb479c959bf7e43b46dcd274e26cafd",
+      "canonicalKey": "01KFRC0WDFD8Z2F8Y0ZZ7E6VE5",
       "explicitId": null,
-      "parentStableId": "c75245479f8b82d19ababfa776c72feb5b046e28",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "99fd03a09bbee9537fdb57ee99f2d92d7c9220d6",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 56,
       "text": "Retry strategy for failed events (exponential backoff, max 5 retries)",
       "checked": true,
@@ -363,11 +335,11 @@
       "estimateHours": 7
     },
     {
-      "stableId": "b787cb329d2cacfc7e3383b0570ee2e380b51b4b",
-      "canonicalKey": null,
+      "stableId": "8d937488ec80bf3e49425d4605cff3a0bcaccfd1",
+      "canonicalKey": "01KFRC0WDFD8Z2F8Y0ZZ7E6VE6",
       "explicitId": null,
-      "parentStableId": "c75245479f8b82d19ababfa776c72feb5b046e28",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "99fd03a09bbee9537fdb57ee99f2d92d7c9220d6",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 57,
       "text": "Circuit breaker for RPC outages (threshold: 5 consecutive failures)",
       "checked": true,
@@ -386,11 +358,11 @@
       "estimateHours": 7
     },
     {
-      "stableId": "d19c706be75ed8a7598e7d0dcb87239dd3700eab",
-      "canonicalKey": null,
+      "stableId": "970c4d8d3c21ce955414e25a30ae2a9d3bb2c52c",
+      "canonicalKey": "01KFRC0WDFD8Z2F8Y0ZZ7E6VE7",
       "explicitId": null,
-      "parentStableId": "c75245479f8b82d19ababfa776c72feb5b046e28",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "99fd03a09bbee9537fdb57ee99f2d92d7c9220d6",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 58,
       "text": "Error recovery and handler restart logic",
       "checked": false,
@@ -408,11 +380,11 @@
       "estimateHours": 7
     },
     {
-      "stableId": "27a86e3e0f25b5fe3bc7b7df686de92aa5e65e42",
-      "canonicalKey": null,
+      "stableId": "f5bcace37937610f2df559d863402c99155771e2",
+      "canonicalKey": "01KFRC0WDFD8Z2F8Y0ZZ7E6VE8",
       "explicitId": null,
-      "parentStableId": "c75245479f8b82d19ababfa776c72feb5b046e28",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "99fd03a09bbee9537fdb57ee99f2d92d7c9220d6",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 59,
       "text": "Comprehensive reorg tests (simulating 1-10 block reorgs)",
       "checked": false,
@@ -430,11 +402,11 @@
       "estimateHours": 7
     },
     {
-      "stableId": "f493e52f87d66b6174e0ecbb08e4dd6ed2d6db51",
-      "canonicalKey": null,
+      "stableId": "ad96ca6b3f6350af86951a7ea3472b4df8a47475",
+      "canonicalKey": "01KFRC0WDFD8Z2F8Y0ZZ7E6VE9",
       "explicitId": null,
-      "parentStableId": "c75245479f8b82d19ababfa776c72feb5b046e28",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "99fd03a09bbee9537fdb57ee99f2d92d7c9220d6",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 60,
       "text": "Database connection pooling and health checks",
       "checked": false,
@@ -453,11 +425,11 @@
       "estimateHours": 7
     },
     {
-      "stableId": "d998bf4ae6e8252d174c3d852db083b36954dbcc",
-      "canonicalKey": null,
+      "stableId": "b3476ffbd709d46eb021a2fa1aec4183e057a0ab",
+      "canonicalKey": "01KFRC0WDFD8Z2F8Y0ZZ7E6VEB",
       "explicitId": null,
-      "parentStableId": "d3488b3d5d221ce624da7863caf997e121ef7ac4",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "d533ddc098b141fcea1c86532ee3a82bb40ac9d9",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 65,
       "text": "Prometheus metrics (indexing lag, event count, error rate)",
       "checked": false,
@@ -476,11 +448,11 @@
       "estimateHours": 8
     },
     {
-      "stableId": "49d877ffe86ff193db189c30e01847bd983e3639",
-      "canonicalKey": null,
+      "stableId": "83a6e1df5170392beabd53c2618fca221de1e17a",
+      "canonicalKey": "01KFRC0WDFD8Z2F8Y0ZZ7E6VEC",
       "explicitId": null,
-      "parentStableId": "d3488b3d5d221ce624da7863caf997e121ef7ac4",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "d533ddc098b141fcea1c86532ee3a82bb40ac9d9",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 66,
       "text": "Structured logging with winston (debug, info, warn, error levels)",
       "checked": false,
@@ -498,11 +470,11 @@
       "estimateHours": 6
     },
     {
-      "stableId": "293cbc47eee1feb4815987c87b2160ebdde88776",
-      "canonicalKey": null,
+      "stableId": "663e95ae2ea3444cace95142d20d1b0bf4f6a42a",
+      "canonicalKey": "01KFRC0WDGRWM3Q9FX7WX3RWYK",
       "explicitId": null,
-      "parentStableId": "d3488b3d5d221ce624da7863caf997e121ef7ac4",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "d533ddc098b141fcea1c86532ee3a82bb40ac9d9",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 67,
       "text": "Grafana dashboards (indexing status, RPC health, database performance)",
       "checked": false,
@@ -520,11 +492,11 @@
       "estimateHours": 8
     },
     {
-      "stableId": "9b98546e4b32c8412129760a619183484e8dbefc",
-      "canonicalKey": null,
+      "stableId": "13b770dc8ebd00cab3325f2852c0898f4e8717a3",
+      "canonicalKey": "01KFRC0WDGRWM3Q9FX7WX3RWYM",
       "explicitId": null,
-      "parentStableId": "d3488b3d5d221ce624da7863caf997e121ef7ac4",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "d533ddc098b141fcea1c86532ee3a82bb40ac9d9",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 68,
       "text": "Alert rules (indexing lag >60s, error rate >0.1%, RPC unavailable)",
       "checked": false,
@@ -542,11 +514,11 @@
       "estimateHours": 8
     },
     {
-      "stableId": "eda7ceafde275b73a06fb71984c07dd5e9e7bf25",
-      "canonicalKey": null,
+      "stableId": "c6216129f7472973907b171000d978ef552aa0c1",
+      "canonicalKey": "01KFRC0WDGRWM3Q9FX7WX3RWYP",
       "explicitId": null,
-      "parentStableId": "988fd3c38444e5b8b092d9bb99f31a475ec0d15d",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "8a052000bb663da4f51c836b5577a60a2efbca36",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 73,
       "text": "Metadata fetch with 5s timeout (IPFS gateway)",
       "checked": true,
@@ -564,11 +536,11 @@
       "estimateHours": 5
     },
     {
-      "stableId": "524a2a71fd0b7dfd2a834e13153fb72dd4557785",
-      "canonicalKey": null,
+      "stableId": "ef942bc40c0b911d944a40a3efcdcd2ee8d2a362",
+      "canonicalKey": "01KFRC0WDGRWM3Q9FX7WX3RWYQ",
       "explicitId": null,
-      "parentStableId": "988fd3c38444e5b8b092d9bb99f31a475ec0d15d",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "8a052000bb663da4f51c836b5577a60a2efbca36",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 74,
       "text": "Fallback chain: on-chain metadata → local cache → placeholder",
       "checked": false,
@@ -586,11 +558,11 @@
       "estimateHours": 6
     },
     {
-      "stableId": "3abcb7f1c8ce9b3379cb1bbebff2e747e44505ba",
-      "canonicalKey": null,
+      "stableId": "e8fbad9287f2664033dd8ddf6143ccae65bdad87",
+      "canonicalKey": "01KFRC0WDGRWM3Q9FX7WX3RWYR",
       "explicitId": null,
-      "parentStableId": "988fd3c38444e5b8b092d9bb99f31a475ec0d15d",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "8a052000bb663da4f51c836b5577a60a2efbca36",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 75,
       "text": "IPFS gateway rotation (multiple gateway URLs)",
       "checked": false,
@@ -609,11 +581,11 @@
       "estimateHours": 5
     },
     {
-      "stableId": "c7f9f37058c12c90be73731e46e9cd94c824dfbc",
-      "canonicalKey": null,
+      "stableId": "a0095e1385916e6e69bd87b3d1976b4d78ee63fb",
+      "canonicalKey": "01KFRC0WDGRWM3Q9FX7WX3RWYS",
       "explicitId": null,
-      "parentStableId": "988fd3c38444e5b8b092d9bb99f31a475ec0d15d",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "8a052000bb663da4f51c836b5577a60a2efbca36",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 76,
       "text": "Caching strategy (TTL: 24h for valid metadata, 1h for failures)",
       "checked": false,
@@ -631,11 +603,11 @@
       "estimateHours": 6
     },
     {
-      "stableId": "961445e1badb2e9b6e06375259d8668099cacbe5",
-      "canonicalKey": null,
+      "stableId": "9f62aa14e6cb19ca2ce8f6e8a1267fe5b9fd34ac",
+      "canonicalKey": "01KFRC0WDGRWM3Q9FX7WX3RWYT",
       "explicitId": null,
-      "parentStableId": "988fd3c38444e5b8b092d9bb99f31a475ec0d15d",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "8a052000bb663da4f51c836b5577a60a2efbca36",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 77,
       "text": "Metadata validation and integrity checks",
       "checked": false,
@@ -654,11 +626,11 @@
       "estimateHours": 3
     },
     {
-      "stableId": "7b166a917f88166aaa5b38e2ff483eae3431ba1e",
-      "canonicalKey": null,
+      "stableId": "8cfc363e19ea7d503208176e44f9b9edc671605c",
+      "canonicalKey": "01KFRC0WDGRWM3Q9FX7WX3RWYW",
       "explicitId": null,
-      "parentStableId": "c5600a562ab684b22a2ab577cc10afbcece26066",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "c596412895fe8a4f09d63348a618caac452e176b",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 82,
       "text": "Native token execution detection and marking",
       "checked": false,
@@ -676,11 +648,11 @@
       "estimateHours": 8
     },
     {
-      "stableId": "68565788929def8fc609d797e89e9d29cc597d35",
-      "canonicalKey": null,
+      "stableId": "61f89c5bad02342f206b45f8f499aa92bd68f950",
+      "canonicalKey": "01KFRC0WDGRWM3Q9FX7WX3RWYX",
       "explicitId": null,
-      "parentStableId": "c5600a562ab684b22a2ab577cc10afbcece26066",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "c596412895fe8a4f09d63348a618caac452e176b",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 83,
       "text": "Native token vote tracking",
       "checked": false,
@@ -698,11 +670,11 @@
       "estimateHours": 6
     },
     {
-      "stableId": "73f9584a7b6035333b458ad00218768462845e2e",
-      "canonicalKey": null,
+      "stableId": "bbde17d45016e151eae18209cb5f2ec1472cc9ab",
+      "canonicalKey": "01KFRC0WDGRWM3Q9FX7WX3RWYY",
       "explicitId": null,
-      "parentStableId": "c5600a562ab684b22a2ab577cc10afbcece26066",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "c596412895fe8a4f09d63348a618caac452e176b",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 84,
       "text": "API exposure of native token execution metadata",
       "checked": false,
@@ -720,11 +692,11 @@
       "estimateHours": 6
     },
     {
-      "stableId": "2ec1cf1ea9cb062fdb284cbc4ba71cca345d6008",
-      "canonicalKey": null,
+      "stableId": "34ee17f8fed5917d09271984a73b19b991e455b7",
+      "canonicalKey": "01KFRC0WDGRWM3Q9FX7WX3RWZ0",
       "explicitId": null,
-      "parentStableId": "f9d1367b09f92bcf6a6c850e6359d807d2a1a401",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "e0f69ee0fbd94e16d9554d16a531af55531385d0",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 89,
       "text": "Integration tests: proposal lifecycle (create → vote → execute)",
       "checked": false,
@@ -742,11 +714,11 @@
       "estimateHours": 5
     },
     {
-      "stableId": "d384db3a68dd986de4975b2bf7699d47c80ed0e4",
-      "canonicalKey": null,
+      "stableId": "a245117ea3d07e0a42d9731804008365bc40674b",
+      "canonicalKey": "01KFRC0WDGRWM3Q9FX7WX3RWZ1",
       "explicitId": null,
-      "parentStableId": "f9d1367b09f92bcf6a6c850e6359d807d2a1a401",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "e0f69ee0fbd94e16d9554d16a531af55531385d0",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 90,
       "text": "Load testing: peak traffic simulation (1000+ events/block)",
       "checked": false,
@@ -765,11 +737,11 @@
       "estimateHours": 4
     },
     {
-      "stableId": "5e6951d7c1b760ad87a20f5679d23ac6003f8065",
-      "canonicalKey": null,
+      "stableId": "3373fe7f312cffdfded279c69a1d9667bfe8f9ef",
+      "canonicalKey": "01KFRC0WDGRWM3Q9FX7WX3RWZ2",
       "explicitId": null,
-      "parentStableId": "f9d1367b09f92bcf6a6c850e6359d807d2a1a401",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "e0f69ee0fbd94e16d9554d16a531af55531385d0",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 91,
       "text": "Production runbook and escalation procedures",
       "checked": false,
@@ -787,11 +759,11 @@
       "estimateHours": 3
     },
     {
-      "stableId": "35429c5b5393120d2790068279298eb2a26b86f0",
-      "canonicalKey": null,
+      "stableId": "58a734dee0cac0e90bf4a279f6229560cad234fa",
+      "canonicalKey": "01KFRC0WDGRWM3Q9FX7WX3RWZ3",
       "explicitId": null,
-      "parentStableId": "f9d1367b09f92bcf6a6c850e6359d807d2a1a401",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "e0f69ee0fbd94e16d9554d16a531af55531385d0",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 92,
       "text": "Deployment and smoke tests on Harmony mainnet",
       "checked": false,
@@ -809,11 +781,11 @@
       "estimateHours": 3
     },
     {
-      "stableId": "75f5be8b64c20837707b97603e6b472c167cc288",
-      "canonicalKey": null,
+      "stableId": "9c707ac7ae07f1898705d6741941b4fa16345d3d",
+      "canonicalKey": "01KFRC0WDGRWM3Q9FX7WX3RWZ5",
       "explicitId": null,
-      "parentStableId": "5008db32c977c3c032dea18b080c98b3c1065970",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "29cd13290e8f2b9c0ee9e104825c8b2ec95cd329",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 97,
       "text": "Event Handling: All events captured and deduplicated",
       "checked": false,
@@ -830,11 +802,11 @@
       "estimateHours": 2
     },
     {
-      "stableId": "91fbad9580036c565e44348a20291bfedc75ec05",
-      "canonicalKey": null,
+      "stableId": "d88edb9b7dbbb8aa077aa8ca75ea26450f938370",
+      "canonicalKey": "01KFRC0WDGRWM3Q9FX7WX3RWZ6",
       "explicitId": null,
-      "parentStableId": "5008db32c977c3c032dea18b080c98b3c1065970",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "29cd13290e8f2b9c0ee9e104825c8b2ec95cd329",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 98,
       "text": "Reorg Recovery: Tested with 1-10 block reorgs; no duplicates",
       "checked": false,
@@ -851,11 +823,11 @@
       "estimateHours": 2
     },
     {
-      "stableId": "154458b8891965fddd2b48476c62152e6ed6e8b0",
-      "canonicalKey": null,
+      "stableId": "e746d22d8039b47539d54dc81856d304fcd555f1",
+      "canonicalKey": "01KFRC0WDH1VE2B7YB53K43BMS",
       "explicitId": null,
-      "parentStableId": "5008db32c977c3c032dea18b080c98b3c1065970",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "29cd13290e8f2b9c0ee9e104825c8b2ec95cd329",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 99,
       "text": "API Endpoints: Status, events, proposals, metadata endpoints operational",
       "checked": false,
@@ -872,11 +844,11 @@
       "estimateHours": 2
     },
     {
-      "stableId": "226e8e5c52a79237b8131c15259df59f737682bf",
-      "canonicalKey": null,
+      "stableId": "714dc83450f087cbd10dc7e00b99db95f99bc904",
+      "canonicalKey": "01KFRC0WDH1VE2B7YB53K43BMT",
       "explicitId": null,
-      "parentStableId": "5008db32c977c3c032dea18b080c98b3c1065970",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "29cd13290e8f2b9c0ee9e104825c8b2ec95cd329",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 100,
       "text": "Error Handling: Retry logic + circuit breaker tested",
       "checked": false,
@@ -893,11 +865,11 @@
       "estimateHours": 2
     },
     {
-      "stableId": "8e66c1cceb62c119283603ee514ae7e735e2e83a",
-      "canonicalKey": null,
+      "stableId": "5b9c5901f6081ad98e83312dd17b5d9a4f57cc28",
+      "canonicalKey": "01KFRC0WDH1VE2B7YB53K43BMV",
       "explicitId": null,
-      "parentStableId": "5008db32c977c3c032dea18b080c98b3c1065970",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "29cd13290e8f2b9c0ee9e104825c8b2ec95cd329",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 101,
       "text": "Database Health: Connection pooling, indices, query performance",
       "checked": false,
@@ -914,11 +886,11 @@
       "estimateHours": 2
     },
     {
-      "stableId": "04a79b38a65d0f1c6870bc7efcd335611ada1fcd",
-      "canonicalKey": null,
+      "stableId": "34fd88f17fe6bf560b32714ad8fc8ddfd7b857a7",
+      "canonicalKey": "01KFRC0WDH1VE2B7YB53K43BMW",
       "explicitId": null,
-      "parentStableId": "5008db32c977c3c032dea18b080c98b3c1065970",
-      "file": "docs/plans/PLAN.md",
+      "parentStableId": "29cd13290e8f2b9c0ee9e104825c8b2ec95cd329",
+      "file": "../../../../../../opt/Aragon-app-backend/docs/plans/PLAN.md",
       "line": 102,
       "text": "Production Deployment: Smoke tests passed on Harmony mainnet",
       "checked": false,
