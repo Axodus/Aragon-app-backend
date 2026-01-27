@@ -1,19 +1,34 @@
 {
   "version": "1.0",
   "repo": "Axodus/Aragon-app-backend",
-  "updatedAt": "2026-01-25T22:44:24.336Z",
-  "planFingerprint": "a392654744d5cab8cc9685ea88394121bd2a5ecc",
+  "updatedAt": "2026-01-27T16:59:30.210Z",
+  "planFingerprint": "8b23131862dab966325616dc58c23780c7ceb09f",
   "planFiles": [
     {
       "path": "PLAN.md",
-      "sha1": "934cf9cc782da8331abec4e022a32d0c69b743a2"
+      "sha1": "a4e1fc5b7e0a25ad8e6ab563e3d565fc24925c6b"
     }
   ],
   "items": [
     {
+      "stableId": "53f77a3f274c68516120fa249eb15c64b200222c",
+      "explicitId": "PLAN",
+      "kind": "task",
+      "issueNumber": 2,
+      "issueNodeId": "I_kwDOQmHY_M7kqyla",
+      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/2",
+      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkWBTg",
+      "title": "Sprint #2 Plan — Indexing Resilience & Error Recovery",
+      "source": {
+        "file": "PLAN.md",
+        "line": 1
+      },
+      "lastSyncedAt": "2026-01-27T16:59:30.198Z"
+    },
+    {
       "stableId": "a014fabeef8a546bd55d1dffdd9354791c3ec9b8",
       "explicitId": "TASK-001",
-      "kind": "task",
+      "kind": "subtask",
       "issueNumber": 283,
       "issueNodeId": "I_kwDOQmHY_M7ls8y5",
       "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/283",
@@ -23,12 +38,12 @@
         "file": "PLAN.md",
         "line": 13
       },
-      "lastSyncedAt": "2026-01-25T22:44:24.325Z"
+      "lastSyncedAt": "2026-01-27T16:59:30.199Z"
     },
     {
       "stableId": "12b7340c06524c7352a32185d40272000aaaebbe",
       "explicitId": "TASK-002",
-      "kind": "task",
+      "kind": "subtask",
       "issueNumber": 284,
       "issueNodeId": "I_kwDOQmHY_M7ls80F",
       "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/284",
@@ -38,12 +53,12 @@
         "file": "PLAN.md",
         "line": 14
       },
-      "lastSyncedAt": "2026-01-25T22:44:24.326Z"
+      "lastSyncedAt": "2026-01-27T16:59:30.199Z"
     },
     {
       "stableId": "eb0aca5545f84d2ee2a39f6364f2216818a2f98c",
       "explicitId": "TASK-003",
-      "kind": "task",
+      "kind": "subtask",
       "issueNumber": 285,
       "issueNodeId": "I_kwDOQmHY_M7ls81H",
       "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/285",
@@ -53,12 +68,12 @@
         "file": "PLAN.md",
         "line": 15
       },
-      "lastSyncedAt": "2026-01-25T22:44:24.326Z"
+      "lastSyncedAt": "2026-01-27T16:59:30.199Z"
     },
     {
       "stableId": "bc4599842336f2d5c085c5f3214bbf527f0d8cb5",
       "explicitId": "TASK-004",
-      "kind": "task",
+      "kind": "subtask",
       "issueNumber": 286,
       "issueNodeId": "I_kwDOQmHY_M7ls82C",
       "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/286",
@@ -68,12 +83,12 @@
         "file": "PLAN.md",
         "line": 16
       },
-      "lastSyncedAt": "2026-01-25T22:44:24.326Z"
+      "lastSyncedAt": "2026-01-27T16:59:30.199Z"
     },
     {
       "stableId": "919345533570ac5078320deaffb3bff6241ba2cf",
       "explicitId": "TASK-005",
-      "kind": "task",
+      "kind": "subtask",
       "issueNumber": 287,
       "issueNodeId": "I_kwDOQmHY_M7ls83B",
       "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/287",
@@ -83,7 +98,7 @@
         "file": "PLAN.md",
         "line": 17
       },
-      "lastSyncedAt": "2026-01-25T22:44:24.326Z"
+      "lastSyncedAt": "2026-01-27T16:59:30.199Z"
     }
   ]
 }

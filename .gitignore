@@ -23,3 +23,4 @@ CLAUDE.md
 .yarn
 .gitissuer
 .gitissuer/state.json
+tmp/
