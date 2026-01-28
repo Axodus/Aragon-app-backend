@@ -7,6 +7,7 @@ import type LogMetadata from '@models/schema/logMetadata'
 import DbOperations from '@models/utils/dbOperations'
 import type Dao from '@models/schema/dao'
 import type Plugin from '@models/schema/plugin'
+import config from '@config'
 import { PluginSettingHandler } from '@src/handlers/pluginSettingHandler'
 import { PluginSlug } from '@helpers/pluginSlug'
 import Utils from '@helpers/utils'
@@ -33,7 +34,20 @@ export const MetadataHandler = {
 
     try {
       const metadataUri = Web3Utils.extractMetadataUri(parsedEvent.args.metadata)
-      const ipfsMetadata = await IPFSModule.fetchMetadata(metadataUri!, { retries: 4 })
+      const ipfsMetadata = await IPFSModule.fetchMetadata(metadataUri!, {
+        retries: 4,
+        timeout: config.IPFS.METADATA_FETCH_TIMEOUT,
+      })
+
+      if (!ipfsMetadata) {
+        logger.warn('Metadata fetch failed or timed out, storing fallback record', llo({
+          metadataUri,
+          network,
+          transactionHash,
+          transactionIndex,
+          logIndex,
+        }))
+      }
 
       const logMetadata = {
         network,
@@ -43,15 +57,15 @@ export const MetadataHandler = {
         metadataUri: metadataUri!,
         fetchedMetadata: !!ipfsMetadata,
         blockNumber,
-        name: ipfsMetadata?.name!,
-        description: ipfsMetadata?.description!,
-        avatar: Utils.parseAvatar(ipfsMetadata?.avatar),
-        links: ipfsMetadata?.links!,
-        processKey: ipfsMetadata?.processKey!,
-        stageNames: ipfsMetadata?.stageNames!,
-        blockedCountries: ipfsMetadata?.blockedCountries || [],
-        termsConditionsUrl: ipfsMetadata?.termsConditionsUrl || null,
-        enableOfacCheck: ipfsMetadata?.enableOfacCheck || null,
+        name: ipfsMetadata?.name ?? null,
+        description: ipfsMetadata?.description ?? null,
+        avatar: ipfsMetadata?.avatar ? Utils.parseAvatar(ipfsMetadata.avatar) : null,
+        links: ipfsMetadata?.links ?? [],
+        processKey: ipfsMetadata?.processKey ?? null,
+        stageNames: ipfsMetadata?.stageNames ?? [],
+        blockedCountries: ipfsMetadata?.blockedCountries ?? [],
+        termsConditionsUrl: ipfsMetadata?.termsConditionsUrl ?? null,
+        enableOfacCheck: ipfsMetadata?.enableOfacCheck ?? null,
       }
 
       if (daoExists) {

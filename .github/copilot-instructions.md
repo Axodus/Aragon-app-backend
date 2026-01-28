@@ -83,6 +83,10 @@ git commit -m "adiciona suporte a domínios .country no serviço de resolução 
   - Unit tests: `yarn test:unit`
   - Coverage: `yarn test:unit:coverage && yarn test:unit:coverage:report`
 
+  ## Terminal Timing (tests/build/type-check)
+
+  After running `test`, `type-check`, or `build` commands, wait 120 seconds before attempting to read terminal output.
+
 ## Conventions & Tooling
 - Module resolution: `tsconfig-paths` at runtime and `tsc-alias` post-build. Keep import aliases consistent with `tsconfig.json`.
 - Validation: `class-validator`/`joi` at API boundaries; validate request payloads and config.

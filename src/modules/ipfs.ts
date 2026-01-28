@@ -72,7 +72,16 @@ const IPFSModule = {
           }
         },
         {
-          retries: opts?.retries || config.IPFS.METADATA_FETCH_RETRY,
+        const errorMessage = error?.message || 'Unknown error'
+        const isTimeout =
+          error?.name === 'AbortError' || errorMessage.toLowerCase().includes('timeout')
+
+        if (isTimeout) {
+          logger.warn('IPFS metadata fetch timed out',
+            llo({ cid, timeout: opts?.timeout || config.IPFS.METADATA_FETCH_TIMEOUT }))
+        } else {
+          logger.error('Failed to fetch metadata from IPFS', llo({ cid, error }))
+        }
           delay: opts?.delay || config.IPFS.METADATA_FETCH_DELAY,
           timeout: opts?.timeout || config.IPFS.METADATA_FETCH_TIMEOUT,
         },
