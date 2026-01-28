@@ -1,104 +1,299 @@
 {
   "version": "1.0",
-  "repo": "Axodus/Aragon-app-backend",
-  "updatedAt": "2026-01-28T12:48:49.125Z",
-  "planFingerprint": "8b23131862dab966325616dc58c23780c7ceb09f",
+  "repo": "mzfshark/Aragon-app-backend",
+  "updatedAt": "2026-01-28T22:39:18.956Z",
+  "planFingerprint": "7ff7d6b3377609b0ffc4c79f34a549cfd9d1a35e",
   "planFiles": [
     {
-      "path": "PLAN.md",
-      "sha1": "a4e1fc5b7e0a25ad8e6ab563e3d565fc24925c6b"
+      "path": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
+      "sha1": "42962760354055443e7eda67d8af2a3bc5e74485"
     }
   ],
   "items": [
     {
-      "stableId": "53f77a3f274c68516120fa249eb15c64b200222c",
-      "explicitId": "PLAN",
+      "stableId": "f9dc0f0ba9ef20b9e6b8f2f0673481f685e01c0d",
+      "explicitId": "PLAN-HARMONYVOTING-INDEXER",
       "kind": "task",
-      "issueNumber": 2,
-      "issueNodeId": "I_kwDOQmHY_M7kqyla",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/2",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkWBTg",
-      "title": "Sprint #2 Plan — Indexing Resilience & Error Recovery",
+      "issueNumber": 63,
+      "issueNodeId": "I_kwDOQmHbmc7miPfO",
+      "issueUrl": "https://github.com/mzfshark/Aragon-app-backend/issues/63",
+      "projectItemId": null,
+      "title": "[PLAN] HarmonyVoting Indexer & Backend Fixes",
       "source": {
-        "file": "PLAN.md",
+        "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
         "line": 1
       },
-      "lastSyncedAt": "2026-01-28T12:48:49.114Z"
+      "lastSyncedAt": "2026-01-28T22:39:18.946Z"
     },
     {
-      "stableId": "a014fabeef8a546bd55d1dffdd9354791c3ec9b8",
-      "explicitId": "TASK-001",
+      "stableId": "18520a3d72339155b8ea87db02ed8317a49137e2",
+      "explicitId": null,
       "kind": "subtask",
-      "issueNumber": 283,
-      "issueNodeId": "I_kwDOQmHY_M7ls8y5",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/283",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNoAw",
-      "title": "TASK-001: Reorg Tests & Simulation. (Issue #57)",
+      "issueNumber": 64,
+      "issueNodeId": "I_kwDOQmHbmc7miPfu",
+      "issueUrl": "https://github.com/mzfshark/Aragon-app-backend/issues/64",
+      "projectItemId": null,
+      "title": "[PLAN-HarmonyVotingBE | SPRINT-001] Diagnosis & Schema Audit",
       "source": {
-        "file": "PLAN.md",
-        "line": 13
+        "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
+        "line": 49
       },
-      "lastSyncedAt": "2026-01-28T12:48:49.114Z"
+      "lastSyncedAt": "2026-01-28T22:39:18.947Z"
     },
     {
-      "stableId": "12b7340c06524c7352a32185d40272000aaaebbe",
-      "explicitId": "TASK-002",
+      "stableId": "e86ade59fa5107bb3dbe6526a0d802a2e2e7ac01",
+      "explicitId": null,
       "kind": "subtask",
-      "issueNumber": 284,
-      "issueNodeId": "I_kwDOQmHY_M7ls80F",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/284",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNoA8",
-      "title": "TASK-002: Connection Pooling & RPC Failover. (Issue #58)",
+      "issueNumber": 65,
+      "issueNodeId": "I_kwDOQmHbmc7miPgI",
+      "issueUrl": "https://github.com/mzfshark/Aragon-app-backend/issues/65",
+      "projectItemId": null,
+      "title": "[PLAN-HarmonyVotingBE | SPRINT-002] Implementation & Backfill",
       "source": {
-        "file": "PLAN.md",
-        "line": 14
+        "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
+        "line": 55
       },
-      "lastSyncedAt": "2026-01-28T12:48:49.114Z"
+      "lastSyncedAt": "2026-01-28T22:39:18.947Z"
     },
     {
-      "stableId": "eb0aca5545f84d2ee2a39f6364f2216818a2f98c",
-      "explicitId": "TASK-003",
+      "stableId": "5db349edc52bf3bfe7d78b91885bac3e6a4f233e",
+      "explicitId": null,
       "kind": "subtask",
-      "issueNumber": 285,
-      "issueNodeId": "I_kwDOQmHY_M7ls81H",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/285",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNoBA",
-      "title": "TASK-003: Backfill & Replay Logic. (Issue #59)",
+      "issueNumber": 66,
+      "issueNodeId": "I_kwDOQmHbmc7miPhU",
+      "issueUrl": "https://github.com/mzfshark/Aragon-app-backend/issues/66",
+      "projectItemId": null,
+      "title": "[PLAN-HarmonyVotingBE | SPRINT-001 | TASK-001] Audit proposal model for HarmonyVoting support",
       "source": {
-        "file": "PLAN.md",
-        "line": 15
+        "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
+        "line": 51
       },
-      "lastSyncedAt": "2026-01-28T12:48:49.114Z"
+      "lastSyncedAt": "2026-01-28T22:39:18.947Z"
     },
     {
-      "stableId": "bc4599842336f2d5c085c5f3214bbf527f0d8cb5",
-      "explicitId": "TASK-004",
+      "stableId": "00d2f7eb77b809979194a8c847a50b0454cdcf10",
+      "explicitId": null,
       "kind": "subtask",
-      "issueNumber": 286,
-      "issueNodeId": "I_kwDOQmHY_M7ls82C",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/286",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNoBE",
-      "title": "TASK-004: Observability Metrics & Alerts. (Issue #60)",
+      "issueNumber": 67,
+      "issueNodeId": "I_kwDOQmHbmc7miPh0",
+      "issueUrl": "https://github.com/mzfshark/Aragon-app-backend/issues/67",
+      "projectItemId": null,
+      "title": "[PLAN-HarmonyVotingBE | SPRINT-001 | TASK-002] Check indexer event handlers",
       "source": {
-        "file": "PLAN.md",
-        "line": 16
+        "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
+        "line": 52
       },
-      "lastSyncedAt": "2026-01-28T12:48:49.114Z"
+      "lastSyncedAt": "2026-01-28T22:39:18.947Z"
     },
     {
-      "stableId": "919345533570ac5078320deaffb3bff6241ba2cf",
-      "explicitId": "TASK-005",
+      "stableId": "65050b638164621ab473aedb00dcb48d86219d3c",
+      "explicitId": null,
       "kind": "subtask",
-      "issueNumber": 287,
-      "issueNodeId": "I_kwDOQmHY_M7ls83B",
-      "issueUrl": "https://github.com/Axodus/Aragon-app-backend/issues/287",
-      "projectItemId": "PVTI_lADOBfRHZM4BM-PBzgkNoBU",
-      "title": "TASK-005: Tests, Docs & Migration Scripts. (Issue #61)",
+      "issueNumber": 68,
+      "issueNodeId": "I_kwDOQmHbmc7miPiP",
+      "issueUrl": "https://github.com/mzfshark/Aragon-app-backend/issues/68",
+      "projectItemId": null,
+      "title": "[PLAN-HarmonyVotingBE | SPRINT-001 | TASK-003] Review API endpoints for proposal queries",
       "source": {
-        "file": "PLAN.md",
-        "line": 17
+        "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
+        "line": 53
       },
-      "lastSyncedAt": "2026-01-28T12:48:49.114Z"
+      "lastSyncedAt": "2026-01-28T22:39:18.947Z"
+    },
+    {
+      "stableId": "eb63a5233a0bfaa4f72ab46ea1f421f908108b7e",
+      "explicitId": null,
+      "kind": "subtask",
+      "issueNumber": 69,
+      "issueNodeId": "I_kwDOQmHbmc7miPjq",
+      "issueUrl": "https://github.com/mzfshark/Aragon-app-backend/issues/69",
+      "projectItemId": null,
+      "title": "[PLAN-HarmonyVotingBE | SPRINT-002 | BUG-001] Add HarmonyVoting proposal indexing",
+      "source": {
+        "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
+        "line": 57
+      },
+      "lastSyncedAt": "2026-01-28T22:39:18.947Z"
+    },
+    {
+      "stableId": "14f98f88acd2497bc9acbd6a7c4c10516c2f4e9a",
+      "explicitId": null,
+      "kind": "subtask",
+      "issueNumber": 70,
+      "issueNodeId": "I_kwDOQmHbmc7miPkU",
+      "issueUrl": "https://github.com/mzfshark/Aragon-app-backend/issues/70",
+      "projectItemId": null,
+      "title": "[PLAN-HarmonyVotingBE | SPRINT-002 | BUG-002] Index validator configuration events",
+      "source": {
+        "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
+        "line": 58
+      },
+      "lastSyncedAt": "2026-01-28T22:39:18.947Z"
+    },
+    {
+      "stableId": "24f51bb01b53df8a641238009e73abb9d5f1e8ba",
+      "explicitId": null,
+      "kind": "subtask",
+      "issueNumber": 71,
+      "issueNodeId": "I_kwDOQmHbmc7miPlB",
+      "issueUrl": "https://github.com/mzfshark/Aragon-app-backend/issues/71",
+      "projectItemId": null,
+      "title": "[PLAN-HarmonyVotingBE | SPRINT-002 | TASK-001] Add delegation tracking",
+      "source": {
+        "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
+        "line": 59
+      },
+      "lastSyncedAt": "2026-01-28T22:39:18.947Z"
+    },
+    {
+      "stableId": "171b29d7b1e458b64b8c6a06f24dd1e423359d86",
+      "explicitId": null,
+      "kind": "subtask",
+      "issueNumber": 72,
+      "issueNodeId": "I_kwDOQmHbmc7miPlo",
+      "issueUrl": "https://github.com/mzfshark/Aragon-app-backend/issues/72",
+      "projectItemId": null,
+      "title": "[PLAN-HarmonyVotingBE | SPRINT-002 | TASK-002] Fix TypeScript errors in scripts",
+      "source": {
+        "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
+        "line": 60
+      },
+      "lastSyncedAt": "2026-01-28T22:39:18.947Z"
+    },
+    {
+      "stableId": "53c7eb7f479b849d67c7557fa9ec1787b3d6cb22",
+      "explicitId": null,
+      "kind": "subtask",
+      "issueNumber": 73,
+      "issueNodeId": "I_kwDOQmHbmc7miPmD",
+      "issueUrl": "https://github.com/mzfshark/Aragon-app-backend/issues/73",
+      "projectItemId": null,
+      "title": "[PLAN-HarmonyVotingBE | SPRINT-002 | TASK-003] Run backfill for historical data",
+      "source": {
+        "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
+        "line": 61
+      },
+      "lastSyncedAt": "2026-01-28T22:39:18.947Z"
+    },
+    {
+      "stableId": "a8b0cc06cad3fbaaa507e629983cd063157831a1",
+      "explicitId": null,
+      "kind": "subtask",
+      "issueNumber": 74,
+      "issueNodeId": "I_kwDOQmHbmc7miPmo",
+      "issueUrl": "https://github.com/mzfshark/Aragon-app-backend/issues/74",
+      "projectItemId": null,
+      "title": "[PLAN-HarmonyVotingBE | SPRINT-002 | TASK-004] Validation tests",
+      "source": {
+        "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
+        "line": 62
+      },
+      "lastSyncedAt": "2026-01-28T22:39:18.947Z"
+    },
+    {
+      "stableId": "338c9040c7549e7af7623c3a7a2a86fdfb714a56",
+      "explicitId": null,
+      "kind": "subtask",
+      "issueNumber": 75,
+      "issueNodeId": "I_kwDOQmHbmc7miPm-",
+      "issueUrl": "https://github.com/mzfshark/Aragon-app-backend/issues/75",
+      "projectItemId": null,
+      "title": "TypeScript errors fixed (`npx tsc --noEmit` passes)",
+      "source": {
+        "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
+        "line": 187
+      },
+      "lastSyncedAt": "2026-01-28T22:39:18.947Z"
+    },
+    {
+      "stableId": "34e84c53671a707964ab5039e4989662c0adc243",
+      "explicitId": null,
+      "kind": "subtask",
+      "issueNumber": 76,
+      "issueNodeId": "I_kwDOQmHbmc7miPnW",
+      "issueUrl": "https://github.com/mzfshark/Aragon-app-backend/issues/76",
+      "projectItemId": null,
+      "title": "HarmonyVoting proposals indexed",
+      "source": {
+        "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
+        "line": 188
+      },
+      "lastSyncedAt": "2026-01-28T22:39:18.947Z"
+    },
+    {
+      "stableId": "201fde1c471a92f058b573082c410fa98a107624",
+      "explicitId": null,
+      "kind": "subtask",
+      "issueNumber": 77,
+      "issueNodeId": "I_kwDOQmHbmc7miPnv",
+      "issueUrl": "https://github.com/mzfshark/Aragon-app-backend/issues/77",
+      "projectItemId": null,
+      "title": "Validator data persisted",
+      "source": {
+        "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
+        "line": 189
+      },
+      "lastSyncedAt": "2026-01-28T22:39:18.947Z"
+    },
+    {
+      "stableId": "8b1060bec86ec91bd9d4c864cb94b6ec84842a33",
+      "explicitId": null,
+      "kind": "subtask",
+      "issueNumber": 78,
+      "issueNodeId": "I_kwDOQmHbmc7miPoO",
+      "issueUrl": "https://github.com/mzfshark/Aragon-app-backend/issues/78",
+      "projectItemId": null,
+      "title": "Delegation events tracked",
+      "source": {
+        "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
+        "line": 190
+      },
+      "lastSyncedAt": "2026-01-28T22:39:18.947Z"
+    },
+    {
+      "stableId": "0898b22b89a379515a8d27dfcd313fd9e526bf83",
+      "explicitId": null,
+      "kind": "subtask",
+      "issueNumber": 79,
+      "issueNodeId": "I_kwDOQmHbmc7miPou",
+      "issueUrl": "https://github.com/mzfshark/Aragon-app-backend/issues/79",
+      "projectItemId": null,
+      "title": "Backfill script runs successfully",
+      "source": {
+        "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
+        "line": 191
+      },
+      "lastSyncedAt": "2026-01-28T22:39:18.947Z"
+    },
+    {
+      "stableId": "5edda102545a33dd174dc121bf45fe836aed3683",
+      "explicitId": null,
+      "kind": "subtask",
+      "issueNumber": 80,
+      "issueNodeId": "I_kwDOQmHbmc7miPpI",
+      "issueUrl": "https://github.com/mzfshark/Aragon-app-backend/issues/80",
+      "projectItemId": null,
+      "title": "API returns HarmonyVoting proposals",
+      "source": {
+        "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
+        "line": 192
+      },
+      "lastSyncedAt": "2026-01-28T22:39:18.947Z"
+    },
+    {
+      "stableId": "80afb0ecc3bf5cdde8e34cf1b1f7a4c11f6f49c6",
+      "explicitId": null,
+      "kind": "subtask",
+      "issueNumber": 81,
+      "issueNodeId": "I_kwDOQmHbmc7miPpi",
+      "issueUrl": "https://github.com/mzfshark/Aragon-app-backend/issues/81",
+      "projectItemId": null,
+      "title": "Unit tests pass",
+      "source": {
+        "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
+        "line": 193
+      },
+      "lastSyncedAt": "2026-01-28T22:39:18.947Z"
     }
   ]
 }
