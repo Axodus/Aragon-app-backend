@@ -1,7 +1,7 @@
 # FEATURE: Backend Feature Tracking — Aragon-app-backend
 
 **Repository:** Aragon-app-backend  
-**Last Updated:** 2026-01-21  
+**Last Updated:** 2026-01-28  
 **Status:** 4 active features | 5 backlog items  
 
 ---
@@ -35,8 +35,8 @@
 **Completion:** 40% (14/35h)
 
 **Subtasks:**
-- [ ] Retry strategy with exponential backoff (max 5 retries)
-- [ ] Circuit breaker for RPC outages (threshold: 5 consecutive failures)
+- [x] Retry strategy with exponential backoff (max 5 retries)
+- [x] Circuit breaker for RPC outages (threshold: 5 consecutive failures)
 - [ ] Handler restart logic and state recovery
 - [ ] Comprehensive reorg tests (1-10 block reorg simulation)
 - [ ] Database connection pooling and health checks
@@ -66,15 +66,15 @@
 
 ---
 
-### FEATURE-004: Metadata Indexing 🟡 PLANNED
-[labels:type:feature, area:backend, area:infra] [status:TODO] [priority:HIGH] [estimate:25h] [start:2026-01-28] [end:2026-02-10]
+### FEATURE-004: Metadata Indexing 🟡 IN_PROGRESS
+[labels:type:feature, area:backend, area:infra] [status:IN_PROGRESS] [priority:HIGH] [estimate:25h] [start:2026-01-28] [end:2026-02-10]
 
 **Description:** IPFS metadata fetching with timeout, fallback chains, and caching strategy.
 
-**Completion:** 0%
+**Completion:** 20%
 
 **Subtasks:**
-- [ ] Metadata fetch with 5s timeout (IPFS gateway)
+- [x] Metadata fetch with 5s timeout (IPFS gateway)
 - [ ] Fallback chain: on-chain metadata → local cache → placeholder
 - [ ] IPFS gateway rotation (multiple gateway URLs for redundancy)
 - [ ] Caching strategy (TTL: 24h for valid, 1h for failures)

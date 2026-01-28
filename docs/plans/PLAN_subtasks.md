@@ -6,7 +6,7 @@ Subtarefas e critérios de aceite para a sprint de retomada sobre indexação e 
 - [ ] Implementar verificação de confirmações configurável antes de marcar eventos como finalizados
   - Acceptance: eventos só são considerados final após N confirmações; testes simulam reorg e confirmam rollback
   - Estimate: 8h
-- [ ] Tornar handlers idempotentes (persist/retry seguro)
+- [x] Tornar handlers idempotentes (persist/retry seguro)
   - Acceptance: reprocessar mesmo evento não cria duplicata nem falha pipeline
   - Estimate: 4h
 

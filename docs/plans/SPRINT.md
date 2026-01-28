@@ -15,7 +15,7 @@
 
 - [x] Handlers cover ProposalCreated/VoteCast [labels:type:task, area:backend, area:indexing] [status:DONE] [priority:high] [estimate:6h] [start:2025-12-18] [end:2025-12-19]
 - [x] Historical indexing enabled (HarmonyVoting) [labels:type:task, area:indexing, area:backend] [status:DONE] [priority:high] [estimate:4h] [start:2025-12-19] [end:2025-12-20]
-- [ ] Reorg-safe idempotency (unique constraints + upsert) [labels:type:task, area:indexing] [status:TODO] [priority:high] [estimate:8h] [start:2026-01-20] [end:2026-01-22]
+- [x] Reorg-safe idempotency (unique constraints + upsert) [labels:type:task, area:indexing] [status:DONE] [priority:high] [estimate:8h] [start:2026-01-20] [end:2026-01-22]
 - [ ] Confirmations + block monitoring [labels:type:task, area:indexing] [status:TODO] [priority:high] [estimate:4h] [start:2026-01-20] [end:2026-01-21]
 - [ ] Catch-up strategy (backfill + checkpointing) [labels:type:task, area:indexing, area:infra] [status:TODO] [priority:high] [estimate:10h] [start:2026-01-22] [end:2026-01-24]
 - [ ] Reorg simulation testing [labels:type:qa, area:indexing] [status:TODO] [priority:high] [estimate:8h] [start:2026-01-25] [end:2026-01-26]

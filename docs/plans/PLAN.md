@@ -140,7 +140,7 @@ Aragon-app-backend is the event indexing service for Harmony HarmonyVoting DAOs.
 ---
 
 **Version:** 2.1  
-**Last Updated:** 2026-01-23  
+**Last Updated:** 2026-01-28  
 **Sprint #1 Status:** ✅ COMPLETE (Reorg-safe idempotency: 20+ unit tests, ReorgDetector service, compound indexes, 2 commits)
 **Next Milestone:** Indexing Resilience (error recovery, reorg tests, connection pooling) starts 2026-01-24
 **Template:** [PLAN.md](https://gist.github.com/mzfshark/2ab8856d6c0efc0dfa9d1f98d2a23fdf)
