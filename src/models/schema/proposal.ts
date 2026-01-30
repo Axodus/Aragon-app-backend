@@ -246,7 +246,7 @@ export default class Proposal extends Model {
   @prop({ type: () => String, required: true })
   public transactionHash!: HexAddress
 
-  @prop({ type: () => Number, required: true })
+  @prop({ type: () => Number })
   public transactionIndex?: number
 
   @prop({ type: () => Number, required: true })
@@ -260,15 +260,6 @@ export default class Proposal extends Model {
 
   @prop({ type: () => String })
   public eventType?: string // ProposalCreated, ProposalExecuted, etc.
-
-  @prop({ type: () => Number })
-  public logIndex?: number
-
-  @prop({ type: () => Number })
-  public transactionIndex?: number
-
-  @prop({ type: () => String })
-  public eventType?: string // ProposalCreated, etc.
 
   @prop({ type: () => Number })
   public blockTimestamp!: number

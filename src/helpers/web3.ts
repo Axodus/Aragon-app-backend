@@ -25,6 +25,22 @@ import { ethers } from 'ethers'
 
 const llo = logger.logMeta.bind(null, { service: 'helpers:Web3Helper' })
 
+async function executeWithPoolFallback<T>(
+  network: NetworksEnum,
+  operation: (provider: any) => Promise<T>,
+  operationName: string,
+): Promise<T> {
+  try {
+    return await rpcPool.executeWithFailover(network, operation, operationName)
+  } catch (error) {
+    const provider = ProviderModule.getAnyRpcProvider(network)
+    if (!provider) {
+      throw error
+    }
+    return await operation(provider)
+  }
+}
+
 const Web3Helper = {
   async supportsInterface(tokenAddress: HexAddress, interfaceId: string, network: NetworksEnum): Promise<boolean> {
     // Use RPC pool with automatic failover
@@ -42,8 +58,8 @@ const Web3Helper = {
   async getBlockNumber(blockNumber: string | number | undefined | BlockTag, network: NetworksEnum): Promise<number> {
     if (blockNumber === 'latest' || blockNumber === undefined) {
       try {
-        // Use RPC pool with automatic failover
-        return await rpcPool.executeWithFailover(
+        // Use RPC pool with automatic failover (fallback to any provider when pool is not configured)
+        return await executeWithPoolFallback(
           network,
           async (provider) => {
             const bn = await retryRequest(async () =>
@@ -64,8 +80,8 @@ const Web3Helper = {
 
   async getBlock(blockNumber: number, network: NetworksEnum): Promise<Block | null> {
     try {
-      // Use RPC pool with automatic failover
-      return await rpcPool.executeWithFailover(
+      // Use RPC pool with automatic failover (fallback to any provider when pool is not configured)
+      return await executeWithPoolFallback(
         network,
         (provider) =>
           retryRequest(async () =>
@@ -81,8 +97,8 @@ const Web3Helper = {
 
   async getBlockHash(blockNumber: number, network: NetworksEnum): Promise<string | null> {
     try {
-      // Use RPC pool with automatic failover
-      return await rpcPool.executeWithFailover(
+      // Use RPC pool with automatic failover (fallback to any provider when pool is not configured)
+      return await executeWithPoolFallback(
         network,
         async (provider) => {
           const block = await retryRequest(async () =>
@@ -100,8 +116,8 @@ const Web3Helper = {
 
   async getLogs(filter: { fromBlock: string; toBlock: string; topics: any }, network: NetworksEnum) {
     try {
-      // Use RPC pool with automatic failover
-      return await rpcPool.executeWithFailover(
+      // Use RPC pool with automatic failover (fallback to any provider when pool is not configured)
+      return await executeWithPoolFallback(
         network,
         (provider) =>
           retryRequest(async () =>
@@ -117,8 +133,8 @@ const Web3Helper = {
 
   async getBlockTimestamp(blockNumber: number, network: NetworksEnum): Promise<number> {
     try {
-      // Use RPC pool with automatic failover
-      return await rpcPool.executeWithFailover(
+      // Use RPC pool with automatic failover (fallback to any provider when pool is not configured)
+      return await executeWithPoolFallback(
         network,
         async (provider) => {
           const block = await retryRequest(async () =>

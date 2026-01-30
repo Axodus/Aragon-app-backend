@@ -169,16 +169,28 @@ export class ResilienceMetrics {
     return ResilienceMetrics.instance
   }
 
+  private static normalizeNetworkLabel(network: NetworksEnum): string {
+    return String(network).split('-')[0]
+  }
+
   static clearInstance(): void {
+    const instance = ResilienceMetrics.instance
     ResilienceMetrics.instance = null
+
+    try {
+      instance?.registry.clear()
+    } catch (error) {
+      logger.debug('Failed to clear ResilienceMetrics registry', llo({ error }))
+    }
   }
 
   // ========== Reorg Metric Recorders ==========
 
   recordReorgDetected(network: NetworksEnum, service: string, depth: number): void {
-    this.reorgDetectedCounter.inc({ network, service })
-    this.reorgBlockDepthHistogram.observe({ network, service }, depth)
-    logger.info('Reorg detected metric recorded', llo({ network, service, depth }))
+    const networkLabel = ResilienceMetrics.normalizeNetworkLabel(network)
+    this.reorgDetectedCounter.inc({ network: networkLabel, service })
+    this.reorgBlockDepthHistogram.observe({ network: networkLabel, service }, depth)
+    logger.info('Reorg detected metric recorded', llo({ network: networkLabel, service, depth }))
   }
 
   recordReorgRollback(
@@ -187,23 +199,26 @@ export class ResilienceMetrics {
     status: 'success' | 'failure',
     eventsRolledBack: number,
   ): void {
-    this.reorgRollbackCounter.inc({ network, service, status })
+    const networkLabel = ResilienceMetrics.normalizeNetworkLabel(network)
+    this.reorgRollbackCounter.inc({ network: networkLabel, service, status })
     if (status === 'success') {
-      this.reorgRollbackEventsGauge.set({ network, service }, eventsRolledBack)
+      this.reorgRollbackEventsGauge.set({ network: networkLabel, service }, eventsRolledBack)
     }
-    logger.info('Reorg rollback metric recorded', llo({ network, service, status, eventsRolledBack }))
+    logger.info('Reorg rollback metric recorded', llo({ network: networkLabel, service, status, eventsRolledBack }))
   }
 
   // ========== RPC Failover Metric Recorders ==========
 
   recordRpcFailover(network: NetworksEnum, fromProvider: string, toProvider: string, reason: string): void {
-    this.rpcFailoverCounter.inc({ network, from_provider: fromProvider, to_provider: toProvider, reason })
-    logger.info('RPC failover metric recorded', llo({ network, fromProvider, toProvider, reason }))
+    const networkLabel = ResilienceMetrics.normalizeNetworkLabel(network)
+    this.rpcFailoverCounter.inc({ network: networkLabel, from_provider: fromProvider, to_provider: toProvider, reason })
+    logger.info('RPC failover metric recorded', llo({ network: networkLabel, fromProvider, toProvider, reason }))
   }
 
   recordRpcHealth(network: NetworksEnum, provider: string, isHealthy: boolean): void {
-    this.rpcHealthGauge.set({ network, provider }, isHealthy ? 1 : 0)
-    logger.debug('RPC health metric recorded', llo({ network, provider, isHealthy }))
+    const networkLabel = ResilienceMetrics.normalizeNetworkLabel(network)
+    this.rpcHealthGauge.set({ network: networkLabel, provider }, isHealthy ? 1 : 0)
+    logger.debug('RPC health metric recorded', llo({ network: networkLabel, provider, isHealthy }))
   }
 
   recordRpcRequest(
@@ -213,46 +228,55 @@ export class ResilienceMetrics {
     durationSeconds: number,
     status: 'success' | 'error',
   ): void {
-    this.rpcRequestDurationHistogram.observe({ network, provider, method, status }, durationSeconds)
+    const networkLabel = ResilienceMetrics.normalizeNetworkLabel(network)
+    this.rpcRequestDurationHistogram.observe({ network: networkLabel, provider, method, status }, durationSeconds)
   }
 
   recordRpcError(network: NetworksEnum, provider: string, errorType: string): void {
-    this.rpcErrorCounter.inc({ network, provider, error_type: errorType })
-    logger.warn('RPC error metric recorded', llo({ network, provider, errorType }))
+    const networkLabel = ResilienceMetrics.normalizeNetworkLabel(network)
+    this.rpcErrorCounter.inc({ network: networkLabel, provider, error_type: errorType })
+    logger.warn('RPC error metric recorded', llo({ network: networkLabel, provider, errorType }))
   }
 
   // ========== Backfill/Replay Metric Recorders ==========
 
   recordBackfillProgress(network: NetworksEnum, service: string, blockNumber: number): void {
-    this.backfillProgressGauge.set({ network, service }, blockNumber)
+    const networkLabel = ResilienceMetrics.normalizeNetworkLabel(network)
+    this.backfillProgressGauge.set({ network: networkLabel, service }, blockNumber)
   }
 
   recordBackfillBatch(network: NetworksEnum, service: string, durationSeconds: number): void {
-    this.backfillBatchDurationHistogram.observe({ network, service }, durationSeconds)
+    const networkLabel = ResilienceMetrics.normalizeNetworkLabel(network)
+    this.backfillBatchDurationHistogram.observe({ network: networkLabel, service }, durationSeconds)
   }
 
   recordBackfillError(network: NetworksEnum, service: string, errorType: string): void {
-    this.backfillErrorCounter.inc({ network, service, error_type: errorType })
-    logger.error('Backfill error metric recorded', llo({ network, service, errorType }))
+    const networkLabel = ResilienceMetrics.normalizeNetworkLabel(network)
+    this.backfillErrorCounter.inc({ network: networkLabel, service, error_type: errorType })
+    logger.error('Backfill error metric recorded', llo({ network: networkLabel, service, errorType }))
   }
 
   recordReplayProgress(network: NetworksEnum, service: string, blockNumber: number): void {
-    this.replayProgressGauge.set({ network, service }, blockNumber)
+    const networkLabel = ResilienceMetrics.normalizeNetworkLabel(network)
+    this.replayProgressGauge.set({ network: networkLabel, service }, blockNumber)
   }
 
   recordGapDetected(network: NetworksEnum, service: string): void {
-    this.gapDetectedCounter.inc({ network, service })
-    logger.warn('Gap detected metric recorded', llo({ network, service }))
+    const networkLabel = ResilienceMetrics.normalizeNetworkLabel(network)
+    this.gapDetectedCounter.inc({ network: networkLabel, service })
+    logger.warn('Gap detected metric recorded', llo({ network: networkLabel, service }))
   }
 
   // ========== General Event Processing Metric Recorders ==========
 
   recordEventProcessed(network: NetworksEnum, service: string, eventType: string, count: number = 1): void {
-    this.eventsProcessedCounter.inc({ network, service, event_type: eventType }, count)
+    const networkLabel = ResilienceMetrics.normalizeNetworkLabel(network)
+    this.eventsProcessedCounter.inc({ network: networkLabel, service, event_type: eventType }, count)
   }
 
   recordProcessingDuration(network: NetworksEnum, service: string, operation: string, durationSeconds: number): void {
-    this.processingDurationHistogram.observe({ network, service, operation }, durationSeconds)
+    const networkLabel = ResilienceMetrics.normalizeNetworkLabel(network)
+    this.processingDurationHistogram.observe({ network: networkLabel, service, operation }, durationSeconds)
   }
 
   // ========== Utility Methods ==========

@@ -17,17 +17,6 @@ Goal: index blockchain events from Aragon OSx and expose API(s) the app consumes
    - [ ] Dependencies and integration points
    - [ ] Expected outcomes and acceptance criteria
 
-2. **Sync with GitHub Project**: Using GitHub CLI (`gh` - already authenticated as mzfshark):
-   ```bash
-   # Create issue from PLAN.md
-   gh issue create --title "[Plan] <descriptive-title>" --body-file PLAN.md --project "https://github.com/users/mzfshark/projects/5"
-   ```
-
-3. **Update Plan Progress**: As tasks complete, update checkboxes in `PLAN.md` and sync with issue:
-   ```bash
-   # Update the issue body with current PLAN.md
-   gh issue edit <issue-number> --body-file PLAN.md
-   ```
 
 **IMPORTANT**: Never run `git commit` or `git push` automatically. Always ask the user before any git operations.
 
