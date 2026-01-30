@@ -2,7 +2,7 @@ import * as path from 'path'
 import * as fs from 'fs'
 import { type IMongoModel } from '@types'
 import logger from '@logger'
-import { getModelForClass } from '@typegoose/typegoose'
+import { deleteModel, getModelForClass } from '@typegoose/typegoose'
 import mongoose from 'mongoose'
 
 const llo = logger.logMeta.bind(null, { service: 'db:setMongoModels' })
@@ -57,6 +57,12 @@ export const setMongoModels = async (): Promise<any> => {
         const exportedClass = importedModule?.default
         if (!exportedClass || typeof exportedClass !== 'function' || !exportedClass.name) {
           continue
+        }
+
+        try {
+          deleteModel(exportedClass.name)
+        } catch (_) {
+          // ignore if model does not exist
         }
 
         schemas[exportedClass.name] = getModelForClass(exportedClass, {

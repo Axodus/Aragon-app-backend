@@ -316,8 +316,10 @@ class RpcPool {
     logger.debug('Health check interval started', llo({ network, interval: this.config.healthCheckInterval }))
 
     // Run an initial health-check pass immediately to fail fast on broken endpoints.
-    // This also makes unit tests with fake timers deterministic.
-    void this.performHealthChecks(network)
+    // Skip in tests to avoid interfering with stub call counts.
+    if (process.env.NODE_ENV !== 'test') {
+      void this.performHealthChecks(network)
+    }
   }
 
   /**

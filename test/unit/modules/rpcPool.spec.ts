@@ -369,8 +369,8 @@ describe('RpcPool', () => {
         // Simulate timeout by never resolving
         mockAragonProvider.getBlockNumber.returns(new Promise(() => {}))
 
-        // Fast-forward past health check timeout (5 seconds)
-        await clock.tickAsync(30000)
+        // Fast-forward past health check interval + timeout (30s + 5s)
+        await clock.tickAsync(35000)
 
         const status = rpcPool.getStatus(NetworksEnum.harmonyMainnet)
         const aragonStatus = status.find((s) => s.providerType === IProviderType.ARAGON)
