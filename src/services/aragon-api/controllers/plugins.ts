@@ -122,6 +122,30 @@ const PluginsController = {
       },
     }
   },
+
+  getHarmonyValidatorConfig: async ({ pluginAddress, network }: IPluginExtraParams) => {
+    const normalizedPluginAddress = pluginAddress.toLowerCase()
+    const normalizedNetwork = network.toLowerCase()
+
+    const cfg = await Models.ValidatorConfig.findOne({
+      network: normalizedNetwork,
+      pluginAddress: normalizedPluginAddress,
+    })
+      .select('validatorAddress processKey lastUpdateTxHash lastUpdateBlock updatedAt createdAt')
+      .lean()
+      .exec()
+
+    return {
+      pluginAddress: normalizedPluginAddress,
+      network: normalizedNetwork,
+      validatorAddress: cfg?.validatorAddress ?? null,
+      processKey: cfg?.processKey ?? null,
+      lastUpdateTxHash: cfg?.lastUpdateTxHash ?? null,
+      lastUpdateBlock: cfg?.lastUpdateBlock ?? null,
+      updatedAt: cfg?.updatedAt ?? null,
+      createdAt: cfg?.createdAt ?? null,
+    }
+  },
 }
 
 // Helper function to check whitelist
@@ -138,3 +162,4 @@ function isDAOWhitelisted(daoAddress: string, pluginSlug: string): boolean {
 }
 
 export default PluginsController
+

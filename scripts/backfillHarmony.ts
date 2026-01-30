@@ -14,6 +14,7 @@ import mongoose from 'mongoose'
 import config from '../config'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 import { ModelProxy } from '@dbModels'
+import { NetworksEnum } from '@types'
 
 const llo = logger.logMeta.bind(null, { service: 'scripts:HarmonyBackfill' })
 let memoryServer: MongoMemoryServer | null = null
@@ -23,7 +24,7 @@ interface CliArgs {
   plugin?: string
   all?: boolean
   from?: number
-  to?: number | string
+  to?: number | 'latest'
   batch?: number
 }
 
@@ -93,6 +94,13 @@ async function main() {
     process.exit(1)
   }
 
+  if (!Object.values(NetworksEnum).includes(args.network as NetworksEnum)) {
+    console.error(`Error: --network must be one of: ${Object.values(NetworksEnum).join(', ')}`)
+    process.exit(1)
+  }
+
+  const network = args.network as NetworksEnum
+
   if (!args.plugin && !args.all) {
     console.error('Error: Either --plugin or --all is required')
     process.exit(1)
@@ -111,12 +119,12 @@ async function main() {
 
     if (args.all) {
       // Backfill all HarmonyVoting plugins on the network
-      await HarmonyBackfillJob.backfillAllPlugins(args.network)
+      await HarmonyBackfillJob.backfillAllPlugins(network)
     } else if (args.plugin) {
       // Backfill specific plugin
       await HarmonyBackfillJob.backfillPlugin({
         pluginAddress: args.plugin,
-        network: args.network,
+        network,
         startBlock: args.from,
         endBlock: args.to,
         batchSize: args.batch,

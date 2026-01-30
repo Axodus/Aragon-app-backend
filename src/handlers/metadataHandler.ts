@@ -49,7 +49,7 @@ export const MetadataHandler = {
         }))
       }
 
-      const logMetadata = {
+      const logMetadata: Partial<LogMetadata> = {
         network,
         transactionHash,
         transactionIndex,
@@ -57,15 +57,15 @@ export const MetadataHandler = {
         metadataUri: metadataUri!,
         fetchedMetadata: !!ipfsMetadata,
         blockNumber,
-        name: ipfsMetadata?.name ?? null,
-        description: ipfsMetadata?.description ?? null,
-        avatar: ipfsMetadata?.avatar ? Utils.parseAvatar(ipfsMetadata.avatar) : null,
+        name: ipfsMetadata?.name ?? undefined,
+        description: ipfsMetadata?.description ?? undefined,
+        avatar: ipfsMetadata?.avatar ? (Utils.parseAvatar(ipfsMetadata.avatar) ?? undefined) : undefined,
         links: ipfsMetadata?.links ?? [],
-        processKey: ipfsMetadata?.processKey ?? null,
+        processKey: ipfsMetadata?.processKey ?? undefined,
         stageNames: ipfsMetadata?.stageNames ?? [],
         blockedCountries: ipfsMetadata?.blockedCountries ?? [],
-        termsConditionsUrl: ipfsMetadata?.termsConditionsUrl ?? null,
-        enableOfacCheck: ipfsMetadata?.enableOfacCheck ?? null,
+        termsConditionsUrl: ipfsMetadata?.termsConditionsUrl ?? undefined,
+        enableOfacCheck: ipfsMetadata?.enableOfacCheck ?? undefined,
       }
 
       if (daoExists) {

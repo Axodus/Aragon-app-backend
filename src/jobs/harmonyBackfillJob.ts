@@ -1,19 +1,20 @@
 import logger from '@logger'
 import { Models } from '@dbModels'
 import { BlockchainLogCrawler } from '@modules/crawlers'
-import { Interface } from 'ethers'
+import { Contract, ethers, Interface } from 'ethers'
 import { HarmonyVotingPlugin } from '@artifacts/HarmonyVotingPlugin'
 import { ProposalHandler } from '@handlers/proposalHandler'
-import type { ILogInfo } from '@types'
-import type { LogDescription } from 'ethers'
+import { IPluginInterfaceType, NetworksEnum } from '@types'
+import ProviderModule from '@modules/provider'
+import ConfigIndexerHelper from '@helpers/configIndexer'
 
 const llo = logger.logMeta.bind(null, { service: 'jobs:HarmonyBackfill' })
 
 interface BackfillConfig {
   pluginAddress: string
-  network: string
+  network: NetworksEnum
   startBlock?: number
-  endBlock?: number
+  endBlock?: number | 'latest'
   batchSize?: number
 }
 
@@ -49,6 +50,9 @@ export class HarmonyBackfillJob {
         toBlock,
       }))
 
+      // Backfill validator/processKey config (best-effort, does not depend on log ranges)
+      await this.backfillValidatorConfig({ pluginAddress, network })
+
       // Backfill ProposalCreated events
       await this.backfillProposalCreated({
         pluginAddress,
@@ -74,6 +78,73 @@ export class HarmonyBackfillJob {
     }
   }
 
+  private static async backfillValidatorConfig(config: { pluginAddress: string; network: NetworksEnum }): Promise<void> {
+    const { pluginAddress, network } = config
+
+    try {
+      const plugin = await Models.Plugin.findByAddress(pluginAddress, network)
+      if (!plugin) return
+
+      // Only delegation voting plugins expose validatorAddress/processKey.
+      if (plugin.interfaceType !== IPluginInterfaceType.harmonyDelegationVoting) return
+
+      const provider = ProviderModule.getAnyRpcProvider(network)
+      if (!provider) {
+        logger.warn('HarmonyBackfill - Missing RPC provider for validator config', llo({ pluginAddress, network }))
+        return
+      }
+
+      const contract = new Contract(
+        pluginAddress,
+        [
+          'function validatorAddress() view returns (address)',
+          'function processKey() view returns (bytes32)',
+        ],
+        provider,
+      )
+
+      let validatorAddress: string | null = null
+      let processKey: string | null = null
+
+      try {
+        const v = await contract.validatorAddress()
+        if (v && v !== ethers.ZeroAddress) validatorAddress = String(v)
+      } catch {
+        // ignore
+      }
+
+      try {
+        const k = await contract.processKey()
+        if (k && k !== '0x' && k !== ethers.ZeroHash) processKey = String(k)
+      } catch {
+        // ignore
+      }
+
+      if (!validatorAddress && !processKey) return
+
+      await Models.ValidatorConfig.findOneAndUpdate(
+        { network, pluginAddress: pluginAddress.toLowerCase() },
+        {
+          $set: {
+            id: Models.ValidatorConfig.getEntityId({ network, pluginAddress: pluginAddress.toLowerCase() }),
+            network,
+            pluginAddress: pluginAddress.toLowerCase(),
+            ...(validatorAddress ? { validatorAddress: validatorAddress.toLowerCase() } : {}),
+            ...(processKey ? { processKey } : {}),
+            lastUpdateBlock: plugin.blockNumber,
+          },
+        },
+        { upsert: true, new: true },
+      )
+
+      if (processKey) {
+        await Models.Plugin.updateOne({ network, address: pluginAddress.toLowerCase() }, { $set: { processKey } })
+      }
+    } catch (error) {
+      logger.warn('HarmonyBackfill - Failed to backfill validator config', llo({ pluginAddress, network, error }))
+    }
+  }
+
   /**
    * Backfill ProposalCreated events
    */
@@ -85,6 +156,12 @@ export class HarmonyBackfillJob {
 
     logger.info('HarmonyBackfill - Starting ProposalCreated backfill', llo({ pluginAddress, network, fromBlock, toBlock }))
 
+    const logService = ConfigIndexerHelper.builders.plugin(
+      IPluginInterfaceType.harmonyVoting,
+      network,
+      `${pluginAddress}-proposals`,
+    )
+
     const crawler = new BlockchainLogCrawler({
       network,
       address: pluginAddress,
@@ -92,7 +169,7 @@ export class HarmonyBackfillJob {
       toBlock,
       batchSize,
       skipLogProcessing: false,
-      logService: 'harmony-backfill-proposals',
+      logService,
       onlyHistorical: true,
       stopOnError: false,
       onError: async (error: any) => {
@@ -105,7 +182,7 @@ export class HarmonyBackfillJob {
           enableHistorical: true,
           config: [
             {
-              abi: HarmonyVotingPlugin.abi,
+              abi: [...HarmonyVotingPlugin.abi] as any,
               handler: ProposalHandler.harmonyProposalCreated,
             },
           ],
@@ -132,6 +209,12 @@ export class HarmonyBackfillJob {
 
     logger.info('HarmonyBackfill - Starting VoteCast backfill', llo({ pluginAddress, network, fromBlock, toBlock }))
 
+    const logService = ConfigIndexerHelper.builders.plugin(
+      IPluginInterfaceType.harmonyVoting,
+      network,
+      `${pluginAddress}-votes`,
+    )
+
     const crawler = new BlockchainLogCrawler({
       network,
       address: pluginAddress,
@@ -139,7 +222,7 @@ export class HarmonyBackfillJob {
       toBlock,
       batchSize,
       skipLogProcessing: false,
-      logService: 'harmony-backfill-votes',
+      logService,
       onlyHistorical: true,
       stopOnError: false,
       onError: async (error: any) => {
@@ -152,7 +235,7 @@ export class HarmonyBackfillJob {
           enableHistorical: true,
           config: [
             {
-              abi: HarmonyVotingPlugin.abi,
+              abi: [...HarmonyVotingPlugin.abi] as any,
               handler: ProposalHandler.harmonyVoteCast,
             },
           ],
@@ -172,14 +255,20 @@ export class HarmonyBackfillJob {
    * Backfill all HarmonyVoting plugins for a network
    * @param network Network identifier
    */
-  static async backfillAllPlugins(network: string): Promise<void> {
+  static async backfillAllPlugins(network: NetworksEnum): Promise<void> {
     try {
       logger.info('HarmonyBackfill - Starting backfill for all plugins', llo({ network }))
 
       // Find all HarmonyVoting plugins on the network
       const plugins = await Models.Plugin.find({
         network,
-        interfaceType: { $in: ['HarmonyVoting', 'HarmonyHIPVoting', 'HarmonyDelegationVoting'] },
+        interfaceType: {
+          $in: [
+            IPluginInterfaceType.harmonyVoting,
+            IPluginInterfaceType.harmonyHipVoting,
+            IPluginInterfaceType.harmonyDelegationVoting,
+          ],
+        },
         isSupported: true,
       })
 

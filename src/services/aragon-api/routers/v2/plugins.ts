@@ -83,6 +83,20 @@ const PluginRouter = {
     ctx.body = await PluginsController.getInstallationHelpers(result.params as IPluginExtraParams)
   },
 
+  getHarmonyValidatorConfig: async function (ctx: RouterContext) {
+    const result = await ValidationSchema.validateRoute(ctx, {
+      params: {
+        network: ctx.params.network as NetworksEnum,
+        pluginAddress: ctx.params.pluginAddress as HexAddress,
+      },
+      schemas: {
+        params: PluginSchema.getHarmonyValidatorConfig,
+      },
+    })
+
+    ctx.body = await PluginsController.getHarmonyValidatorConfig(result.params as IPluginExtraParams)
+  },
+
   router(): Router {
     const router = new Router()
 
@@ -90,6 +104,7 @@ const PluginRouter = {
     router.get('/by-dao/:network/:daoAddress', PluginRouter.getPluginsByDao)
     router.get('/logs/:pluginAddress/:network/:event', PluginRouter.getLogPluginSetupProcessor)
     router.get('/installation-helpers/:network/:pluginAddress', PluginRouter.getInstallationHelpers)
+    router.get('/harmony-config/:network/:pluginAddress', PluginRouter.getHarmonyValidatorConfig)
 
     return router
   },

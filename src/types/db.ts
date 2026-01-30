@@ -30,6 +30,7 @@ import type Gauge from '@models/schema/gauge'
 import type VoteGauge from '@models/schema/voteGauge'
 import type GaugeMetrics from '@models/schema/gaugeMetrics'
 import type Metrics from '@models/schema/metrics'
+import type ValidatorConfig from '@models/schema/validatorConfig'
 
 export interface IMongoModel {
   Migration: typeof Migration
@@ -64,6 +65,7 @@ export interface IMongoModel {
   VoteGauge: typeof VoteGauge
   GaugeMetrics: typeof GaugeMetrics
   Metrics: typeof Metrics
+  ValidatorConfig: typeof ValidatorConfig
 }
 
 export enum ICollectionNames {
@@ -99,6 +101,7 @@ export enum ICollectionNames {
   VoteGauge = 'VoteGauge',
   GaugeMetrics = 'GaugeMetrics',
   Metrics = 'Metrics',
+  ValidatorConfig = 'ValidatorConfig',
 }
 
 export enum ITransactionIndexCheckType {

@@ -44,6 +44,13 @@ const PluginSchema = {
       .required(),
     pluginAddress: ValidationSchema.joiAddress.required(),
   }),
+
+  getHarmonyValidatorConfig: Joi.object({
+    network: Joi.string()
+      .valid(...Object.values(NetworksEnum))
+      .required(),
+    pluginAddress: ValidationSchema.joiAddress.required(),
+  }),
 }
 
 export default PluginSchema

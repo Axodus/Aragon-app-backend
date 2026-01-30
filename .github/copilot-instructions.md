@@ -107,3 +107,7 @@ git commit -m "adiciona suporte a domínios .country no serviço de resolução 
 - Add an endpoint: define schema/DTO, implement controller in `src/**`, wire route in the service runner, add validation, return typed responses.
 - Add an indexer job: define queue/topic, write a worker that reads on-chain events (Ethers v6), persist via Typegoose, emit metrics and logs.
 - Add a migration: use `mig:create`, implement idempotent changes, verify with `mig:status` on a test DB.
+
+## wsl Notes
+- do not use wsl paths in any configuration or script.
+- never try to run commands wsl terminal that interact with codacy cli.
