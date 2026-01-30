@@ -25,6 +25,8 @@ const STUBBABLE_MONGOOSE_STATICS = [
   'updateOne',
 ] as const
 
+const RESERVED_STATIC_KEYS = ['length', 'prototype', 'name'] as const
+
 function materializeInheritedStatics(model: any): void {
   if (!model || (typeof model !== 'function' && typeof model !== 'object')) return
 
@@ -39,6 +41,20 @@ function materializeInheritedStatics(model: any): void {
       writable: true,
       configurable: true,
     })
+  }
+}
+
+function materializeCustomStatics(model: any, exportedClass: any): void {
+  if (!model || !exportedClass) return
+
+  for (const key of Object.getOwnPropertyNames(exportedClass)) {
+    if ((RESERVED_STATIC_KEYS as readonly string[]).includes(key)) continue
+
+    const descriptor = Object.getOwnPropertyDescriptor(exportedClass, key)
+    if (!descriptor || typeof descriptor.value !== 'function') continue
+
+    // Ensure custom statics (e.g., findByAddress) are present on the compiled model.
+    model[key] = descriptor.value
   }
 }
 
@@ -65,9 +81,12 @@ export const setMongoModels = async (): Promise<any> => {
           // ignore if model does not exist
         }
 
-        schemas[exportedClass.name] = getModelForClass(exportedClass, {
+        const model = getModelForClass(exportedClass, {
           existingMongoose: mongoose,
         })
+
+        materializeCustomStatics(model, exportedClass)
+        schemas[exportedClass.name] = model
       } catch (error) {
         logger.error(`Error loading Mongo model from file ${filename}:`, llo({ error }))
       }
