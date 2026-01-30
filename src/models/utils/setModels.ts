@@ -47,14 +47,22 @@ function materializeInheritedStatics(model: any): void {
 function materializeCustomStatics(model: any, exportedClass: any): void {
   if (!model || !exportedClass) return
 
-  for (const key of Object.getOwnPropertyNames(exportedClass)) {
-    if ((RESERVED_STATIC_KEYS as readonly string[]).includes(key)) continue
+  // Copy all static methods from the class to the model
+  const staticKeys = Object.getOwnPropertyNames(exportedClass).filter(
+    key => !((RESERVED_STATIC_KEYS as readonly string[]).includes(key))
+  )
 
-    const descriptor = Object.getOwnPropertyDescriptor(exportedClass, key)
-    if (!descriptor || typeof descriptor.value !== 'function') continue
+  for (const key of staticKeys) {
+    const value = exportedClass[key]
+    if (typeof value !== 'function') continue
 
-    // Ensure custom statics (e.g., findByAddress) are present on the compiled model.
-    model[key] = descriptor.value
+    // Bind the method to the model so 'this' refers to the model constructor
+    Object.defineProperty(model, key, {
+      value: value.bind(model),
+      writable: true,
+      configurable: true,
+      enumerable: false,
+    })
   }
 }
 

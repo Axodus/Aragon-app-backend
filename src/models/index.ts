@@ -23,7 +23,13 @@ export const Models: IMongoModel | any = new Proxy(modelsStore, {
 export const ModelProxy = {
   setMongoModels: async () => {
     const models = await setMongoModels()
-    // Prefer models built by Typegoose, but always expose mongoose models as a fallback.
+    // CRITICAL: models from setMongoModels have custom statics; they must override mongoose.models
     Object.assign(Models, mongoose.models, models)
+    // Double-check: ensure the compiled models are actually in the registry
+    Object.keys(models).forEach(key => {
+      if (models[key]) {
+        Models[key] = models[key]
+      }
+    })
   },
 }
