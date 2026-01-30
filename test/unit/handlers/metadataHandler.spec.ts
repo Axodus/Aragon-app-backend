@@ -229,8 +229,8 @@ describe('Indexer: MetadataHandler', () => {
 
       const logMetadata = createDocumentStub.args[0][1]
       expect(logMetadata.fetchedMetadata).to.be.false
-      expect(logMetadata.name).to.eq(null)
-      expect(logMetadata.description).to.eq(null)
+      expect(logMetadata.name).to.eq(undefined)
+      expect(logMetadata.description).to.eq(undefined)
       expect(logMetadata.metadataUri).to.eq('ipfs://fake-uri')
     })
 

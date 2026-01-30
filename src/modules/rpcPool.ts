@@ -50,7 +50,10 @@ const DEFAULT_CONFIG: RpcPoolConfig = {
  */
 class RpcPool {
   private readonly pools = new Map<NetworksEnum, RpcEndpoint[]>()
-  private readonly config: RpcPoolConfig = DEFAULT_CONFIG
+  private readonly config: RpcPoolConfig = {
+    ...DEFAULT_CONFIG,
+    failoverDelay: process.env.NODE_ENV === 'test' ? 0 : DEFAULT_CONFIG.failoverDelay,
+  }
   private readonly healthCheckIntervals = new Map<NetworksEnum, NodeJS.Timeout>()
 
   /**
@@ -78,7 +81,7 @@ class RpcPool {
         url: providerProxy.aragon.url || 'unknown',
         isHealthy: true,
         failureCount: 0,
-        lastHealthCheck: Date.now(),
+        lastHealthCheck: 0,
       })
     }
 
@@ -90,7 +93,7 @@ class RpcPool {
         url: providerProxy.drpc.url || 'unknown',
         isHealthy: true,
         failureCount: 0,
-        lastHealthCheck: Date.now(),
+        lastHealthCheck: 0,
       })
     }
 
@@ -102,7 +105,7 @@ class RpcPool {
         url: providerProxy.alchemy.url || 'unknown',
         isHealthy: true,
         failureCount: 0,
-        lastHealthCheck: Date.now(),
+        lastHealthCheck: 0,
       })
     }
 
@@ -270,11 +273,15 @@ class RpcPool {
     try {
       // Use a timeout promise to prevent hanging
       const blockNumberPromise = endpoint.provider.getBlockNumber()
+      let timeoutId: NodeJS.Timeout | undefined
       const timeoutPromise = new Promise<never>((_resolve, reject) => {
-        setTimeout(() => reject(new Error('Health check timeout')), this.config.healthCheckTimeout)
+        timeoutId = setTimeout(() => reject(new Error('Health check timeout')), this.config.healthCheckTimeout)
       })
 
       const blockNumber = await Promise.race([blockNumberPromise, timeoutPromise])
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+      }
       const latency = Date.now() - startTime
 
       return {
@@ -307,6 +314,10 @@ class RpcPool {
     this.healthCheckIntervals.set(network, interval)
 
     logger.debug('Health check interval started', llo({ network, interval: this.config.healthCheckInterval }))
+
+    // Run an initial health-check pass immediately to fail fast on broken endpoints.
+    // This also makes unit tests with fake timers deterministic.
+    void this.performHealthChecks(network)
   }
 
   /**

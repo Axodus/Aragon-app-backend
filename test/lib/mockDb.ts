@@ -2,7 +2,7 @@
 import { MongoMemoryReplSet } from 'mongodb-memory-server'
 import mongoose from 'mongoose'
 import './sinon-mongoose'
-import { ModelProxy } from '@src/models'
+import { ModelProxy } from '@dbModels'
 import config from '@config'
 
 const MockDB = {
@@ -63,9 +63,9 @@ const MockDB = {
 
     await MockDB.replSet.start()
     const uri = MockDB.replSet.getUri()
-    await ModelProxy.setMongoModels()
 
     await mongoose.connect(uri, MockDB.mongoOptions)
+    await ModelProxy.setMongoModels()
     mongoose.set('debug', config.MONGO_DB.DEBUGGER)
     MockDB.mongoUri = uri
     return uri

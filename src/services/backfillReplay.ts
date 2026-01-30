@@ -52,7 +52,8 @@ export class BackfillReplayService {
    */
   static async backfill(config: BackfillConfig): Promise<BackfillResult> {
     const startTime = Date.now()
-    const { network, service, fromBlock, toBlock, batchSize = DEFAULT_BATCH_SIZE } = config
+    const { network, service, fromBlock, batchSize = DEFAULT_BATCH_SIZE } = config
+    let endBlock = config.toBlock
     const errors: string[] = []
 
     logger.info(
@@ -61,31 +62,31 @@ export class BackfillReplayService {
         network,
         service,
         fromBlock,
-        toBlock,
+        toBlock: endBlock,
         batchSize,
-        totalBlocks: toBlock - fromBlock + 1,
+        totalBlocks: endBlock - fromBlock + 1,
       }),
     )
 
-    try {
-      // Validate block range
-      if (fromBlock > toBlock) {
-        throw new Error(`Invalid block range: fromBlock (${fromBlock}) > toBlock (${toBlock})`)
-      }
+    // Validate block range (programmer/config error: let it throw)
+    if (fromBlock > endBlock) {
+      throw new Error(`Invalid block range: fromBlock (${fromBlock}) > toBlock (${endBlock})`)
+    }
 
+    try {
       const currentBlock = await Web3Helper.getBlockNumber('latest', network)
-      if (toBlock > currentBlock) {
+      if (endBlock > currentBlock) {
         logger.warn(
           'toBlock exceeds current chain height',
           llo({
             network,
-            toBlock,
+            toBlock: endBlock,
             currentBlock,
             adjusting: true,
           }),
         )
         // Auto-adjust to current block
-        config.toBlock = currentBlock
+        endBlock = currentBlock
       }
 
       // Find or create config indexer checkpoint
@@ -95,8 +96,8 @@ export class BackfillReplayService {
       let currentBatch = fromBlock
       let processedBlocks = 0
 
-      while (currentBatch <= toBlock) {
-        const batchEnd = Math.min(currentBatch + batchSize - 1, toBlock)
+      while (currentBatch <= endBlock) {
+        const batchEnd = Math.min(currentBatch + batchSize - 1, endBlock)
 
         try {
           // Check for reorg before processing batch
@@ -132,7 +133,7 @@ export class BackfillReplayService {
 
           // Report progress
           if (config.onProgress) {
-            config.onProgress(batchEnd, toBlock)
+            config.onProgress(batchEnd, endBlock)
           }
 
           logger.debug(
@@ -142,7 +143,7 @@ export class BackfillReplayService {
               service,
               batchStart: currentBatch,
               batchEnd,
-              progress: `${processedBlocks}/${toBlock - fromBlock + 1}`,
+                progress: `${processedBlocks}/${endBlock - fromBlock + 1}`,
             }),
           )
 
@@ -174,7 +175,7 @@ export class BackfillReplayService {
         success: errors.length === 0,
         processedBlocks,
         startBlock: fromBlock,
-        endBlock: toBlock,
+        endBlock,
         duration,
         errors: errors.length > 0 ? errors : undefined,
       }
@@ -185,7 +186,7 @@ export class BackfillReplayService {
         success: false,
         processedBlocks: 0,
         startBlock: fromBlock,
-        endBlock: toBlock,
+        endBlock,
         duration: Date.now() - startTime,
         errors: [error instanceof Error ? error.message : String(error)],
       }

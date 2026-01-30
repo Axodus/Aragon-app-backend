@@ -238,7 +238,17 @@ class TxInfo {
 @index({ network: 1 })
 @index({ isSubProposal: 1, 'executed.status': 1 })
 @index({ daoAddress: 1, createdAt: -1, transactionIndex: -1 })
-@index({ network: 1, blockHash: 1, logIndex: 1, eventType: 1 }, { unique: true })
+@index(
+  { network: 1, blockHash: 1, logIndex: 1, eventType: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      blockHash: { $exists: true, $type: 'string' },
+      logIndex: { $exists: true, $type: 'number' },
+      eventType: { $exists: true, $type: 'string' },
+    },
+  },
+)
 export default class Proposal extends Model {
   @prop({ type: () => String, required: true, unique: true })
   public id!: string

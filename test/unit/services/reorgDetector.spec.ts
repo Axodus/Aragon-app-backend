@@ -19,7 +19,8 @@ describe('ReorgDetector', () => {
   let voteFindStub: sinon.SinonStub
   let configIndexerFindStub: sinon.SinonStub
   let transactionFindStub: sinon.SinonStub
-  let permissionFindStub: sinon.SinonStub
+  let daoPermissionFindStub: sinon.SinonStub
+  let selectorPermissionFindStub: sinon.SinonStub
   let settingFindStub: sinon.SinonStub
 
   beforeEach(() => {
@@ -28,7 +29,8 @@ describe('ReorgDetector', () => {
     proposalFindStub = sinon.stub(Models.Proposal, 'deleteMany')
     voteFindStub = sinon.stub(Models.Vote, 'deleteMany')
     transactionFindStub = sinon.stub(Models.Transaction, 'deleteMany')
-    permissionFindStub = sinon.stub(Models.Permission, 'deleteMany')
+    daoPermissionFindStub = sinon.stub(Models.DaoPermission, 'deleteMany')
+    selectorPermissionFindStub = sinon.stub(Models.SelectorPermission, 'deleteMany')
     settingFindStub = sinon.stub(Models.Setting, 'deleteMany')
     configIndexerFindStub = sinon.stub(Models.ConfigIndexer, 'find')
   })
@@ -152,7 +154,8 @@ describe('ReorgDetector', () => {
       proposalFindStub.resolves({ deletedCount: 10 })
       voteFindStub.resolves({ deletedCount: 25 })
       transactionFindStub.resolves({ deletedCount: 2 })
-      permissionFindStub.resolves({ deletedCount: 1 })
+      daoPermissionFindStub.resolves({ deletedCount: 1 })
+      selectorPermissionFindStub.resolves({ deletedCount: 0 })
       settingFindStub.resolves({ deletedCount: 0 })
 
       const updateManyStub = sinon.stub(Models.ConfigIndexer, 'updateMany').resolves({})
@@ -162,7 +165,8 @@ describe('ReorgDetector', () => {
       expect(proposalFindStub.called).to.be.true
       expect(voteFindStub.called).to.be.true
       expect(transactionFindStub.called).to.be.true
-      expect(permissionFindStub.called).to.be.true
+      expect(daoPermissionFindStub.called).to.be.true
+      expect(selectorPermissionFindStub.called).to.be.true
       expect(settingFindStub.called).to.be.true
 
       updateManyStub.restore()
@@ -206,7 +210,8 @@ describe('ReorgDetector', () => {
         proposalFindStub.resolves({ deletedCount: 2 })
         voteFindStub.resolves({ deletedCount: 5 })
         transactionFindStub.resolves({ deletedCount: 1 })
-        permissionFindStub.resolves({ deletedCount: 0 })
+        daoPermissionFindStub.resolves({ deletedCount: 0 })
+        selectorPermissionFindStub.resolves({ deletedCount: 0 })
         settingFindStub.resolves({ deletedCount: 0 })
 
         const updateManyStub = sinon.stub(Models.ConfigIndexer, 'updateMany').resolves({})
@@ -257,7 +262,8 @@ describe('ReorgDetector', () => {
         proposalFindStub.resolves({ deletedCount: 10 })
         voteFindStub.resolves({ deletedCount: 30 })
         transactionFindStub.resolves({ deletedCount: 5 })
-        permissionFindStub.resolves({ deletedCount: 2 })
+        daoPermissionFindStub.resolves({ deletedCount: 2 })
+        selectorPermissionFindStub.resolves({ deletedCount: 0 })
         settingFindStub.resolves({ deletedCount: 1 })
 
         const updateManyStub = sinon.stub(Models.ConfigIndexer, 'updateMany').resolves({})
@@ -305,7 +311,8 @@ describe('ReorgDetector', () => {
         proposalFindStub.resolves({ deletedCount: 3 })
         voteFindStub.resolves({ deletedCount: 0 }) // No votes in these blocks
         transactionFindStub.resolves({ deletedCount: 1 })
-        permissionFindStub.resolves({ deletedCount: 0 })
+        daoPermissionFindStub.resolves({ deletedCount: 0 })
+        selectorPermissionFindStub.resolves({ deletedCount: 0 })
         settingFindStub.resolves({ deletedCount: 0 })
 
         const updateManyStub = sinon.stub(Models.ConfigIndexer, 'updateMany').resolves({})
@@ -314,7 +321,8 @@ describe('ReorgDetector', () => {
 
         // Should handle zero deletions gracefully
         expect(voteFindStub.called).to.be.true
-        expect(permissionFindStub.called).to.be.true
+        expect(daoPermissionFindStub.called).to.be.true
+        expect(selectorPermissionFindStub.called).to.be.true
         expect(settingFindStub.called).to.be.true
 
         updateManyStub.restore()
@@ -345,7 +353,8 @@ describe('ReorgDetector', () => {
         proposalFindStub.resolves({ deletedCount: 150 })
         voteFindStub.resolves({ deletedCount: 300 })
         transactionFindStub.resolves({ deletedCount: 30 })
-        permissionFindStub.resolves({ deletedCount: 15 })
+        daoPermissionFindStub.resolves({ deletedCount: 15 })
+        selectorPermissionFindStub.resolves({ deletedCount: 0 })
         settingFindStub.resolves({ deletedCount: 5 })
 
         const updateManyStub = sinon.stub(Models.ConfigIndexer, 'updateMany').resolves({})
@@ -400,7 +409,8 @@ describe('ReorgDetector', () => {
         proposalFindStub.resolves({ deletedCount: 5 })
         voteFindStub.resolves({ deletedCount: 12 })
         transactionFindStub.resolves({ deletedCount: 2 })
-        permissionFindStub.resolves({ deletedCount: 1 })
+        daoPermissionFindStub.resolves({ deletedCount: 1 })
+        selectorPermissionFindStub.resolves({ deletedCount: 0 })
         settingFindStub.resolves({ deletedCount: 0 })
 
         const updateManyStub = sinon.stub(Models.ConfigIndexer, 'updateMany').resolves({})
@@ -444,7 +454,8 @@ describe('ReorgDetector', () => {
         proposalFindStub.resolves({ deletedCount: 0 })
         voteFindStub.resolves({ deletedCount: 0 })
         transactionFindStub.resolves({ deletedCount: 0 })
-        permissionFindStub.resolves({ deletedCount: 0 })
+        daoPermissionFindStub.resolves({ deletedCount: 0 })
+        selectorPermissionFindStub.resolves({ deletedCount: 0 })
         settingFindStub.resolves({ deletedCount: 0 })
 
         const updateManyStub = sinon.stub(Models.ConfigIndexer, 'updateMany').resolves({})
@@ -508,7 +519,8 @@ describe('ReorgDetector', () => {
         proposalFindStub.resolves({ deletedCount: 5 })
         voteFindStub.resolves({ deletedCount: 10 })
         transactionFindStub.resolves({ deletedCount: 2 })
-        permissionFindStub.resolves({ deletedCount: 0 })
+        daoPermissionFindStub.resolves({ deletedCount: 0 })
+        selectorPermissionFindStub.resolves({ deletedCount: 0 })
         settingFindStub.resolves({ deletedCount: 0 })
 
         let updateManyStub = sinon.stub(Models.ConfigIndexer, 'updateMany').resolves({})
@@ -532,7 +544,8 @@ describe('ReorgDetector', () => {
         proposalFindStub.resolves({ deletedCount: 3 })
         voteFindStub.resolves({ deletedCount: 7 })
         transactionFindStub.resolves({ deletedCount: 1 })
-        permissionFindStub.resolves({ deletedCount: 0 })
+        daoPermissionFindStub.resolves({ deletedCount: 0 })
+        selectorPermissionFindStub.resolves({ deletedCount: 0 })
         settingFindStub.resolves({ deletedCount: 0 })
 
         updateManyStub = sinon.stub(Models.ConfigIndexer, 'updateMany').resolves({})

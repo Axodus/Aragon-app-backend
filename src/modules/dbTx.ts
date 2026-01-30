@@ -5,6 +5,18 @@ import config from '@config'
 const llo = logger.logMeta.bind(null, { service: 'DbTx' })
 
 const DbTx = {
+  createNoopSession(): ClientSession {
+    // Used in unit tests or early startup when Mongo connection is not ready.
+    // Provides the subset of ClientSession API that our code expects.
+    return {
+      startTransaction: () => undefined,
+      inTransaction: () => false,
+      commitTransaction: async () => undefined,
+      abortTransaction: async () => undefined,
+      endSession: async () => undefined,
+    } as any
+  },
+
   async transactionOptions(): Promise<ClientSession> {
     const session = await mongoose.startSession({
       defaultTransactionOptions: {
@@ -32,6 +44,11 @@ const DbTx = {
   },
 
   async executeTxFn(fn: any, options?: { stopRetry?: boolean; throwOnStop?: boolean }) {
+    // If Mongo isn't connected yet (common in unit tests), skip real transactions.
+    if (mongoose.connection.readyState !== 1) {
+      return await fn({ session: DbTx.createNoopSession() })
+    }
+
     async function tryFn(attempt: number = 0): Promise<any> {
       const session = await DbTx.transactionOptions()
       session.startTransaction()

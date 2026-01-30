@@ -6,7 +6,7 @@ import RabbitMQHelper from '@helpers/rabbitMQ'
 import config from '@config'
 import { IEventLogPluginType, NetworksEnum, EnumQueueName } from '@types'
 import logger from '@logger'
-import { Models } from '@src/models'
+import { Models } from '@dbModels'
 
 describe('Controller: Plugin', () => {
   let sandbox: SinonSandbox

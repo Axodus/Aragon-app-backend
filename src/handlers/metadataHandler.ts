@@ -64,8 +64,8 @@ export const MetadataHandler = {
         processKey: ipfsMetadata?.processKey ?? undefined,
         stageNames: ipfsMetadata?.stageNames ?? [],
         blockedCountries: ipfsMetadata?.blockedCountries ?? [],
-        termsConditionsUrl: ipfsMetadata?.termsConditionsUrl ?? undefined,
-        enableOfacCheck: ipfsMetadata?.enableOfacCheck ?? undefined,
+        termsConditionsUrl: ipfsMetadata?.termsConditionsUrl ?? null,
+        enableOfacCheck: ipfsMetadata?.enableOfacCheck ?? null,
       }
 
       if (daoExists) {
@@ -104,7 +104,7 @@ export const MetadataHandler = {
       await MetadataHandler._updatePluginMetadata(logDb)
 
       if (plugin.isSupported && plugin.status === IPluginStatus.installed) {
-        await PluginSlug.updateSlug(plugin, logMetadata.processKey)
+        await PluginSlug.updateSlug(plugin, logMetadata.processKey ?? undefined)
       }
 
       if (plugin.interfaceType === IPluginInterfaceType.spp && ipfsMetadata) {

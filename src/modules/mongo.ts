@@ -2,7 +2,7 @@ import config from '@config'
 import logger from '@logger'
 import mongoose, { type ConnectOptions } from 'mongoose'
 import { retry } from 'ts-retry-promise'
-import { ModelProxy } from '@src/models'
+import { ModelProxy } from '@dbModels'
 import { type IOptionService } from '@types'
 
 const llo = logger.logMeta.bind(null, { service: 'mongo' })

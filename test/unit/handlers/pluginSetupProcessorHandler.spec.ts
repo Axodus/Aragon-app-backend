@@ -164,6 +164,14 @@ describe('Indexer: PluginSetupProcessorHandler', () => {
 
       const rabbiMqStub = sandbox.stub(RabbitMQHelper, 'sendMessage')
 
+      // Ensure test isolation (other tests reuse the same tx hash/index/logIndex)
+      await Models.LogPluginSetupProcessor.deleteMany({
+        network: logInfo.network,
+        transactionHash: logInfo.transactionHash,
+        transactionIndex: logInfo.transactionIndex,
+        logIndex: logInfo.logIndex,
+      })
+
       await PluginSetupProcessorHandler.installationApplied(fakeEvent as any, logInfo)
 
       expect(stubLogger.calledOnceWith('Created new document - New InstallationApplied' as any)).to.be.true
