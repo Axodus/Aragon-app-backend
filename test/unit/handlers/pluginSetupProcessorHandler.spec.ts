@@ -208,7 +208,8 @@ describe('Indexer: PluginSetupProcessorHandler', () => {
       expect(existingLog.pluginAddress).to.eq(fakeEvent.args.plugin)
       expect(isSupportedStub.calledOnce).to.be.true
       expect(findByAddressStub.calledOnce).to.be.true
-      expect(rabbiMqStub.calledOnce).to.be.true
+      // installationApplied sends a normal message + a one-time historical sync when isHistorical is falsy
+      expect(rabbiMqStub.calledTwice).to.be.true
     })
 
     it('should create new log installationApplied when spp plugin', async () => {
