@@ -6,6 +6,7 @@ import { glob } from 'glob'
 import { argv } from 'process'
 import Mocha from 'mocha'
 import { MockDB } from '@test/lib/mockDb'
+import { reapplyCustomStatics } from '@models/utils/setModels'
 import logger from '@logger'
 import utils from '@helpers/utils'
 import ProviderModule from '@modules/provider'
@@ -56,6 +57,8 @@ async function runTests() {
   })
 
   mocha.suite.beforeEach(async () => {
+    // Ensure custom statics exist and are stub-friendly before any test-level stubbing runs.
+    reapplyCustomStatics()
     switch (testFolder) {
       case 'unit':
         await MockDB.drop()
@@ -66,6 +69,12 @@ async function runTests() {
       default:
         break
     }
+  })
+
+  // CRITICAL: Restore custom model statics after each test
+  // Sinon sandbox.restore() may remove custom statics when unstubbing
+  mocha.suite.afterEach(() => {
+    reapplyCustomStatics()
   })
 
   mocha.suite.afterAll(async () => {

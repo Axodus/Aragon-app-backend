@@ -18,6 +18,34 @@ const MockDB = {
   connect: async () => {
     await MockDB._connectMongoDB()
     await MockDB.syncIndexesForAllModels()
+    // Sanity check: verify critical model statics exist
+    await MockDB._verifyModelStatics()
+  },
+
+  _verifyModelStatics: async () => {
+    const { Models } = require('@dbModels')
+    const criticalStatics = ['create', 'findByAddress', 'findAllByTokenAddress', 'findOne']
+    const missingStatics: string[] = []
+    
+    if (!Models.Plugin) {
+      console.error(`[MockDB] CRITICAL: Models.Plugin is undefined!`)
+      return
+    }
+
+    criticalStatics.forEach(staticName => {
+      const exists = typeof Models.Plugin[staticName] === 'function'
+      if (!exists) {
+        missingStatics.push(`${staticName} (type: ${typeof Models.Plugin[staticName]})`)
+      }
+    })
+
+    if (missingStatics.length > 0) {
+      console.error(`[MockDB] CRITICAL: Models.Plugin missing statics: ${missingStatics.join(', ')}`)
+      const allKeys = Object.getOwnPropertyNames(Models.Plugin).filter(k => typeof Models.Plugin[k] === 'function')
+      console.error(`[MockDB] Available Plugin methods:`, allKeys.slice(0, 30))
+    } else {
+      console.log(`[MockDB] ✓ Models.Plugin statics verified: ${criticalStatics.join(', ')}`)
+    }
   },
 
   drop: async () => {
