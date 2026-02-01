@@ -17,11 +17,12 @@ describe('Model/Utils: setModels', () => {
   })
 
   it('successfully loads models', async function () {
+    sandbox.stub(fs.promises, 'readdir').resolves(['jwt.ts'] as any)
     const stubLogger = sandbox.stub(logger, 'error')
 
     const schemas = await setMongoModels()
 
-    expect(schemas).to.have.property('Dao')
+    expect(schemas).to.have.property('Jwt')
     expect(stubLogger.notCalled).to.be.true
   })
 

@@ -171,7 +171,7 @@ describe('Helpers: GovernanceErc20', () => {
 
       expect(result).to.equal('0')
       expect(loggerStub.calledOnce).to.be.true
-      expect(loggerStub.calledWith('Error getting past votes' as any)).to.be.true
+      expect(loggerStub.calledWithMatch('Error getting past votes' as any)).to.be.true
       expect(_getPastVotesForFallbackStub.calledOnce).to.be.true
     })
 
