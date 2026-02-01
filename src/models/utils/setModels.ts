@@ -97,10 +97,21 @@ export const setMongoModels = async (): Promise<any> => {
           continue
         }
 
+        // NOTE: setMongoModels() can be called multiple times in the same process
+        // (e.g. during unit tests). Ensure we delete any existing compiled model
+        // before recompiling it to avoid "Cannot overwrite model once compiled".
         try {
-          deleteModel(exportedClass.name)
+          // Typegoose helper (preferred when available)
+          deleteModel(exportedClass)
         } catch (_) {
-          // ignore if model does not exist
+          // ignore
+        }
+
+        try {
+          // Native mongoose fallback (guards against typegoose deleteModel not deleting by name)
+          mongoose.deleteModel(exportedClass.name)
+        } catch (_) {
+          // ignore
         }
 
         // CRITICAL: Build schema first, then add custom statics to it
