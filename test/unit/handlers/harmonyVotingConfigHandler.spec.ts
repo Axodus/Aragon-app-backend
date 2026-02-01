@@ -11,13 +11,13 @@ describe('HarmonyVotingConfigHandler', () => {
 
   beforeEach(() => {
     sandbox = sinon.createSandbox()
-    ;(Models as any).ValidatorConfig = {
-      getEntityId: ({ network, pluginAddress }: any) => `${network}-${pluginAddress}`,
-      findOneAndUpdate: sandbox.stub().resolves({}),
-    }
-    ;(Models as any).Plugin = {
-      updateOne: sandbox.stub().resolves({ acknowledged: true }),
-    }
+
+    sandbox
+      .stub(Models.ValidatorConfig as any, 'getEntityId')
+      .callsFake(({ network, pluginAddress }: any) => `${network}-${pluginAddress}`)
+
+    sandbox.stub(Models.ValidatorConfig as any, 'findOneAndUpdate').resolves({})
+    sandbox.stub(Models.Plugin as any, 'updateOne').resolves({ acknowledged: true })
   })
 
   afterEach(() => {

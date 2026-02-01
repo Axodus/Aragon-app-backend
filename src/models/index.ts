@@ -3,6 +3,16 @@ import { setMongoModels } from '@models/utils/setModels'
 import { type IMongoModel } from '@types'
 
 const modelsStore: IMongoModel | any = {}
+let baselineModelsStore: Record<string, any> | null = null
+
+function isProbablyMongooseModel(value: any): boolean {
+  return (
+    !!value &&
+    typeof value === 'function' &&
+    typeof value.modelName === 'string' &&
+    !!value.schema
+  )
+}
 
 export const Models: IMongoModel | any = new Proxy(modelsStore, {
   get(target, prop) {
@@ -37,5 +47,25 @@ export const ModelProxy = {
         modelsStore[modelName] = mongoose.models[modelName]
       }
     })
+
+    // Capture a baseline snapshot of the store so tests can safely restore
+    // if a spec accidentally overwrites Models.<Model> with a plain object.
+    if (!baselineModelsStore) {
+      baselineModelsStore = { ...modelsStore }
+    }
+  },
+
+  restoreBaselineIfOverwritten: () => {
+    if (!baselineModelsStore) return
+
+    for (const [modelName, baselineModel] of Object.entries(baselineModelsStore)) {
+      const currentValue = modelsStore[modelName]
+
+      // Only restore when the model was overwritten with something that
+      // doesn't look like a Mongoose model (common test pollution pattern).
+      if (currentValue !== baselineModel && !isProbablyMongooseModel(currentValue)) {
+        modelsStore[modelName] = baselineModel
+      }
+    }
   },
 }
