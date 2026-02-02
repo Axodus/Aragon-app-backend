@@ -27,6 +27,23 @@ export const Models: IMongoModel | any = new Proxy(modelsStore, {
     return undefined
   },
   set(target, prop, value) {
+    // Log unexpected assignments that are not Mongoose models so we can
+    // trace which test or module overwrote a model with a plain object.
+    if (!isProbablyMongooseModel(value)) {
+      try {
+        // Avoid serializing large objects; show keys or type instead.
+        const summary = value && typeof value === 'object' ? Object.keys(value).slice(0, 10) : typeof value
+        // eslint-disable-next-line no-console
+        console.warn('[ModelProxy] Assigning non-mongoose value to Models.%s — summary: %o', String(prop), summary)
+        // eslint-disable-next-line no-console
+        console.warn(new Error('Model overwrite stack').stack)
+      } catch (e) {
+        // best-effort logging
+        // eslint-disable-next-line no-console
+        console.warn('[ModelProxy] Assigning non-mongoose value to Models.%s', String(prop))
+      }
+    }
+
     target[prop as keyof typeof target] = value
     return true
   },
