@@ -54,6 +54,7 @@ class RpcPool {
     ...DEFAULT_CONFIG,
     failoverDelay: process.env.NODE_ENV === 'test' ? 0 : DEFAULT_CONFIG.failoverDelay,
   }
+
   private readonly healthCheckIntervals = new Map<NetworksEnum, NodeJS.Timeout>()
 
   /**

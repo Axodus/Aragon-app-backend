@@ -52,11 +52,44 @@ const getHarmonyVotingInterfaceType = (
   if (!version) return undefined
 
   const normalizedRepo = pluginSetupRepoAddress.toLowerCase()
-  const hipRepo = version.HarmonyHIPVotingRepoProxy?.address?.toLowerCase()
-  const delegationRepo = version.HarmonyDelegationVotingRepoProxy?.address?.toLowerCase()
+  const repoMappings: Array<[string | undefined, IPluginInterfaceType]> = [
+    [version.HarmonyHIPVotingRepoProxy?.address, IPluginInterfaceType.harmonyHipVoting],
+    [version.HarmonyDelegationVotingRepoProxy?.address, IPluginInterfaceType.harmonyDelegationVoting],
+  ]
 
-  if (hipRepo && normalizedRepo === hipRepo) return IPluginInterfaceType.harmonyHipVoting
-  if (delegationRepo && normalizedRepo === delegationRepo) return IPluginInterfaceType.harmonyDelegationVoting
+  for (const [repoAddress, interfaceType] of repoMappings) {
+    if (repoAddress && normalizedRepo === repoAddress.toLowerCase()) {
+      return interfaceType
+    }
+  }
+
+  return undefined
+}
+
+const getInterfaceTypeFromSubdomain = (subdomain?: string): IPluginInterfaceType | undefined => {
+  if (!subdomain) return undefined
+
+  const normalized = subdomain.toLowerCase().replace(/[^a-z0-9]/g, '')
+  const rules: Array<{ tokens: string[]; type: IPluginInterfaceType }> = [
+    { tokens: ['harmony', 'hip'], type: IPluginInterfaceType.harmonyHipVoting },
+    { tokens: ['harmony', 'deleg'], type: IPluginInterfaceType.harmonyDelegationVoting },
+    { tokens: ['harmony', 'voting'], type: IPluginInterfaceType.harmonyVoting },
+    { tokens: ['token', 'voting'], type: IPluginInterfaceType.tokenVoting },
+    { tokens: ['lock', 'vote'], type: IPluginInterfaceType.lockToVote },
+    { tokens: ['multisig'], type: IPluginInterfaceType.multisig },
+    { tokens: ['admin'], type: IPluginInterfaceType.admin },
+    { tokens: ['gauge'], type: IPluginInterfaceType.gauge },
+    { tokens: ['spp'], type: IPluginInterfaceType.spp },
+    { tokens: ['core'], type: IPluginInterfaceType.spp },
+    { tokens: ['capital'], type: IPluginInterfaceType.capitalDistributor },
+    { tokens: ['distributor'], type: IPluginInterfaceType.capitalDistributor },
+  ]
+
+  for (const rule of rules) {
+    if (rule.tokens.every(token => normalized.includes(token))) {
+      return rule.type
+    }
+  }
 
   return undefined
 }
@@ -316,8 +349,10 @@ export const PluginHandler = {
     }
 
     const pluginInfo = await PluginDetector.detectPluginType(plugin.address, plugin.network)
-    document.interfaceType =
-      getHarmonyVotingInterfaceType(plugin.pluginSetupRepoAddress, plugin.network) ?? pluginInfo?.type
+    const interfaceTypeFromRepo =
+      getHarmonyVotingInterfaceType(plugin.pluginSetupRepoAddress, plugin.network) ??
+      getInterfaceTypeFromSubdomain(plugin.subdomain)
+    document.interfaceType = interfaceTypeFromRepo ?? pluginInfo?.type
 
     if (document.interfaceType === IPluginInterfaceType.tokenVoting) {
       // maybe the token is not a erc20 governance
@@ -394,8 +429,10 @@ export const PluginHandler = {
         }
 
         const pluginInfo = await PluginDetector.detectPluginType(pluginLog.pluginAddress, pluginLog.network)
-        document.interfaceType =
-          getHarmonyVotingInterfaceType(pluginLog.pluginSetupRepo, pluginLog.network) ?? pluginInfo?.type
+        const interfaceTypeFromRepo =
+          getHarmonyVotingInterfaceType(pluginLog.pluginSetupRepo, pluginLog.network) ??
+          getInterfaceTypeFromSubdomain(pluginRepo?.subdomain)
+        document.interfaceType = interfaceTypeFromRepo ?? pluginInfo?.type
 
         if (
           document.interfaceType === IPluginInterfaceType.tokenVoting ||

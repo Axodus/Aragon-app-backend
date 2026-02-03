@@ -162,4 +162,3 @@ function isDAOWhitelisted(daoAddress: string, pluginSlug: string): boolean {
 }
 
 export default PluginsController
-

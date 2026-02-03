@@ -177,7 +177,7 @@ export const ProposalHandler = {
       }
 
       const blockTimestamp = await Web3Helper.getBlockTimestamp(info.blockNumber, info.network)
-      const normalizedBlockTimestamp = (blockTimestamp ?? undefined) as Proposal['blockTimestamp']
+      const normalizedBlockTimestamp = blockTimestamp ?? undefined
 
       const document: Partial<Proposal> = {
         network: info.network,
@@ -318,7 +318,7 @@ export const ProposalHandler = {
           logIndex: info.logIndex,
         },
         { $set: document },
-        { upsert: true, new: true }
+        { upsert: true, new: true },
       )
 
       logger.verbose('New Proposal', llo({ ...info, logId: newProposal.id }))
@@ -403,7 +403,7 @@ export const ProposalHandler = {
       info.interfaceType = relatedPlugin.interfaceType
 
       const proposalIndex = parsedEvent.args?.proposalId?.toString()
-      
+
       // Idempotency check: verify if this exact log was already processed
       const existingLog = await Models.Proposal.findExistingLog({
         transactionHash: info.transactionHash,
@@ -449,7 +449,7 @@ export const ProposalHandler = {
       }
 
       const blockTimestamp = await Web3Helper.getBlockTimestamp(info.blockNumber, info.network)
-      const normalizedBlockTimestamp = (blockTimestamp ?? undefined) as Proposal['blockTimestamp']
+      const normalizedBlockTimestamp = blockTimestamp ?? undefined
       const block = await Web3Helper.getBlock(info.blockNumber, info.network)
       const blockHash = block?.hash ?? undefined
       const metadataHash = parsedEvent.args?.metadata
@@ -473,7 +473,7 @@ export const ProposalHandler = {
         network: info.network,
         blockNumber: info.blockNumber,
         blockHash,
-          blockTimestamp: normalizedBlockTimestamp,
+        blockTimestamp: normalizedBlockTimestamp,
         transactionHash: info.transactionHash,
         title: proposalMetadata?.title!,
         description: proposalMetadata?.description!,
@@ -488,7 +488,7 @@ export const ProposalHandler = {
         startDate: Number(parsedEvent.args.startDate),
         endDate: Number(parsedEvent.args.endDate),
         allowFailureMap: 0,
-          metadataUri: metadataUri ?? undefined,
+        metadataUri: metadataUri ?? undefined,
         settings: rawSettings,
         rawActions: [],
       }
@@ -513,7 +513,7 @@ export const ProposalHandler = {
           logIndex: info.logIndex,
         },
         { $set: document },
-        { upsert: true, new: true }
+        { upsert: true, new: true },
       )
 
       logger.verbose('New Harmony Proposal', llo({ ...info, logId: newProposal.id }))
@@ -681,7 +681,7 @@ export const ProposalHandler = {
             logIndex: info.logIndex,
           },
           { $set: document },
-          { upsert: true, new: true, session }
+          { upsert: true, new: true, session },
         )
 
         if (isExistingVote) {
@@ -741,7 +741,10 @@ export const ProposalHandler = {
 
       if (!proposal) {
         logger.warn('HarmonyVoteCast - Proposal not found', llo(info))
-        HarmonyIndexingMetrics.recordError(info.network, 'Proposal not found', { proposalIndex, pluginAddress: info.address })
+        HarmonyIndexingMetrics.recordError(info.network, 'Proposal not found', {
+          proposalIndex,
+          pluginAddress: info.address,
+        })
         return
       }
 
@@ -767,7 +770,8 @@ export const ProposalHandler = {
         logIndex: info.logIndex,
         blockNumber: info.blockNumber,
         blockHash,
-        blockTimestamp: ((await Web3Helper.getBlockTimestamp(info.blockNumber, info.network)) ?? undefined) as Vote['blockTimestamp'],
+        blockTimestamp: ((await Web3Helper.getBlockTimestamp(info.blockNumber, info.network)) ??
+          undefined) as Vote['blockTimestamp'],
         daoAddress: proposal.daoAddress,
         pluginAddress: info.address,
         memberAddress: parsedEvent.args.voter,
@@ -799,7 +803,7 @@ export const ProposalHandler = {
             logIndex: info.logIndex,
           },
           { $set: document },
-          { upsert: true, new: true, session }
+          { upsert: true, new: true, session },
         )
 
         if (isExistingVote) {

@@ -143,7 +143,7 @@ export class BackfillReplayService {
               service,
               batchStart: currentBatch,
               batchEnd,
-                progress: `${processedBlocks}/${endBlock - fromBlock + 1}`,
+              progress: `${processedBlocks}/${endBlock - fromBlock + 1}`,
             }),
           )
 

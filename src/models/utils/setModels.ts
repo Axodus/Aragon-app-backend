@@ -117,15 +117,15 @@ export const setMongoModels = async (): Promise<any> => {
         // CRITICAL: Build schema first, then add custom statics to it
         // This is the Mongoose-approved way to add static methods
         const schema = buildSchema(exportedClass)
-        
+
         // Add custom static methods directly to schema.statics
         const staticKeys = Object.getOwnPropertyNames(exportedClass).filter(
-          key => !((RESERVED_STATIC_KEYS as readonly string[]).includes(key)) && typeof exportedClass[key] === 'function'
+          key => !(RESERVED_STATIC_KEYS as readonly string[]).includes(key) && typeof exportedClass[key] === 'function',
         )
-        
+
         // Store custom statics in registry for re-application after Sinon restore
         customStaticsRegistry[exportedClass.name] = {}
-        
+
         staticKeys.forEach(key => {
           const staticMethod = exportedClass[key]
           if (typeof staticMethod === 'function') {
@@ -135,7 +135,7 @@ export const setMongoModels = async (): Promise<any> => {
             schema.statics[key] = staticMethod
           }
         })
-        
+
         // Now compile the model with the schema that has custom statics
         const model = mongoose.model(exportedClass.name, schema)
 

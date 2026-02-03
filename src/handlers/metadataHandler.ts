@@ -40,13 +40,16 @@ export const MetadataHandler = {
       })
 
       if (!ipfsMetadata) {
-        logger.warn('Metadata fetch failed or timed out, storing fallback record', llo({
-          metadataUri,
-          network,
-          transactionHash,
-          transactionIndex,
-          logIndex,
-        }))
+        logger.warn(
+          'Metadata fetch failed or timed out, storing fallback record',
+          llo({
+            metadataUri,
+            network,
+            transactionHash,
+            transactionIndex,
+            logIndex,
+          }),
+        )
       }
 
       const logMetadata: Partial<LogMetadata> = {

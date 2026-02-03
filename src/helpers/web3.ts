@@ -61,7 +61,7 @@ const Web3Helper = {
         // Use RPC pool with automatic failover (fallback to any provider when pool is not configured)
         return await executeWithPoolFallback(
           network,
-          async (provider) => {
+          async provider => {
             const bn = await retryRequest(async () =>
               BottleneckModule.getNodeLimiter(network).schedule(async () => provider.getBlockNumber()),
             )
@@ -83,7 +83,7 @@ const Web3Helper = {
       // Use RPC pool with automatic failover (fallback to any provider when pool is not configured)
       return await executeWithPoolFallback(
         network,
-        (provider) =>
+        async provider =>
           retryRequest(async () =>
             BottleneckModule.getNodeLimiter(network).schedule(async () => provider.getBlock(blockNumber)),
           ),
@@ -100,7 +100,7 @@ const Web3Helper = {
       // Use RPC pool with automatic failover (fallback to any provider when pool is not configured)
       return await executeWithPoolFallback(
         network,
-        async (provider) => {
+        async provider => {
           const block = await retryRequest(async () =>
             BottleneckModule.getNodeLimiter(network).schedule(async () => provider.getBlock(blockNumber)),
           )
@@ -119,7 +119,7 @@ const Web3Helper = {
       // Use RPC pool with automatic failover (fallback to any provider when pool is not configured)
       return await executeWithPoolFallback(
         network,
-        (provider) =>
+        async provider =>
           retryRequest(async () =>
             BottleneckModule.getNodeLimiter(network).schedule(async () => provider.getLogs(filter)),
           ),
@@ -136,7 +136,7 @@ const Web3Helper = {
       // Use RPC pool with automatic failover (fallback to any provider when pool is not configured)
       return await executeWithPoolFallback(
         network,
-        async (provider) => {
+        async provider => {
           const block = await retryRequest(async () =>
             BottleneckModule.getNodeLimiter(network).schedule(async () => provider.getBlock(blockNumber)),
           )

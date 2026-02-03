@@ -57,7 +57,7 @@ export class ReorgDetectionHelper {
       }
 
       const currentBlock = await Web3Helper.getBlock(blockNumber, normalizedNetwork)
-      
+
       if (!currentBlock) {
         logger.warn('ReorgCheck - Block not found on current chain', llo({ blockNumber, network }))
         return { isReorg: false }
@@ -71,12 +71,15 @@ export class ReorgDetectionHelper {
       }
 
       if (currentHash !== storedBlockHash) {
-        logger.warn('ReorgDetected - Block hash mismatch', llo({
-          blockNumber,
-          network,
-          storedHash: storedBlockHash,
-          currentHash: currentHash ?? undefined,
-        }))
+        logger.warn(
+          'ReorgDetected - Block hash mismatch',
+          llo({
+            blockNumber,
+            network,
+            storedHash: storedBlockHash,
+            currentHash: currentHash ?? undefined,
+          }),
+        )
         return {
           isReorg: true,
           affectedBlock: blockNumber,
@@ -158,12 +161,15 @@ export class ReorgDetectionHelper {
         blockNumber: { $gte: fromBlock, $lte: toBlock },
       })
 
-      logger.info('ReorgRollback - Proposals rolled back', llo({
-        fromBlock,
-        toBlock,
-        network,
-        count: affectedProposals.length,
-      }))
+      logger.info(
+        'ReorgRollback - Proposals rolled back',
+        llo({
+          fromBlock,
+          toBlock,
+          network,
+          count: affectedProposals.length,
+        }),
+      )
     } catch (error) {
       logger.error('ReorgRollback - Error rolling back proposals', llo({ fromBlock, toBlock, network, error }))
       throw error
@@ -195,12 +201,15 @@ export class ReorgDetectionHelper {
         blockNumber: { $gte: fromBlock, $lte: toBlock },
       })
 
-      logger.info('ReorgRollback - Votes rolled back', llo({
-        fromBlock,
-        toBlock,
-        network,
-        count: affectedVotes.length,
-      }))
+      logger.info(
+        'ReorgRollback - Votes rolled back',
+        llo({
+          fromBlock,
+          toBlock,
+          network,
+          count: affectedVotes.length,
+        }),
+      )
     } catch (error) {
       logger.error('ReorgRollback - Error rolling back votes', llo({ fromBlock, toBlock, network, error }))
       throw error

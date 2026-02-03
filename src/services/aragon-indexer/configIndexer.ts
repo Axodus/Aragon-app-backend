@@ -245,8 +245,7 @@ const IndexerEventConfig: IIndexerConfig[] = [
   {
     event: 'HarmonyProcessKeyConfigured',
     enableHistorical: true,
-    topic: new Interface(['event ProcessKeyConfigured(bytes32 indexed processKey)'])
-      .getEvent('ProcessKeyConfigured')
+    topic: new Interface(['event ProcessKeyConfigured(bytes32 indexed processKey)']).getEvent('ProcessKeyConfigured')
       ?.topicHash!,
     config: [
       {

@@ -49,8 +49,8 @@ export default class ValidatorConfig extends Model {
     assert(!!rawData.network, 'network is required')
     assert(!!rawData.pluginAddress, 'pluginAddress is required')
 
-    const network = rawData.network as NetworksEnum
-    const pluginAddress = rawData.pluginAddress as HexAddress
+    const network = rawData.network!
+    const pluginAddress = rawData.pluginAddress!
 
     if (!rawData.id) {
       rawData.id = this.getEntityId({

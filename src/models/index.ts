@@ -6,12 +6,7 @@ const modelsStore: IMongoModel | any = {}
 let baselineModelsStore: Record<string, any> | null = null
 
 function isProbablyMongooseModel(value: any): boolean {
-  return (
-    !!value &&
-    typeof value === 'function' &&
-    typeof value.modelName === 'string' &&
-    !!value.schema
-  )
+  return !!value && typeof value === 'function' && typeof value.modelName === 'string' && !!value.schema
 }
 
 export const Models: IMongoModel | any = new Proxy(modelsStore, {

@@ -24,7 +24,7 @@ export class ReorgDetector {
     try {
       // Get current block hash from the blockchain
       const currentBlockHash = await Web3Helper.getBlockHash(blockNumber, network)
-      
+
       if (!currentBlockHash) {
         logger.warn('Could not fetch current block hash', llo({ network, blockNumber }))
         return { isReorg: false }

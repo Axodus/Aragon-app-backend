@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * CLI script to backfill HarmonyVoting events
- * 
+ *
  * Usage:
  *   yarn backfill:harmony --network=harmony --plugin=0x123...
  *   yarn backfill:harmony --network=harmony --all
@@ -31,7 +31,7 @@ interface CliArgs {
 function parseArgs(): CliArgs {
   const args: CliArgs = {}
 
-  process.argv.slice(2).forEach((arg) => {
+  process.argv.slice(2).forEach(arg => {
     if (arg.startsWith('--network=')) {
       args.network = arg.split('=')[1]
     } else if (arg.startsWith('--plugin=')) {

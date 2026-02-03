@@ -175,7 +175,9 @@ async function runReplay(args: CliArgs) {
   }
 
   const events = getEventConfigs(args.events)
-  const addresses = (args.address ? [args.address] : getDaoRegistryAddresses(args.network)).map(address => address.toLowerCase())
+  const addresses = (args.address ? [args.address] : getDaoRegistryAddresses(args.network)).map(address =>
+    address.toLowerCase(),
+  )
 
   if (addresses.length === 0) {
     throw new Error(`No DAORegistry addresses configured for ${args.network}`)

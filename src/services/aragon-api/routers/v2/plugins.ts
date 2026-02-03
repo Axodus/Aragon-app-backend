@@ -87,7 +87,7 @@ const PluginRouter = {
     const result = await ValidationSchema.validateRoute(ctx, {
       params: {
         network: ctx.params.network as NetworksEnum,
-        pluginAddress: ctx.params.pluginAddress as HexAddress,
+        pluginAddress: ctx.params.pluginAddress,
       },
       schemas: {
         params: PluginSchema.getHarmonyValidatorConfig,
