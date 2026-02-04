@@ -10,6 +10,7 @@ const llo = logger.logMeta.bind(null, { service: 'helper:PluginDetector' })
 const PluginDetector = {
   SPP_FUNCTIONS: ['getStages(uint256)'],
   TOKEN_VOTING_FUNCTIONS: ['getVotingToken()', 'totalVotingPower(uint256)'],
+  NATIVE_TOKEN_VOTING_FUNCTIONS: ['setProposalSnapshot(uint256,bytes32,uint256)', 'getProposalSnapshot(uint256)'],
   HARMONY_VOTING_FUNCTIONS: [
     'setMerkleRoot(uint256,bytes32,uint256)',
     'submitVotingPower(uint256,address,uint256,bytes32[])',
@@ -45,70 +46,70 @@ const PluginDetector = {
     return keccak256(Buffer.from(functionSignature)).slice(0, 10)
   },
 
-  async detectPluginType(address: string, network: NetworksEnum): Promise<IPluginInfo> {
-    if (address === ZeroAddress) {
-      return {
-        type: IPluginInterfaceType.unknown,
-        proxy: false,
-        implementationAddress: null,
-        hasTarget: false,
+  _bytecodeHasFunction(bytecode: string, signature: string): boolean {
+    return bytecode.includes(PluginDetector._generateFunctionHash(signature).replace('0x', ''))
+  },
+
+  _bytecodeHasFunctions(bytecode: string, functions: string[]): boolean {
+    return functions.every(signature => PluginDetector._bytecodeHasFunction(bytecode, signature))
+  },
+
+  _detectTypeFromBytecode(bytecode: string): IPluginInterfaceType {
+    const typeRules: Array<{ functions: string[]; type: IPluginInterfaceType }> = [
+      { functions: PluginDetector.LOCK_TO_VOTE_FUNCTIONS, type: IPluginInterfaceType.lockToVote },
+      { functions: PluginDetector.HARMONY_VOTING_FUNCTIONS, type: IPluginInterfaceType.harmonyVoting },
+      { functions: PluginDetector.NATIVE_TOKEN_VOTING_FUNCTIONS, type: IPluginInterfaceType.nativeTokenVoting },
+      { functions: PluginDetector.TOKEN_VOTING_FUNCTIONS, type: IPluginInterfaceType.tokenVoting },
+      { functions: PluginDetector.SPP_FUNCTIONS, type: IPluginInterfaceType.spp },
+      { functions: PluginDetector.MULTISIG_FUNCTIONS, type: IPluginInterfaceType.multisig },
+      { functions: PluginDetector.CAPITAL_DISTRIBUTION_FUNCTIONS, type: IPluginInterfaceType.capitalDistributor },
+      { functions: PluginDetector.ADMIN_FUNCTIONS, type: IPluginInterfaceType.admin },
+      { functions: PluginDetector.GAUGE_VOTER_FUNCTIONS, type: IPluginInterfaceType.gauge },
+    ]
+
+    for (const rule of typeRules) {
+      if (PluginDetector._bytecodeHasFunctions(bytecode, rule.functions)) {
+        return rule.type
       }
     }
 
-    const provider = ProviderModule.getAnyRpcProvider(network)
-    let contractAddress = address
+    return IPluginInterfaceType.unknown
+  },
 
-    // Check if the contract is a proxy and get its implementation address
-    const implementationAddress = await ProxyContractHelper.getImplementationAddress(address, network)
-    if (implementationAddress) {
-      contractAddress = implementationAddress
-    }
-
-    const pluginDetails: IPluginInfo = {
-      proxy: !!implementationAddress,
-      implementationAddress: implementationAddress || null,
+  _createEmptyPluginInfo(implementationAddress?: string | null): IPluginInfo {
+    return {
+      proxy: Boolean(implementationAddress),
+      implementationAddress: implementationAddress ?? null,
       type: IPluginInterfaceType.unknown,
       hasTarget: false,
     }
+  },
+
+  _getCodeAddress(address: string, contractAddress: string): string {
+    return contractAddress === utils.zeroAddress ? address : contractAddress
+  },
+
+  _isEmptyBytecode(bytecode?: string): boolean {
+    return !bytecode || bytecode === '0x'
+  },
+
+  async detectPluginType(address: string, network: NetworksEnum): Promise<IPluginInfo> {
+    const provider = ProviderModule.getAnyRpcProvider(network)
+    if (address === ZeroAddress) return PluginDetector._createEmptyPluginInfo(null)
+    const implementationAddress = await ProxyContractHelper.getImplementationAddress(address, network)
+    const contractAddress = implementationAddress ?? address
+    const pluginDetails = PluginDetector._createEmptyPluginInfo(implementationAddress)
 
     try {
-      const contractCodeAddress = contractAddress === utils.zeroAddress ? address : contractAddress
-      const bytecode = await provider.getCode(contractCodeAddress)
-      if (!bytecode || bytecode === '0x') return pluginDetails
+      const codeAddress = PluginDetector._getCodeAddress(address, contractAddress)
+      const bytecode = await provider.getCode(codeAddress)
+      if (PluginDetector._isEmptyBytecode(bytecode)) return pluginDetails
 
-      function hasFunction(signature: string): boolean {
-        return bytecode.includes(PluginDetector._generateFunctionHash(signature).replace('0x', ''))
+      return {
+        ...pluginDetails,
+        type: PluginDetector._detectTypeFromBytecode(bytecode),
+        hasTarget: PluginDetector._bytecodeHasFunctions(bytecode, PluginDetector.HAS_TARGET),
       }
-
-      function hasFunctions(functions: string[]): boolean {
-        return functions.every(hasFunction)
-      }
-
-      if (hasFunctions(PluginDetector.LOCK_TO_VOTE_FUNCTIONS)) {
-        pluginDetails.type = IPluginInterfaceType.lockToVote
-      } else if (hasFunctions(PluginDetector.HARMONY_VOTING_FUNCTIONS)) {
-        pluginDetails.type = IPluginInterfaceType.harmonyVoting
-      } else if (hasFunctions(PluginDetector.TOKEN_VOTING_FUNCTIONS)) {
-        pluginDetails.type = IPluginInterfaceType.tokenVoting
-      } else if (hasFunctions(PluginDetector.SPP_FUNCTIONS)) {
-        pluginDetails.type = IPluginInterfaceType.spp
-      } else if (hasFunctions(PluginDetector.MULTISIG_FUNCTIONS)) {
-        pluginDetails.type = IPluginInterfaceType.multisig
-      } else if (hasFunctions(PluginDetector.CAPITAL_DISTRIBUTION_FUNCTIONS)) {
-        pluginDetails.type = IPluginInterfaceType.capitalDistributor
-      } else if (hasFunctions(PluginDetector.ADMIN_FUNCTIONS)) {
-        pluginDetails.type = IPluginInterfaceType.admin
-      } else if (hasFunctions(PluginDetector.GAUGE_VOTER_FUNCTIONS)) {
-        pluginDetails.type = IPluginInterfaceType.gauge
-      } else {
-        pluginDetails.type = IPluginInterfaceType.unknown
-      }
-
-      if (hasFunctions(PluginDetector.HAS_TARGET)) {
-        pluginDetails.hasTarget = true
-      }
-
-      return pluginDetails
     } catch (error) {
       logger.error('Error detecting plugin type', llo({ address, error }))
       return pluginDetails

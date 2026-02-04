@@ -21,6 +21,8 @@ export const PluginSlug = {
         return IPluginSlug.locktovote
       case IPluginInterfaceType.tokenVoting:
         return IPluginSlug.tokenvoting
+      case IPluginInterfaceType.nativeTokenVoting:
+        return IPluginSlug.nativetokenvoting
       case IPluginInterfaceType.multisig:
         return IPluginSlug.multisig
       case IPluginInterfaceType.admin:

@@ -71,6 +71,9 @@ const getInterfaceTypeFromSubdomain = (subdomain?: string): IPluginInterfaceType
 
   const normalized = subdomain.toLowerCase().replace(/[^a-z0-9]/g, '')
   const rules: Array<{ tokens: string[]; type: IPluginInterfaceType }> = [
+    // Must be checked before the generic tokenVoting match.
+    // Otherwise, "native-token-voting" would be incorrectly classified as "tokenVoting".
+    { tokens: ['native', 'token', 'voting'], type: IPluginInterfaceType.nativeTokenVoting },
     { tokens: ['harmony', 'hip'], type: IPluginInterfaceType.harmonyHipVoting },
     { tokens: ['harmony', 'deleg'], type: IPluginInterfaceType.harmonyDelegationVoting },
     { tokens: ['harmony', 'voting'], type: IPluginInterfaceType.harmonyVoting },
