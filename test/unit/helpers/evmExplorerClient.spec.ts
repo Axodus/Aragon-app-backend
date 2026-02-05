@@ -395,7 +395,8 @@ describe('Helpers: EvmExplorerClient', () => {
 
       const result = await evmExplorerClient.fetchContractSourceCode(EvmExplorerEnum.BLOCKSCOUT, address, network)
 
-      expect(networkToAragonStub.calledOnce).to.be.true
+      // Called twice: first for `getsourcecode`, then again for fallback `getabi`.
+      expect(networkToAragonStub.calledTwice).to.be.true
       expect(result).to.be.null
     })
 

@@ -65,7 +65,7 @@ class EvmExplorerClient {
       },
     },
     [EvmExplorerEnum.CHILIZ]: {
-      buildUrlAndParams: (customParams = {}) => {
+      buildUrlAndParams: (_network: NetworksEnum, customParams = {}) => {
         const baseUrl = `${config.CHILIZ_API_URL}/api`
         return {
           url: baseUrl,
