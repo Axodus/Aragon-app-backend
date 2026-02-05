@@ -160,6 +160,51 @@ describe('AragonDao: contractInfo', () => {
       expect(result).to.be.null
     })
 
+    it('should return contract data when ABI exists but source code is empty', async () => {
+      const mockABI = [
+        {
+          name: 'allowDAO',
+          type: 'function',
+          inputs: [{ name: '_dao', type: 'address' }],
+          stateMutability: 'nonpayable',
+        },
+        {
+          name: 'allowedDAOs',
+          type: 'function',
+          inputs: [{ name: '', type: 'address' }],
+          stateMutability: 'view',
+        },
+      ]
+
+      const fetchContractSourceCodeStub = sandbox.stub(ProxyWeb3Provider, 'fetchContractSourceCode').resolves([
+        {
+          SourceCode: '',
+          ContractName: '',
+          ABI: JSON.stringify(mockABI),
+          CompilerVersion: 'v0.8.0',
+        },
+      ])
+
+      const parseNetspecStub = sandbox.stub(ContractNetspecHelper, 'parseNetspec')
+
+      const result = await ContractInfo.fetchVerifiedContractData(NetworksEnum.ethereumSepolia, '0xaddress')
+
+      expect(fetchContractSourceCodeStub.calledOnce).to.be.true
+      expect(parseNetspecStub.called).to.be.false
+      expect(result).to.be.deep.eq({
+        name: null,
+        functions: [
+          {
+            name: 'allowDAO',
+            parameters: [{ name: '_dao', type: 'address' }],
+            type: 'function',
+            stateMutability: 'nonpayable',
+            notice: undefined,
+          },
+        ],
+      })
+    })
+
     it('should return if the contract netspec returns empty', async () => {
       let fetchContractSourceCodeStub = sandbox
         .stub(ProxyWeb3Provider, 'fetchContractSourceCode')

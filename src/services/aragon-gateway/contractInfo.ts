@@ -39,19 +39,29 @@ export const ContractInfo = {
       address: contractAddress,
     })
 
-    if (!contractDetails?.length || !contractDetails[0].SourceCode) return null
+    if (!contractDetails?.length) return null
 
-    const parsed = ContractNetspecHelper.parseNetspec(
-      contractDetails[0].SourceCode,
-      contractDetails[0].ContractName,
-      JSON.parse(contractDetails[0].ABI || '[]'),
-      contractDetails[0].CompilerVersion,
-    )
+    const abi = JSON.parse(contractDetails[0].ABI || '[]')
+    const hasAbi = Array.isArray(abi) && abi.length > 0
+    const hasSourceCode = Boolean(contractDetails[0].SourceCode)
+
+    // Some explorers provide ABI without verified source code (e.g., Harmony getabi).
+    // In this scenario we still want to expose write functions, but we can't enrich with NatSpec.
+    if (!hasSourceCode && !hasAbi) return null
+
+    const parsed = hasSourceCode
+      ? ContractNetspecHelper.parseNetspec(
+          contractDetails[0].SourceCode,
+          contractDetails[0].ContractName,
+          abi,
+          contractDetails[0].CompilerVersion,
+        )
+      : abi
 
     if (!parsed?.length) return null
 
     return {
-      name: contractDetails[0].ContractName,
+      name: contractDetails[0].ContractName || null,
       functions: ContractInfo.parseContractAbi(parsed),
     }
   },
