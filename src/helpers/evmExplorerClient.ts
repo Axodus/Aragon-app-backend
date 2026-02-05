@@ -51,15 +51,15 @@ class EvmExplorerClient {
     [EvmExplorerEnum.BLOCKSCOUT]: {
       buildUrlAndParams: (network: NetworksEnum, customParams = {}) => {
         const networkConfig = config.NODES[utils.networkToAragon(network)]
-        if (networkConfig.BLOCKSCOUT_API_KEY === undefined) {
-          return null
-        }
+        const baseUrl = networkConfig?.BLOCKSCOUT_API_URL
+        if (!baseUrl) return null
 
+        const apiKey = networkConfig?.BLOCKSCOUT_API_KEY
         return {
-          url: `${networkConfig.BLOCKSCOUT_API_URL}`,
+          url: `${baseUrl}`,
           params: {
             ...customParams,
-            apikey: networkConfig.BLOCKSCOUT_API_KEY,
+            ...(apiKey ? { apikey: apiKey } : {}),
           },
         }
       },
@@ -108,9 +108,14 @@ class EvmExplorerClient {
 
       const { url, params: requestParams } = built
 
-      const response = await retryRequest(async () =>
-        BottleneckModule.getEtherScanLimiter(network).schedule(async () => axios.get(url, { params: requestParams })),
-      )
+      const limiter =
+        explorerType === EvmExplorerEnum.BLOCKSCOUT
+          ? BottleneckModule.getBlockScoutLimiter(network)
+          : explorerType === EvmExplorerEnum.CHILIZ
+            ? BottleneckModule.getChilizLimiter(network)
+            : BottleneckModule.getEtherScanLimiter(network)
+
+      const response = await retryRequest(async () => limiter.schedule(async () => axios.get(url, { params: requestParams })))
 
       return response?.data
     } catch (error) {

@@ -18,8 +18,20 @@ export async function retryRequest<T>(requestFunction: () => Promise<T>, options
   while (retryCount < maxRetries) {
     try {
       const response: any = await requestFunction()
+
+      // Etherscan-style APIs often return HTTP 200 with `message: "NOTOK"` for multiple error cases.
+      // Only treat it as rate-limit when the payload explicitly indicates throttling.
       if (response?.data?.message === 'NOTOK') {
-        assert(false, 'Rate limit', { status: 429, description: 'Rate limit exceeded' })
+        const resultText = String(response?.data?.result ?? '').toLowerCase()
+        const looksLikeRateLimit =
+          resultText.includes('rate limit') ||
+          resultText.includes('max rate limit') ||
+          resultText.includes('too many request') ||
+          resultText.includes('throttl')
+
+        if (looksLikeRateLimit) {
+          assert(false, 'Rate limit', { status: 429, description: 'Rate limit exceeded' })
+        }
       }
       return response
     } catch (error: any) {
@@ -79,7 +91,7 @@ export async function retryResult<T>(fn: () => Promise<T>, retries: number, dela
     }
 
     if (attempt < retries) {
-      await new Promise(resolve => setTimeout(resolve, delay * attempt))
+      await new Promise(resolve => globalThis.setTimeout(resolve, delay * attempt))
     }
   }
   return null

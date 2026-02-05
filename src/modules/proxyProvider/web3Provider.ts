@@ -169,7 +169,11 @@ const Web3Provider: IWeb3Provider = {
   },
 
   fetchContractSourceCode: async ({ address, network }) => {
-    const explorers: EvmExplorerType[] = [EvmExplorerEnum.ETHERSCAN, EvmExplorerEnum.BLOCKSCOUT, EvmExplorerEnum.ROUTESCAN]
+    let explorers: EvmExplorerType[] = [EvmExplorerEnum.ETHERSCAN, EvmExplorerEnum.BLOCKSCOUT, EvmExplorerEnum.ROUTESCAN]
+    // Prefer Blockscout for Harmony networks (Harmony uses Blockscout as primary explorer)
+    if (network === NetworksEnum.harmonyMainnet || network === NetworksEnum.harmonyTestnet) {
+      explorers = [EvmExplorerEnum.BLOCKSCOUT, EvmExplorerEnum.ETHERSCAN, EvmExplorerEnum.ROUTESCAN]
+    }
     if (network === NetworksEnum.zksyncMainnet || network === NetworksEnum.zksyncSepolia) {
       explorers.unshift(EvmExplorerEnum.ZKSYNC)
     }
