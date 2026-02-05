@@ -6,7 +6,7 @@
 **End Date Goal:** 2026-02-15  
 **Priority:** HIGH  
 **Estimative Hours:** 24h  
-**Status:** IN_PROGRESS
+**Status:** COMPLETED
 
 ---
 
@@ -48,18 +48,18 @@ This plan addresses backend/indexer issues affecting HarmonyVoting plugins. The 
 
 ### [PLAN-HarmonyVotingBE | SPRINT-001] Diagnosis & Schema Audit
 
-- [ ] [PLAN-HarmonyVotingBE | SPRINT-001 | TASK-001] Audit proposal model for HarmonyVoting support [key:01JK8BE00001] [status:TODO] [priority:HIGH] [estimate:3h]
-- [ ] [PLAN-HarmonyVotingBE | SPRINT-001 | TASK-002] Check indexer event handlers [key:01JK8BE00002] [status:TODO] [priority:HIGH] [estimate:3h]
-- [ ] [PLAN-HarmonyVotingBE | SPRINT-001 | TASK-003] Review API endpoints for proposal queries [key:01JK8BE00003] [status:TODO] [priority:HIGH] [estimate:2h]
+- [x] [PLAN-HarmonyVotingBE | SPRINT-001 | TASK-001] Audit proposal model for HarmonyVoting support [key:01JK8BE00001] [status:COMPLETED] [priority:HIGH] [estimate:3h]
+- [x] [PLAN-HarmonyVotingBE | SPRINT-001 | TASK-002] Check indexer event handlers [key:01JK8BE00002] [status:COMPLETED] [priority:HIGH] [estimate:3h]
+- [x] [PLAN-HarmonyVotingBE | SPRINT-001 | TASK-003] Review API endpoints for proposal queries [key:01JK8BE00003] [status:COMPLETED] [priority:HIGH] [estimate:2h]
 
 ### [PLAN-HarmonyVotingBE | SPRINT-002] Implementation & Backfill
 
-- [ ] [PLAN-HarmonyVotingBE | SPRINT-002 | BUG-001] Add HarmonyVoting proposal indexing [key:01JK8BE00004] [status:TODO] [priority:URGENT] [estimate:6h]
-- [ ] [PLAN-HarmonyVotingBE | SPRINT-002 | BUG-002] Index validator configuration events [key:01JK8BE00005] [status:TODO] [priority:HIGH] [estimate:4h]
-- [ ] [PLAN-HarmonyVotingBE | SPRINT-002 | TASK-001] Add delegation tracking [key:01JK8BE00006] [status:TODO] [priority:MEDIUM] [estimate:4h]
-- [ ] [PLAN-HarmonyVotingBE | SPRINT-002 | TASK-002] Fix TypeScript errors in scripts [key:01JK8BE00007] [status:TODO] [priority:HIGH] [estimate:2h]
-- [ ] [PLAN-HarmonyVotingBE | SPRINT-002 | TASK-003] Run backfill for historical data [key:01JK8BE00008] [status:TODO] [priority:HIGH] [estimate:2h]
-- [ ] [PLAN-HarmonyVotingBE | SPRINT-002 | TASK-004] Validation tests [key:01JK8BE00009] [status:TODO] [priority:HIGH] [estimate:2h]
+- [x] [PLAN-HarmonyVotingBE | SPRINT-002 | BUG-001] Add HarmonyVoting proposal indexing [key:01JK8BE00004] [status:COMPLETED] [priority:URGENT] [estimate:6h]
+- [x] [PLAN-HarmonyVotingBE | SPRINT-002 | BUG-002] Index validator configuration events [key:01JK8BE00005] [status:COMPLETED] [priority:HIGH] [estimate:4h]
+- [x] [PLAN-HarmonyVotingBE | SPRINT-002 | TASK-001] Add delegation tracking [key:01JK8BE00006] [status:COMPLETED] [priority:MEDIUM] [estimate:4h]
+- [x] [PLAN-HarmonyVotingBE | SPRINT-002 | TASK-002] Fix TypeScript errors in scripts [key:01JK8BE00007] [status:COMPLETED] [priority:HIGH] [estimate:2h]
+- [x] [PLAN-HarmonyVotingBE | SPRINT-002 | TASK-003] Run backfill for historical data [key:01JK8BE00008] [status:COMPLETED] [priority:HIGH] [estimate:2h]
+- [x] [PLAN-HarmonyVotingBE | SPRINT-002 | TASK-004] Validation tests [key:01JK8BE00009] [status:COMPLETED] [priority:HIGH] [estimate:2h]
 
 ---
 
@@ -113,18 +113,16 @@ Reference: `TYPESCRIPT_ERRORS_FIX.md`
 
 ## Progress & Next Steps
 
-- **Status summary:** Iniciado — escopo definido e arquivos-chave identificados; auditoria em andamento.
-- **Completed:** Plano criado; lista de arquivos e scripts prioritários mapeada; comandos e integração com Harmony documentados.
+- **Status summary:** Completed — backend diagnostics and implementation for HarmonyVoting addressed.
+- **Completed:** All sprint tasks implemented: proposal indexing, validator configuration indexing, delegation tracking, TypeScript fixes, backfill and validation tests. Evidence collected: backend logs (including `tooBusy` warnings captured during peak), frontend start logs, and E2E installation/proposal verification artifacts.
 - **Next actions:**
-  - Concluir `TASK-001` (Audit proposal model for HarmonyVoting support).
-  - Revisar e implementar handlers de indexação (target: `BUG-001`).
-  - Corrigir erros de TypeScript listados e garantir `npx tsc --noEmit` passa antes dos testes.
-  - Implementar backfill em ambiente de teste e validar cobertura histórica.
-- **Owners (provisório):** @backend-team — substituir por responsáveis reais.
+  - Monitor for recurrence of `tooBusy` warnings; add event-loop lag and GC metrics to observability.
+  - Add scheduled health checks and alerts on currentLag metric to proactively detect backlog.
+  - Owners: @backend-team — replace with responsible engineers and schedule post-mortem if `tooBusy` recurs.
 - **Milestones:**
-  - M1 — Diagnosis complete (target: 2026-02-07)
-  - M2 — Implementation & Backfill (target: 2026-02-12)
-- **Notes:** Priorizar correções de tipagem e cobertura de unidade antes do backfill em produção.
+  - M1 — Diagnosis complete (completed)
+  - M2 — Implementation & Backfill (completed)
+- **Notes:** Monitoring and throttling of heavy backfill jobs are recommended to avoid future spikes.
 
 
 ## Harmony API Integration
@@ -200,10 +198,10 @@ pnpm test:unit
 
 ## Definition of Done
 
-- [ ] TypeScript errors fixed (`npx tsc --noEmit` passes)
-- [ ] HarmonyVoting proposals indexed
-- [ ] Validator data persisted
-- [ ] Delegation events tracked
-- [ ] Backfill script runs successfully
-- [ ] API returns HarmonyVoting proposals
-- [ ] Unit tests pass
+- [x] TypeScript errors fixed (`npx tsc --noEmit` passes)
+- [x] HarmonyVoting proposals indexed
+- [x] Validator data persisted
+- [x] Delegation events tracked
+- [x] Backfill script runs successfully
+- [x] API returns HarmonyVoting proposals
+- [x] Unit tests pass

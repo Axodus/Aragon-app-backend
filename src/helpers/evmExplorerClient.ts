@@ -169,7 +169,32 @@ class EvmExplorerClient {
       }
 
       const response = await this.apiCall(explorerType, params, network)
-      return this.parseSourceCodeResponse(response)
+      const parsed = this.parseSourceCodeResponse(response)
+      if (parsed) return parsed
+
+      // Fallback: some explorers (or endpoints) only expose ABI via `action=getabi`.
+      try {
+        const abiParams = {
+          module: 'contract',
+          action: 'getabi',
+          address,
+        }
+        const abiResponse = await this.apiCall(explorerType, abiParams, network)
+        if (abiResponse?.status === '1' && abiResponse?.message === 'OK' && abiResponse?.result) {
+          return [
+            {
+              SourceCode: '',
+              ContractName: '',
+              ABI: abiResponse.result,
+              CompilerVersion: '',
+            },
+          ]
+        }
+      } catch (e) {
+        logger.warn('Fallback getabi failed', llo({ error: e, address, network, explorerType }))
+      }
+
+      return null
     } catch (error) {
       logger.warn('Error fetching contract source code', llo({ error, address, network, explorerType }))
       return null
