@@ -6,7 +6,7 @@
 **End Date Goal:** 2026-02-15  
 **Priority:** HIGH  
 **Estimative Hours:** 24h  
-**Status:** TODO
+**Status:** IN_PROGRESS
 
 ---
 
@@ -110,6 +110,22 @@ Reference: `TYPESCRIPT_ERRORS_FIX.md`
 | Subgraph provides raw events | AragonOSX | Alternative source |
 
 ---
+
+## Progress & Next Steps
+
+- **Status summary:** Iniciado — escopo definido e arquivos-chave identificados; auditoria em andamento.
+- **Completed:** Plano criado; lista de arquivos e scripts prioritários mapeada; comandos e integração com Harmony documentados.
+- **Next actions:**
+  - Concluir `TASK-001` (Audit proposal model for HarmonyVoting support).
+  - Revisar e implementar handlers de indexação (target: `BUG-001`).
+  - Corrigir erros de TypeScript listados e garantir `npx tsc --noEmit` passa antes dos testes.
+  - Implementar backfill em ambiente de teste e validar cobertura histórica.
+- **Owners (provisório):** @backend-team — substituir por responsáveis reais.
+- **Milestones:**
+  - M1 — Diagnosis complete (target: 2026-02-07)
+  - M2 — Implementation & Backfill (target: 2026-02-12)
+- **Notes:** Priorizar correções de tipagem e cobertura de unidade antes do backfill em produção.
+
 
 ## Harmony API Integration
 

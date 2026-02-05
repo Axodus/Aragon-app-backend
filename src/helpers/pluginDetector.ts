@@ -1,4 +1,4 @@
-import { keccak256, ZeroAddress } from 'ethers'
+import { keccak256, toUtf8Bytes, ZeroAddress } from 'ethers'
 import { VotingBodyBrandIdentity, type IPluginInfo, IPluginInterfaceType, type NetworksEnum } from '@types'
 import ProxyContractHelper from '@helpers/proxyContract'
 import ProviderModule from '@modules/provider'
@@ -15,6 +15,14 @@ const PluginDetector = {
     'setMerkleRoot(uint256,bytes32,uint256)',
     'submitVotingPower(uint256,address,uint256,bytes32[])',
     'getProposal(uint256)',
+  ],
+  // Delegation voting extends HarmonyVotingBase with validator/process discriminator getters.
+  HARMONY_DELEGATION_VOTING_FUNCTIONS: [
+    'setMerkleRoot(uint256,bytes32,uint256)',
+    'submitVotingPower(uint256,address,uint256,bytes32[])',
+    'getProposal(uint256)',
+    'validatorAddress()',
+    'processKey()',
   ],
   MULTISIG_FUNCTIONS: ['isMember(address)', 'isListed(address)', 'multisigSettings()'],
   ADMIN_FUNCTIONS: ['isMember(address)'],
@@ -43,7 +51,7 @@ const PluginDetector = {
   ],
 
   _generateFunctionHash(functionSignature: string): string {
-    return keccak256(Buffer.from(functionSignature)).slice(0, 10)
+    return keccak256(toUtf8Bytes(functionSignature)).slice(0, 10)
   },
 
   _bytecodeHasFunction(bytecode: string, signature: string): boolean {
@@ -57,7 +65,10 @@ const PluginDetector = {
   _detectTypeFromBytecode(bytecode: string): IPluginInterfaceType {
     const typeRules: Array<{ functions: string[]; type: IPluginInterfaceType }> = [
       { functions: PluginDetector.LOCK_TO_VOTE_FUNCTIONS, type: IPluginInterfaceType.lockToVote },
-      { functions: PluginDetector.HARMONY_VOTING_FUNCTIONS, type: IPluginInterfaceType.harmonyVoting },
+      // Must be checked before the generic HarmonyVotingBase match.
+      { functions: PluginDetector.HARMONY_DELEGATION_VOTING_FUNCTIONS, type: IPluginInterfaceType.harmonyDelegationVoting },
+      // Default HarmonyVotingBase match to HIP voting to avoid UI registry mismatches.
+      { functions: PluginDetector.HARMONY_VOTING_FUNCTIONS, type: IPluginInterfaceType.harmonyHipVoting },
       { functions: PluginDetector.NATIVE_TOKEN_VOTING_FUNCTIONS, type: IPluginInterfaceType.nativeTokenVoting },
       { functions: PluginDetector.TOKEN_VOTING_FUNCTIONS, type: IPluginInterfaceType.tokenVoting },
       { functions: PluginDetector.SPP_FUNCTIONS, type: IPluginInterfaceType.spp },

@@ -123,7 +123,28 @@ describe('Helper: PluginDetector', () => {
     } as any)
 
     const result = await PluginDetector.detectPluginType('0xAddress', NetworksEnum.ethereumMainnet)
-    expect(result.type).to.equal(IPluginInterfaceType.harmonyVoting)
+    expect(result.type).to.equal(IPluginInterfaceType.harmonyHipVoting)
+    expect(result.proxy).to.be.false
+    expect(result.hasTarget).to.be.true
+    expect(getImplementationAddressStub.calledOnce).to.be.true
+    expect(getImplementationAddressStub.calledWith('0xAddress', NetworksEnum.ethereumMainnet)).to.be.true
+  })
+
+  it('should detect harmonyDelegationVoting plugin', async () => {
+    const getImplementationAddressStub = sandbox.stub(ProxyContractHelper, 'getImplementationAddress').resolves(null)
+    sandbox.stub(ProviderModule, 'getAnyRpcProvider').returns({
+      getCode: sandbox
+        .stub()
+        .resolves(
+          simulateBytecodeForFunctions([
+            ...PluginDetector.HARMONY_DELEGATION_VOTING_FUNCTIONS,
+            ...PluginDetector.HAS_TARGET,
+          ]),
+        ),
+    } as any)
+
+    const result = await PluginDetector.detectPluginType('0xAddress', NetworksEnum.ethereumMainnet)
+    expect(result.type).to.equal(IPluginInterfaceType.harmonyDelegationVoting)
     expect(result.proxy).to.be.false
     expect(result.hasTarget).to.be.true
     expect(getImplementationAddressStub.calledOnce).to.be.true

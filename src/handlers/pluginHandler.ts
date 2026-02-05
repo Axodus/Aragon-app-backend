@@ -352,10 +352,9 @@ export const PluginHandler = {
     }
 
     const pluginInfo = await PluginDetector.detectPluginType(plugin.address, plugin.network)
-    const interfaceTypeFromRepo =
-      getHarmonyVotingInterfaceType(plugin.pluginSetupRepoAddress, plugin.network) ??
-      getInterfaceTypeFromSubdomain(plugin.subdomain)
-    document.interfaceType = interfaceTypeFromRepo ?? pluginInfo?.type
+    const interfaceTypeFromHarmonyRepo = getHarmonyVotingInterfaceType(plugin.pluginSetupRepoAddress, plugin.network)
+    const interfaceTypeFromSubdomain = getInterfaceTypeFromSubdomain(plugin.subdomain)
+    document.interfaceType = interfaceTypeFromHarmonyRepo ?? pluginInfo?.type ?? interfaceTypeFromSubdomain
 
     if (document.interfaceType === IPluginInterfaceType.tokenVoting) {
       // maybe the token is not a erc20 governance
@@ -432,10 +431,9 @@ export const PluginHandler = {
         }
 
         const pluginInfo = await PluginDetector.detectPluginType(pluginLog.pluginAddress, pluginLog.network)
-        const interfaceTypeFromRepo =
-          getHarmonyVotingInterfaceType(pluginLog.pluginSetupRepo, pluginLog.network) ??
-          getInterfaceTypeFromSubdomain(pluginRepo?.subdomain)
-        document.interfaceType = interfaceTypeFromRepo ?? pluginInfo?.type
+        const interfaceTypeFromHarmonyRepo = getHarmonyVotingInterfaceType(pluginLog.pluginSetupRepo, pluginLog.network)
+        const interfaceTypeFromSubdomain = getInterfaceTypeFromSubdomain(pluginRepo?.subdomain)
+        document.interfaceType = interfaceTypeFromHarmonyRepo ?? pluginInfo?.type ?? interfaceTypeFromSubdomain
 
         if (
           document.interfaceType === IPluginInterfaceType.tokenVoting ||
