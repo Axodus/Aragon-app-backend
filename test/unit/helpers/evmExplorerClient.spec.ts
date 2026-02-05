@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, it } from 'mocha'
 import * as sinon from 'sinon'
 import { SinonSandbox } from 'sinon'
 import { expect } from 'chai'
-import { evmExplorerClient, EvmExplorerEnum } from '@helpers/evmExplorerClient'
+import { evmExplorerClient, EvmExplorerEnum, type EvmExplorerType } from '@helpers/evmExplorerClient'
 import { NetworksEnum } from '@types'
 import axios from 'axios'
 import logger from '@logger'
@@ -492,7 +492,11 @@ describe('Helpers: EvmExplorerClient', () => {
     })
 
     it('should return null for unsupported explorer type', async () => {
-      const result = await evmExplorerClient.fetchContractSourceCode('unsupported' as EvmExplorerEnum, address, network)
+      const result = await evmExplorerClient.fetchContractSourceCode(
+        'unsupported' as unknown as EvmExplorerType,
+        address,
+        network,
+      )
 
       expect(result).to.be.null
     })
@@ -658,7 +662,11 @@ describe('Helpers: EvmExplorerClient', () => {
     })
 
     it('should return default values for unsupported explorer type', async () => {
-      const result = await evmExplorerClient.fetchContractCreation('unsupported' as EvmExplorerEnum, address, network)
+      const result = await evmExplorerClient.fetchContractCreation(
+        'unsupported' as unknown as EvmExplorerType,
+        address,
+        network,
+      )
 
       expect(result).to.deep.equal({
         address,
@@ -1053,7 +1061,7 @@ describe('Helpers: EvmExplorerClient', () => {
     })
 
     it('should return empty array for unsupported explorer type', async () => {
-      const result = await evmExplorerClient.getTokenBalances('unsupported' as EvmExplorerEnum, address, network)
+      const result = await evmExplorerClient.getTokenBalances('unsupported' as unknown as EvmExplorerType, address, network)
 
       expect(result).to.deep.equal([])
     })
@@ -1447,7 +1455,7 @@ describe('Helpers: EvmExplorerClient', () => {
     })
 
     it('should return undefined for unsupported explorer type', async () => {
-      const result = await evmExplorerClient.fetchTokenInfo('unsupported' as EvmExplorerEnum, address, network)
+      const result = await evmExplorerClient.fetchTokenInfo('unsupported' as unknown as EvmExplorerType, address, network)
 
       expect(result).to.be.undefined
     })

@@ -7,7 +7,7 @@ import Alchemy from '@helpers/alchemy'
 import Web3Utils from '@helpers/web3Utils'
 import BlockScoutHelper from '@helpers/blockScout'
 import Web3Helper from '@helpers/web3'
-import { evmExplorerClient, EvmExplorerEnum } from '@helpers/evmExplorerClient'
+import { evmExplorerClient, EvmExplorerEnum, type EvmExplorerType } from '@helpers/evmExplorerClient'
 import { ITransactionType } from '@src/types/transfer'
 import { formatUnits } from 'ethers'
 
@@ -138,14 +138,14 @@ const Web3Provider: IWeb3Provider = {
   },
 
   fetchContractCreation: async ({ address, network }) => {
-    const explorers = [EvmExplorerEnum.BLOCKSCOUT, EvmExplorerEnum.ETHERSCAN, EvmExplorerEnum.ROUTESCAN]
+    const explorers: EvmExplorerType[] = [EvmExplorerEnum.BLOCKSCOUT, EvmExplorerEnum.ETHERSCAN, EvmExplorerEnum.ROUTESCAN]
     if (network === NetworksEnum.zksyncMainnet || network === NetworksEnum.zksyncSepolia) {
       explorers.unshift(EvmExplorerEnum.ZKSYNC)
     }
 
     const result = await utils.fallbackCall(
       explorers,
-      async (explorerType: EvmExplorerEnum) => {
+      async (explorerType: EvmExplorerType) => {
         return await evmExplorerClient.fetchContractCreation(explorerType, address, network)
       },
       {
@@ -169,13 +169,13 @@ const Web3Provider: IWeb3Provider = {
   },
 
   fetchContractSourceCode: async ({ address, network }) => {
-    const explorers = [EvmExplorerEnum.ETHERSCAN, EvmExplorerEnum.BLOCKSCOUT, EvmExplorerEnum.ROUTESCAN]
+    const explorers: EvmExplorerType[] = [EvmExplorerEnum.ETHERSCAN, EvmExplorerEnum.BLOCKSCOUT, EvmExplorerEnum.ROUTESCAN]
     if (network === NetworksEnum.zksyncMainnet || network === NetworksEnum.zksyncSepolia) {
       explorers.unshift(EvmExplorerEnum.ZKSYNC)
     }
     const result = await utils.fallbackCall(
       explorers,
-      async (explorerType: EvmExplorerEnum) => {
+      async (explorerType: EvmExplorerType) => {
         return await evmExplorerClient.fetchContractSourceCode(explorerType, address, network)
       },
       {
