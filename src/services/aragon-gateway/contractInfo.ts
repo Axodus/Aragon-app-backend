@@ -33,7 +33,7 @@ export const ContractInfo = {
   fetchVerifiedContractData: async (
     network: NetworksEnum,
     contractAddress: string,
-  ): Promise<{ name: string; functions: any[] } | null> => {
+  ): Promise<{ name: string | null; functions: any[] } | null> => {
     const contractDetails = await ProxyWeb3Provider.fetchContractSourceCode({
       network,
       address: contractAddress,

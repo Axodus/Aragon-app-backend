@@ -245,14 +245,16 @@ class EvmExplorerClient {
       response?.status === '1' &&
       response?.message === 'OK' &&
       response?.result?.length > 0 &&
-      response.result[0].SourceCode !== '' &&
-      response.result[0].ABI !== undefined
+      response.result[0].ABI !== undefined &&
+      response.result[0].ABI !== ''
     ) {
       const name = response.result[0].ContractName
       const ContractName = name.split(':').pop() || name
       return [
         {
-          SourceCode: response.result[0].SourceCode,
+          // Some explorers (e.g. Harmony) may return ABI but an empty SourceCode.
+          // The caller can still use the ABI (without NatSpec enrichment).
+          SourceCode: response.result[0].SourceCode || '',
           ContractName,
           ABI: response.result[0].ABI,
           CompilerVersion: response.result[0].CompilerVersion || response.result[0].CompilerType,

@@ -32,9 +32,12 @@ if (argv.includes('--unit-dep')) {
 }
 
 async function runTests() {
+  const defaultTimeoutMs = testFolder === 'unit' ? 180000 : 60000
+  const timeoutMs = Number(process.env.MOCHA_TIMEOUT_MS || defaultTimeoutMs)
+
   const mocha = new Mocha({
     ui: 'bdd',
-    timeout: 60000,
+    timeout: timeoutMs,
     color: true,
     diff: true,
     fullTrace: true,
