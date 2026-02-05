@@ -1,4 +1,4 @@
-/* eslint-env mocha */
+import { afterEach, beforeEach, describe, it } from 'mocha'
 
 import * as sinon from 'sinon'
 import { SinonSandbox } from 'sinon'
