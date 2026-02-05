@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "repo": "mzfshark/Aragon-app-backend",
-  "updatedAt": "2026-02-05T11:22:15.974Z",
+  "updatedAt": "2026-02-05T14:59:22.244Z",
   "planFingerprint": "7ff7d6b3377609b0ffc4c79f34a549cfd9d1a35e",
   "planFiles": [
     {
@@ -23,7 +23,7 @@
         "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
         "line": 1
       },
-      "lastSyncedAt": "2026-02-05T11:22:15.965Z"
+      "lastSyncedAt": "2026-02-05T14:59:22.229Z"
     },
     {
       "stableId": "18520a3d72339155b8ea87db02ed8317a49137e2",
@@ -38,7 +38,7 @@
         "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
         "line": 49
       },
-      "lastSyncedAt": "2026-02-05T11:22:15.965Z"
+      "lastSyncedAt": "2026-02-05T14:59:22.229Z"
     },
     {
       "stableId": "e86ade59fa5107bb3dbe6526a0d802a2e2e7ac01",
@@ -53,7 +53,7 @@
         "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
         "line": 55
       },
-      "lastSyncedAt": "2026-02-05T11:22:15.965Z"
+      "lastSyncedAt": "2026-02-05T14:59:22.229Z"
     },
     {
       "stableId": "5db349edc52bf3bfe7d78b91885bac3e6a4f233e",
@@ -68,7 +68,7 @@
         "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
         "line": 51
       },
-      "lastSyncedAt": "2026-02-05T11:22:15.965Z"
+      "lastSyncedAt": "2026-02-05T14:59:22.230Z"
     },
     {
       "stableId": "00d2f7eb77b809979194a8c847a50b0454cdcf10",
@@ -83,7 +83,7 @@
         "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
         "line": 52
       },
-      "lastSyncedAt": "2026-02-05T11:22:15.965Z"
+      "lastSyncedAt": "2026-02-05T14:59:22.230Z"
     },
     {
       "stableId": "65050b638164621ab473aedb00dcb48d86219d3c",
@@ -98,7 +98,7 @@
         "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
         "line": 53
       },
-      "lastSyncedAt": "2026-02-05T11:22:15.965Z"
+      "lastSyncedAt": "2026-02-05T14:59:22.230Z"
     },
     {
       "stableId": "eb63a5233a0bfaa4f72ab46ea1f421f908108b7e",
@@ -113,7 +113,7 @@
         "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
         "line": 57
       },
-      "lastSyncedAt": "2026-02-05T11:22:15.965Z"
+      "lastSyncedAt": "2026-02-05T14:59:22.230Z"
     },
     {
       "stableId": "14f98f88acd2497bc9acbd6a7c4c10516c2f4e9a",
@@ -128,7 +128,7 @@
         "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
         "line": 58
       },
-      "lastSyncedAt": "2026-02-05T11:22:15.965Z"
+      "lastSyncedAt": "2026-02-05T14:59:22.230Z"
     },
     {
       "stableId": "24f51bb01b53df8a641238009e73abb9d5f1e8ba",
@@ -143,7 +143,7 @@
         "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
         "line": 59
       },
-      "lastSyncedAt": "2026-02-05T11:22:15.965Z"
+      "lastSyncedAt": "2026-02-05T14:59:22.230Z"
     },
     {
       "stableId": "171b29d7b1e458b64b8c6a06f24dd1e423359d86",
@@ -158,7 +158,7 @@
         "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
         "line": 60
       },
-      "lastSyncedAt": "2026-02-05T11:22:15.965Z"
+      "lastSyncedAt": "2026-02-05T14:59:22.230Z"
     },
     {
       "stableId": "53c7eb7f479b849d67c7557fa9ec1787b3d6cb22",
@@ -173,7 +173,7 @@
         "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
         "line": 61
       },
-      "lastSyncedAt": "2026-02-05T11:22:15.965Z"
+      "lastSyncedAt": "2026-02-05T14:59:22.230Z"
     },
     {
       "stableId": "a8b0cc06cad3fbaaa507e629983cd063157831a1",
@@ -188,7 +188,7 @@
         "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
         "line": 62
       },
-      "lastSyncedAt": "2026-02-05T11:22:15.965Z"
+      "lastSyncedAt": "2026-02-05T14:59:22.230Z"
     },
     {
       "stableId": "338c9040c7549e7af7623c3a7a2a86fdfb714a56",
@@ -203,7 +203,7 @@
         "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
         "line": 187
       },
-      "lastSyncedAt": "2026-02-05T11:22:15.965Z"
+      "lastSyncedAt": "2026-02-05T14:59:22.230Z"
     },
     {
       "stableId": "34e84c53671a707964ab5039e4989662c0adc243",
@@ -218,7 +218,7 @@
         "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
         "line": 188
       },
-      "lastSyncedAt": "2026-02-05T11:22:15.965Z"
+      "lastSyncedAt": "2026-02-05T14:59:22.230Z"
     },
     {
       "stableId": "201fde1c471a92f058b573082c410fa98a107624",
@@ -233,7 +233,7 @@
         "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
         "line": 189
       },
-      "lastSyncedAt": "2026-02-05T11:22:15.965Z"
+      "lastSyncedAt": "2026-02-05T14:59:22.230Z"
     },
     {
       "stableId": "8b1060bec86ec91bd9d4c864cb94b6ec84842a33",
@@ -248,7 +248,7 @@
         "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
         "line": 190
       },
-      "lastSyncedAt": "2026-02-05T11:22:15.965Z"
+      "lastSyncedAt": "2026-02-05T14:59:22.230Z"
     },
     {
       "stableId": "0898b22b89a379515a8d27dfcd313fd9e526bf83",
@@ -263,7 +263,7 @@
         "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
         "line": 191
       },
-      "lastSyncedAt": "2026-02-05T11:22:15.965Z"
+      "lastSyncedAt": "2026-02-05T14:59:22.230Z"
     },
     {
       "stableId": "5edda102545a33dd174dc121bf45fe836aed3683",
@@ -278,7 +278,7 @@
         "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
         "line": 192
       },
-      "lastSyncedAt": "2026-02-05T11:22:15.965Z"
+      "lastSyncedAt": "2026-02-05T14:59:22.230Z"
     },
     {
       "stableId": "80afb0ecc3bf5cdde8e34cf1b1f7a4c11f6f49c6",
@@ -293,7 +293,7 @@
         "file": "docs/plans/PLAN_HARMONYVOTING_INDEXER.md",
         "line": 193
       },
-      "lastSyncedAt": "2026-02-05T11:22:15.965Z"
+      "lastSyncedAt": "2026-02-05T14:59:22.230Z"
     }
   ]
 }
