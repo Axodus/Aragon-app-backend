@@ -1,3 +1,5 @@
+/* eslint-env mocha */
+
 import * as sinon from 'sinon'
 import { SinonSandbox } from 'sinon'
 import { expect } from 'chai'
@@ -20,13 +22,7 @@ describe('Helpers: EvmExplorerClient', () => {
     sandbox = sinon.createSandbox()
     loggerStub = sandbox.stub(logger, 'warn')
     // Stub retryRequest to execute immediately without retries
-    sandbox.stub(retryRequestModule, 'retryRequest').callsFake(async fn => {
-      try {
-        return await fn()
-      } catch (error) {
-        throw error
-      }
-    })
+    sandbox.stub(retryRequestModule, 'retryRequest').callsFake(async fn => fn())
     // Stub BottleneckModule to execute immediately without rate limiting
     sandbox.stub(BottleneckModule, 'getEtherScanLimiter').returns({
       schedule: sandbox.stub().callsFake(async fn => fn()),
@@ -285,7 +281,9 @@ describe('Helpers: EvmExplorerClient', () => {
         },
       }
 
-      const axiosStub = sandbox.stub(axios, 'get').resolves(mockResponse)
+      const axiosStub = sandbox.stub(axios, 'get')
+      axiosStub.onFirstCall().resolves(mockResponse)
+      axiosStub.onSecondCall().resolves(mockResponse)
       sandbox.stub(ProviderModule, 'getChainId').returns(1)
       sandbox.stub(config, 'ETHERSCAN_API').value({
         BASE_URI: 'https://api.etherscan.io/api',
@@ -294,7 +292,7 @@ describe('Helpers: EvmExplorerClient', () => {
 
       const result = await evmExplorerClient.fetchContractSourceCode(EvmExplorerEnum.ETHERSCAN, address, network)
 
-      expect(axiosStub.calledOnce).to.be.true
+      expect(axiosStub.calledTwice).to.be.true
       expect(result).to.be.null
     })
 
@@ -313,7 +311,17 @@ describe('Helpers: EvmExplorerClient', () => {
         },
       }
 
-      const axiosStub = sandbox.stub(axios, 'get').resolves(mockResponse)
+      const mockAbiResponse = {
+        data: {
+          status: '1',
+          message: 'OK',
+          result: '',
+        },
+      }
+
+      const axiosStub = sandbox.stub(axios, 'get')
+      axiosStub.onFirstCall().resolves(mockResponse)
+      axiosStub.onSecondCall().resolves(mockAbiResponse)
       sandbox.stub(ProviderModule, 'getChainId').returns(1)
       sandbox.stub(config, 'ETHERSCAN_API').value({
         BASE_URI: 'https://api.etherscan.io/api',
@@ -322,8 +330,57 @@ describe('Helpers: EvmExplorerClient', () => {
 
       const result = await evmExplorerClient.fetchContractSourceCode(EvmExplorerEnum.ETHERSCAN, address, network)
 
-      expect(axiosStub.calledOnce).to.be.true
+      expect(axiosStub.calledTwice).to.be.true
       expect(result).to.be.null
+    })
+
+    it('should fallback to getabi when getsourcecode is not available', async () => {
+      const mockSourceResponse = {
+        data: {
+          status: '0',
+          message: 'fail',
+          result: [],
+        },
+      }
+
+      const abi = JSON.stringify([
+        {
+          type: 'function',
+          name: 'foo',
+          inputs: [],
+          stateMutability: 'nonpayable',
+        },
+      ])
+
+      const mockAbiResponse = {
+        data: {
+          status: '1',
+          message: 'OK',
+          result: abi,
+        },
+      }
+
+      const axiosStub = sandbox.stub(axios, 'get')
+      axiosStub.onFirstCall().resolves(mockSourceResponse)
+      axiosStub.onSecondCall().resolves(mockAbiResponse)
+
+      sandbox.stub(ProviderModule, 'getChainId').returns(1)
+      sandbox.stub(config, 'ETHERSCAN_API').value({
+        BASE_URI: 'https://api.etherscan.io/api',
+        API_KEY: 'test-api-key',
+      })
+
+      const result = await evmExplorerClient.fetchContractSourceCode(EvmExplorerEnum.ETHERSCAN, address, network)
+
+      expect(axiosStub.calledTwice).to.be.true
+      expect(result).to.deep.equal([
+        {
+          SourceCode: '',
+          ContractName: '',
+          ABI: abi,
+          CompilerVersion: '',
+        },
+      ])
     })
 
     it('should return null when BlockScout API key is not configured', async () => {
