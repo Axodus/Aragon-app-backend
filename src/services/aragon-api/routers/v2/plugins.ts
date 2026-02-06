@@ -6,7 +6,7 @@ import {
   type ILogPluginSetupProcessorParams,
   type IPluginExtraParams,
   type IPluginInterfaceType,
-  type NetworksEnum,
+  NetworksEnum,
 } from '@types'
 import ValidationSchema from '@helpers/validationSchema'
 import PluginSchema from '@api/routers/schema/plugin'
