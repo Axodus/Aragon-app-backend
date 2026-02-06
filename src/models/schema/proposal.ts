@@ -14,6 +14,7 @@ import {
 } from '@types'
 import { Model, type SaveOptions, Schema } from 'mongoose'
 import * as _ from 'lodash'
+import { ethers } from 'ethers'
 import { assert } from '@errors'
 import ModelUtils from '@models/utils/models'
 import { AggregationQueryHelper } from '@models/utils/aggregation'
@@ -438,7 +439,27 @@ export default class Proposal extends Model {
     network: NetworksEnum,
     tOpts?: SaveOptions,
   ) {
-    return await this.findOne({ incrementalId, pluginAddress, network }, null, tOpts)
+    const pluginAddressCandidates = new Set<string>()
+    pluginAddressCandidates.add(pluginAddress)
+    pluginAddressCandidates.add(pluginAddress.toLowerCase())
+
+    try {
+      const checksummed = ethers.getAddress(pluginAddress)
+      pluginAddressCandidates.add(checksummed)
+      pluginAddressCandidates.add(checksummed.toLowerCase())
+    } catch {
+      // Ignore invalid address formatting; query will fallback to raw candidates.
+    }
+
+    return await this.findOne(
+      {
+        incrementalId,
+        pluginAddress: { $in: Array.from(pluginAddressCandidates) },
+        network,
+      },
+      null,
+      tOpts,
+    )
   }
 
   static async findLatestProposal(pluginAddress: HexAddress, network: NetworksEnum) {
