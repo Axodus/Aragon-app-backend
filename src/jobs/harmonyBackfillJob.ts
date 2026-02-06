@@ -185,7 +185,7 @@ export class HarmonyBackfillJob {
       },
       events: [
         {
-          event: 'HarmonyProposalCreated',
+          event: 'ProposalCreated',
           topic: new Interface(HarmonyVotingPlugin.abi).getEvent('ProposalCreated')?.topicHash!,
           enableHistorical: true,
           config: [
