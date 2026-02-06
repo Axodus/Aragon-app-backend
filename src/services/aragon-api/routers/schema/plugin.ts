@@ -72,6 +72,21 @@ const PluginSchema = {
       .required(),
     delegatorAddress: ValidationSchema.joiHarmonyAddress.required(),
   }),
+
+  getDelegationVotingValidator: Joi.object({
+    network: Joi.string()
+      .valid(...Object.values(NetworksEnum))
+      .required(),
+    pluginAddress: ValidationSchema.joiAddress.required(),
+  }),
+
+  getDelegationVotingVotingPower: Joi.object({
+    network: Joi.string()
+      .valid(...Object.values(NetworksEnum))
+      .required(),
+    pluginAddress: ValidationSchema.joiAddress.required(),
+    voterAddress: ValidationSchema.joiHarmonyAddress.required(),
+  }),
 }
 
 export default PluginSchema

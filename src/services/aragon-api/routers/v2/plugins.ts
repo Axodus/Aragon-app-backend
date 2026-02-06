@@ -163,6 +163,54 @@ const PluginRouter = {
     })
   },
 
+  getDelegationVotingValidator: async function (ctx: RouterContext) {
+    const result = await ValidationSchema.validateRoute(ctx, {
+      params: {
+        network: ctx.params.network as NetworksEnum,
+        pluginAddress: ctx.params.pluginAddress,
+      },
+      requireRule: ({ params }) => {
+        const harmonyNetworks = [NetworksEnum.harmonyMainnet, NetworksEnum.harmonyTestnet]
+        return harmonyNetworks.includes(params.network)
+          ? null
+          : 'Delegation voting validator info is only available on Harmony networks.'
+      },
+      schemas: {
+        params: PluginSchema.getDelegationVotingValidator,
+      },
+    })
+
+    ctx.body = await PluginsController.getDelegationVotingValidator({
+      ...(result.params as { network: NetworksEnum; pluginAddress: HexAddress }),
+      ...(result.paginationParams as { page: number; pageSize: number }),
+    })
+  },
+
+  getDelegationVotingVotingPower: async function (ctx: RouterContext) {
+    const result = await ValidationSchema.validateRoute(ctx, {
+      params: {
+        network: ctx.params.network as NetworksEnum,
+        pluginAddress: ctx.params.pluginAddress,
+        voterAddress: ctx.params.voterAddress,
+      },
+      requireRule: ({ params }) => {
+        const harmonyNetworks = [NetworksEnum.harmonyMainnet, NetworksEnum.harmonyTestnet]
+        return harmonyNetworks.includes(params.network)
+          ? null
+          : 'Delegation voting voting power is only available on Harmony networks.'
+      },
+      schemas: {
+        params: PluginSchema.getDelegationVotingVotingPower,
+      },
+    })
+
+    ctx.body = await PluginsController.getDelegationVotingVotingPower(result.params as {
+      network: NetworksEnum
+      pluginAddress: HexAddress
+      voterAddress: string
+    })
+  },
+
   router(): Router {
     const router = new Router()
 
@@ -174,6 +222,8 @@ const PluginRouter = {
     router.get('/harmony/validator/:network/:validatorAddress', PluginRouter.getHarmonyValidatorInfo)
     router.get('/harmony/delegations/validator/:network/:validatorAddress', PluginRouter.getHarmonyDelegationsByValidator)
     router.get('/harmony/delegations/delegator/:network/:delegatorAddress', PluginRouter.getHarmonyDelegationsByDelegator)
+    router.get('/delegation-voting/:network/:pluginAddress/validator', PluginRouter.getDelegationVotingValidator)
+    router.get('/delegation-voting/:network/:pluginAddress/voting-power/:voterAddress', PluginRouter.getDelegationVotingVotingPower)
 
     return router
   },

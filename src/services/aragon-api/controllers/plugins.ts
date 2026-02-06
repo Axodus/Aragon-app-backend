@@ -10,10 +10,26 @@ import config from '@config'
 import logger from '@logger'
 import { Models } from '@dbModels'
 import { HarmonyRpcService } from '@services/harmonyRpcService'
+import { formatUnits } from 'ethers'
+import { toHarmonyBech32Address } from '@src/utils/harmonyAddressUtils'
+import { toHarmonyHexAddress } from '@src/utils/harmonyAddressUtils'
 
 const llo = logger.logMeta.bind(null, { service: 'PluginsController' })
 
 const harmonyNetworks = new Set<NetworksEnum>([NetworksEnum.harmonyMainnet, NetworksEnum.harmonyTestnet])
+
+function formatCommissionRate(rate: unknown): string {
+  const numeric = typeof rate === 'string' ? Number(rate) : typeof rate === 'number' ? rate : NaN
+  if (!Number.isFinite(numeric)) return '0.00%'
+  return `${(numeric * 100).toFixed(2)}%`
+}
+
+function paginate<T>(items: T[], page: number, pageSize: number): T[] {
+  const safePage = Number.isSafeInteger(page) && page > 0 ? page : 1
+  const safePageSize = Number.isSafeInteger(pageSize) && pageSize > 0 ? pageSize : 10
+  const start = (safePage - 1) * safePageSize
+  return items.slice(start, start + safePageSize)
+}
 
 const PluginsController = {
   getInstallationData: async ({ pluginAddress, network }: IPluginExtraParams) => {
@@ -197,6 +213,122 @@ const PluginsController = {
       amount: delegation.amount.toString(),
       reward: delegation.reward.toString(),
     }))
+  },
+
+  getDelegationVotingValidator: async ({
+    network,
+    pluginAddress,
+    page,
+    pageSize,
+  }: {
+    network: NetworksEnum
+    pluginAddress: string
+    page: number
+    pageSize: number
+  }) => {
+    if (!harmonyNetworks.has(network)) {
+      throw new Error(`Delegation voting validator info is only available on Harmony networks (got ${network})`)
+    }
+
+    const normalizedNetwork = network.toLowerCase()
+    const normalizedPluginAddress = pluginAddress.toLowerCase()
+
+    const cfg = await Models.ValidatorConfig.findOne({
+      network: normalizedNetwork,
+      pluginAddress: normalizedPluginAddress,
+    })
+      .select('validatorAddress')
+      .lean()
+      .exec()
+
+    if (!cfg?.validatorAddress) {
+      const error = new Error('Validator config not found for plugin')
+      error.name = 'NotFoundError'
+      throw error
+    }
+
+    const service = new HarmonyRpcService({ network })
+    const info = await service.getValidatorInformation(cfg.validatorAddress)
+    const delegations = await service.getDelegationsByValidator(cfg.validatorAddress)
+
+    const totalVotingPowerRaw = delegations.reduce((acc, d) => acc + (d.amount ?? 0n), 0n)
+    const members = paginate(delegations, page, pageSize).map(d => {
+      const address = d.delegatorAddress
+      const votingPowerRaw = d.amount ?? 0n
+      const pendingRewardRaw = d.reward ?? 0n
+
+      return {
+        address,
+        addressOne: toHarmonyBech32Address(address),
+        votingPower: formatUnits(votingPowerRaw, 18),
+        votingPowerRaw: votingPowerRaw.toString(),
+        pendingReward: formatUnits(pendingRewardRaw, 18),
+      }
+    })
+
+    return {
+      validatorAddress: info.address,
+      validatorAddressOne: toHarmonyBech32Address(info.address),
+      validatorName: info.name,
+      commissionRate: formatCommissionRate(info.rate),
+      isActive: info.activeStatus === 'active',
+      isInCommittee: info.currentlyInCommittee,
+      totalVotingPower: formatUnits(totalVotingPowerRaw, 18),
+      totalVotingPowerRaw: totalVotingPowerRaw.toString(),
+      membersCount: delegations.length,
+      members,
+    }
+  },
+
+  getDelegationVotingVotingPower: async ({
+    network,
+    pluginAddress,
+    voterAddress,
+  }: {
+    network: NetworksEnum
+    pluginAddress: string
+    voterAddress: string
+  }) => {
+    if (!harmonyNetworks.has(network)) {
+      throw new Error(`Delegation voting voting power is only available on Harmony networks (got ${network})`)
+    }
+
+    const normalizedNetwork = network.toLowerCase()
+    const normalizedPluginAddress = pluginAddress.toLowerCase()
+
+    const cfg = await Models.ValidatorConfig.findOne({
+      network: normalizedNetwork,
+      pluginAddress: normalizedPluginAddress,
+    })
+      .select('validatorAddress')
+      .lean()
+      .exec()
+
+    if (!cfg?.validatorAddress) {
+      const error = new Error('Validator config not found for plugin')
+      error.name = 'NotFoundError'
+      throw error
+    }
+
+    const normalizedValidatorHex = toHarmonyHexAddress(cfg.validatorAddress)
+
+    const service = new HarmonyRpcService({ network })
+    const delegations = await service.getDelegationsByDelegator(voterAddress)
+
+    const match = delegations.find(d => {
+      try {
+        return toHarmonyHexAddress(d.validatorAddress) === normalizedValidatorHex
+      } catch {
+        return false
+      }
+    })
+
+    const votingPowerRaw = match?.amount ?? 0n
+    return {
+      votingPower: formatUnits(votingPowerRaw, 18),
+      votingPowerRaw: votingPowerRaw.toString(),
+      canVote: votingPowerRaw > 0n,
+    }
   },
 }
 

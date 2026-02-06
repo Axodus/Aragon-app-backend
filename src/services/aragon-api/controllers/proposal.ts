@@ -32,9 +32,39 @@ const ProposalController = {
     assertExposable(plugin, ErrorKeyEnum.pluginNotFound)
 
     const proposal = await Models.Proposal.findByProposalIncrementalId(index, plugin.address, plugin.network)
-    assertExposable(proposal?.id, ErrorKeyEnum.proposalNotFound)
+    assertExposable(proposal, ErrorKeyEnum.proposalNotFound)
 
-    return ProposalController.getProposalById(proposal.id)
+    let proposalId = proposal.id
+
+    // Backward-compat: some historical backfills inserted Proposal docs without the deterministic `id` field.
+    // The slug endpoint expects `id` to be present to retrieve the enriched projection.
+    if (!proposalId) {
+      const transactionHash = proposal.transactionHash
+      const proposalIndex = proposal.proposalIndex
+      const proposalPluginAddress = proposal.pluginAddress
+
+      if (transactionHash && proposalIndex && proposalPluginAddress) {
+        proposalId = Models.Proposal.getEntityId({
+          transactionHash,
+          pluginAddress: proposalPluginAddress,
+          proposalIndex,
+        })
+
+        try {
+          await Models.Proposal.updateOne(
+            { _id: (proposal as any)._id, id: { $in: [null, undefined] } },
+            { $set: { id: proposalId } },
+          )
+        } catch (error) {
+          // Non-fatal: still attempt to read using the computed id.
+          logger.warn('Failed to backfill proposal id', llo({ error, proposalId }))
+        }
+      }
+    }
+
+    assertExposable(proposalId, ErrorKeyEnum.proposalNotFound)
+
+    return ProposalController.getProposalById(proposalId)
   },
 
   getProposalById: async (id: string): Promise<IProposalsResponse> => {

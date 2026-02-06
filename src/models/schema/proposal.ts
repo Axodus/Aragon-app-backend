@@ -434,11 +434,22 @@ export default class Proposal extends Model {
   }
 
   static async findByProposalIncrementalId(
-    incrementalId: string,
+    incrementalId: string | number,
     pluginAddress: HexAddress,
     network: NetworksEnum,
     tOpts?: SaveOptions,
   ) {
+    const incrementalIdCandidates = new Set<string | number>()
+    incrementalIdCandidates.add(incrementalId)
+    incrementalIdCandidates.add(String(incrementalId))
+
+    if (typeof incrementalId === 'string') {
+      const asNumber = Number(incrementalId)
+      if (!Number.isNaN(asNumber)) {
+        incrementalIdCandidates.add(asNumber)
+      }
+    }
+
     const pluginAddressCandidates = new Set<string>()
     pluginAddressCandidates.add(pluginAddress)
     pluginAddressCandidates.add(pluginAddress.toLowerCase())
@@ -453,7 +464,7 @@ export default class Proposal extends Model {
 
     return await this.findOne(
       {
-        incrementalId,
+        incrementalId: { $in: Array.from(incrementalIdCandidates) },
         pluginAddress: { $in: Array.from(pluginAddressCandidates) },
         network,
       },

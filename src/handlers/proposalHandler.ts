@@ -74,7 +74,7 @@ export const ProposalHandler = {
             config: [
               {
                 abi: TokenVoting.abi,
-                handler: async (_parsedEvent: LogDescription, _info: ILogInfo) => {},
+                handler: async () => {},
               },
             ],
           },
@@ -177,7 +177,6 @@ export const ProposalHandler = {
       }
 
       const blockTimestamp = await Web3Helper.getBlockTimestamp(info.blockNumber, info.network)
-      const normalizedBlockTimestamp = blockTimestamp ?? undefined
 
       const document: Partial<Proposal> = {
         network: info.network,
@@ -308,6 +307,14 @@ export const ProposalHandler = {
       }
 
       document.incrementalId = incrementalId
+
+      if (!document.id) {
+        document.id = Models.Proposal.getEntityId({
+          transactionHash: info.transactionHash,
+          pluginAddress,
+          proposalIndex,
+        })
+      }
 
       // Idempotent upsert: prevent duplicates on blockchain reorgs
       // Use unique compound key: (network, transactionHash, logIndex)
@@ -503,6 +510,14 @@ export const ProposalHandler = {
       }
 
       document.incrementalId = incrementalId
+
+      if (!document.id) {
+        document.id = Models.Proposal.getEntityId({
+          transactionHash: info.transactionHash,
+          pluginAddress,
+          proposalIndex,
+        })
+      }
 
       // Idempotent upsert: prevent duplicates on blockchain reorgs
       // Use unique compound key: (network, transactionHash, logIndex)
