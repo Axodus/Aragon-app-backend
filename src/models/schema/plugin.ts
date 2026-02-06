@@ -308,10 +308,20 @@ export default class Plugin extends Model {
   }
 
   static async getPluginIdBySlugAndDao(slug: string, daoAddress: HexAddress, network: NetworksEnum) {
+    const daoAddressVariants = (() => {
+      if (!daoAddress) return []
+      try {
+        const checksum = ethers.getAddress(daoAddress)
+        return Array.from(new Set([daoAddress, daoAddress.toLowerCase(), checksum, checksum.toLowerCase()]))
+      } catch {
+        return Array.from(new Set([daoAddress, daoAddress.toLowerCase()]))
+      }
+    })()
+
     const plugin: any = await this.aggregate([
       {
         $match: {
-          daoAddress,
+          daoAddress: { $in: daoAddressVariants },
           network,
           isSupported: true,
         },
