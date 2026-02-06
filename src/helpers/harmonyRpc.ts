@@ -131,6 +131,35 @@ const HarmonyRpc = {
       throw error
     }
   },
+
+  async getValidatorInformation(validatorAddress: HexAddress, network: NetworksEnum): Promise<any> {
+    try {
+      return await callRpc<any>('hmyv2_getValidatorInformation', [validatorAddress], network)
+    } catch (error) {
+      logger.error('Error getValidatorInformation', llo({ network, validatorAddress, error }))
+      throw error
+    }
+  },
+
+  async getDelegationsByValidator(validatorAddress: HexAddress, network: NetworksEnum): Promise<any[]> {
+    try {
+      const delegations = await callRpc<any>('hmyv2_getDelegationsByValidator', [validatorAddress], network)
+      return Array.isArray(delegations) ? delegations : []
+    } catch (error) {
+      logger.error('Error getDelegationsByValidator', llo({ network, validatorAddress, error }))
+      throw error
+    }
+  },
+
+  async getDelegationsByDelegator(delegatorAddress: HexAddress, network: NetworksEnum): Promise<any[]> {
+    try {
+      const delegations = await callRpc<any>('hmyv2_getDelegationsByDelegator', [delegatorAddress], network)
+      return Array.isArray(delegations) ? delegations : []
+    } catch (error) {
+      logger.error('Error getDelegationsByDelegator', llo({ network, delegatorAddress, error }))
+      throw error
+    }
+  },
 }
 
 export type { HarmonyHeader, HarmonyBlock, ValidatorInformationByBlock }

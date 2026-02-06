@@ -51,6 +51,27 @@ const PluginSchema = {
       .required(),
     pluginAddress: ValidationSchema.joiAddress.required(),
   }),
+
+  getHarmonyValidatorInfo: Joi.object({
+    network: Joi.string()
+      .valid(...Object.values(NetworksEnum))
+      .required(),
+    validatorAddress: ValidationSchema.joiHarmonyAddress.required(),
+  }),
+
+  getHarmonyDelegationsByValidator: Joi.object({
+    network: Joi.string()
+      .valid(...Object.values(NetworksEnum))
+      .required(),
+    validatorAddress: ValidationSchema.joiHarmonyAddress.required(),
+  }),
+
+  getHarmonyDelegationsByDelegator: Joi.object({
+    network: Joi.string()
+      .valid(...Object.values(NetworksEnum))
+      .required(),
+    delegatorAddress: ValidationSchema.joiHarmonyAddress.required(),
+  }),
 }
 
 export default PluginSchema

@@ -3,6 +3,7 @@ import { ErrorKeyEnum, NetworksEnum } from '@types'
 import { throwExposable } from '@helpers/errors'
 import Joi from 'joi'
 import { getAddress } from 'ethers'
+import { toHarmonyHexAddress } from '@src/utils/harmonyAddressUtils'
 import dayjs from '@helpers/dayjs'
 import { type RouterContext } from '@koa/router'
 import Utils from '@helpers/utils'
@@ -22,6 +23,17 @@ const ValidationSchema = {
     }, 'Address Validation')
     .messages({
       'string.invalid': '{{#label}} is not a valid address',
+    }),
+  joiHarmonyAddress: Joi.string()
+    .custom((value, helpers) => {
+      try {
+        return toHarmonyHexAddress(value)
+      } catch (error) {
+        return helpers.error('string.invalid', { value })
+      }
+    }, 'Harmony Address Validation')
+    .messages({
+      'string.invalid': '{{#label}} is not a valid Harmony address',
     }),
   joiNetworks: Joi.alternatives().try(
     // handle an actual array
@@ -171,7 +183,7 @@ const ValidationSchema = {
       pairParams?: Record<string, any>
       customParams?: Record<string, any>
       skipParams?: string[]
-      requireRule?: (params: any) => string | null
+      requireRule?: Function
       schemas: {
         params?: any
         extra?: any

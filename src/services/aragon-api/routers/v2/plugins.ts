@@ -97,6 +97,72 @@ const PluginRouter = {
     ctx.body = await PluginsController.getHarmonyValidatorConfig(result.params as IPluginExtraParams)
   },
 
+  getHarmonyValidatorInfo: async function (ctx: RouterContext) {
+    const result = await ValidationSchema.validateRoute(ctx, {
+      params: {
+        network: ctx.params.network as NetworksEnum,
+        validatorAddress: ctx.params.validatorAddress,
+      },
+      requireRule: ({ params }) => {
+        const harmonyNetworks = [NetworksEnum.harmonyMainnet, NetworksEnum.harmonyTestnet]
+        return harmonyNetworks.includes(params.network)
+          ? null
+          : 'Harmony validator info is only available on Harmony networks.'
+      },
+      schemas: {
+        params: PluginSchema.getHarmonyValidatorInfo,
+      },
+    })
+
+    ctx.body = await PluginsController.getHarmonyValidatorInfo(result.params as { network: NetworksEnum; validatorAddress: string })
+  },
+
+  getHarmonyDelegationsByValidator: async function (ctx: RouterContext) {
+    const result = await ValidationSchema.validateRoute(ctx, {
+      params: {
+        network: ctx.params.network as NetworksEnum,
+        validatorAddress: ctx.params.validatorAddress,
+      },
+      requireRule: ({ params }) => {
+        const harmonyNetworks = [NetworksEnum.harmonyMainnet, NetworksEnum.harmonyTestnet]
+        return harmonyNetworks.includes(params.network)
+          ? null
+          : 'Harmony delegations are only available on Harmony networks.'
+      },
+      schemas: {
+        params: PluginSchema.getHarmonyDelegationsByValidator,
+      },
+    })
+
+    ctx.body = await PluginsController.getHarmonyDelegationsByValidator(result.params as {
+      network: NetworksEnum
+      validatorAddress: string
+    })
+  },
+
+  getHarmonyDelegationsByDelegator: async function (ctx: RouterContext) {
+    const result = await ValidationSchema.validateRoute(ctx, {
+      params: {
+        network: ctx.params.network as NetworksEnum,
+        delegatorAddress: ctx.params.delegatorAddress,
+      },
+      requireRule: ({ params }) => {
+        const harmonyNetworks = [NetworksEnum.harmonyMainnet, NetworksEnum.harmonyTestnet]
+        return harmonyNetworks.includes(params.network)
+          ? null
+          : 'Harmony delegations are only available on Harmony networks.'
+      },
+      schemas: {
+        params: PluginSchema.getHarmonyDelegationsByDelegator,
+      },
+    })
+
+    ctx.body = await PluginsController.getHarmonyDelegationsByDelegator(result.params as {
+      network: NetworksEnum
+      delegatorAddress: string
+    })
+  },
+
   router(): Router {
     const router = new Router()
 
@@ -105,6 +171,9 @@ const PluginRouter = {
     router.get('/logs/:pluginAddress/:network/:event', PluginRouter.getLogPluginSetupProcessor)
     router.get('/installation-helpers/:network/:pluginAddress', PluginRouter.getInstallationHelpers)
     router.get('/harmony-config/:network/:pluginAddress', PluginRouter.getHarmonyValidatorConfig)
+    router.get('/harmony/validator/:network/:validatorAddress', PluginRouter.getHarmonyValidatorInfo)
+    router.get('/harmony/delegations/validator/:network/:validatorAddress', PluginRouter.getHarmonyDelegationsByValidator)
+    router.get('/harmony/delegations/delegator/:network/:delegatorAddress', PluginRouter.getHarmonyDelegationsByDelegator)
 
     return router
   },

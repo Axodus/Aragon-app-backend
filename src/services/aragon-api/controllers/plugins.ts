@@ -3,13 +3,17 @@ import {
   type ILogPluginSetupProcessorParams,
   type IGetPluginsByDaoParams,
   type IPluginExtraParams,
+  NetworksEnum,
 } from '@types'
 import RabbitMQHelper from '@helpers/rabbitMQ'
 import config from '@config'
 import logger from '@logger'
 import { Models } from '@dbModels'
+import { HarmonyRpcService } from '@services/harmonyRpcService'
 
 const llo = logger.logMeta.bind(null, { service: 'PluginsController' })
+
+const harmonyNetworks = new Set<NetworksEnum>([NetworksEnum.harmonyMainnet, NetworksEnum.harmonyTestnet])
 
 const PluginsController = {
   getInstallationData: async ({ pluginAddress, network }: IPluginExtraParams) => {
@@ -31,15 +35,7 @@ const PluginsController = {
     try {
       const plugins = await Models.Plugin.findByDaoWithFilters(params)
 
-      // 🔒 Filter "by request" plugins based on whitelist
-      const filteredPlugins = plugins.filter(plugin => {
-        // Se o plugin é "by request" (ex: HarmonyHIP)
-        if (plugin.slug === 'harmony-hip' && plugin.status === 'by-request') {
-          // Verificar se o DAO está na whitelist
-          return isDAOWhitelisted(params.daoAddress, 'harmony-hip')
-        }
-        return true // Outros plugins passam normalmente
-      })
+      const filteredPlugins = filterPluginsByWhitelist(plugins, params.daoAddress)
 
       logger.info(
         'Retrieved plugins by DAO',
@@ -146,6 +142,62 @@ const PluginsController = {
       createdAt: cfg?.createdAt ?? null,
     }
   },
+
+  getHarmonyValidatorInfo: async ({ validatorAddress, network }: { validatorAddress: string; network: NetworksEnum }) => {
+    if (!harmonyNetworks.has(network)) {
+      throw new Error(`Harmony validator info is only available on Harmony networks (got ${network})`)
+    }
+
+    const service = new HarmonyRpcService({ network })
+    const info = await service.getValidatorInformation(validatorAddress)
+
+    return {
+      ...info,
+      totalDelegation: info.totalDelegation.toString(),
+    }
+  },
+
+  getHarmonyDelegationsByValidator: async ({
+    validatorAddress,
+    network,
+  }: {
+    validatorAddress: string
+    network: NetworksEnum
+  }) => {
+    if (!harmonyNetworks.has(network)) {
+      throw new Error(`Harmony delegations are only available on Harmony networks (got ${network})`)
+    }
+
+    const service = new HarmonyRpcService({ network })
+    const delegations = await service.getDelegationsByValidator(validatorAddress)
+
+    return delegations.map(delegation => ({
+      ...delegation,
+      amount: delegation.amount.toString(),
+      reward: delegation.reward.toString(),
+    }))
+  },
+
+  getHarmonyDelegationsByDelegator: async ({
+    delegatorAddress,
+    network,
+  }: {
+    delegatorAddress: string
+    network: NetworksEnum
+  }) => {
+    if (!harmonyNetworks.has(network)) {
+      throw new Error(`Harmony delegations are only available on Harmony networks (got ${network})`)
+    }
+
+    const service = new HarmonyRpcService({ network })
+    const delegations = await service.getDelegationsByDelegator(delegatorAddress)
+
+    return delegations.map(delegation => ({
+      ...delegation,
+      amount: delegation.amount.toString(),
+      reward: delegation.reward.toString(),
+    }))
+  },
 }
 
 // Helper function to check whitelist
@@ -159,6 +211,16 @@ function isDAOWhitelisted(daoAddress: string, pluginSlug: string): boolean {
   }
 
   return whitelist[pluginSlug]?.includes(daoAddress.toLowerCase()) || false
+}
+
+function filterPluginsByWhitelist(plugins: any[], daoAddress: string) {
+  return plugins.filter(plugin => {
+    if (plugin.slug === 'harmony-hip' && plugin.status === 'by-request') {
+      return isDAOWhitelisted(daoAddress, 'harmony-hip')
+    }
+
+    return true
+  })
 }
 
 export default PluginsController
