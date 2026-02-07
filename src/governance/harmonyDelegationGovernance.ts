@@ -8,12 +8,14 @@ import {
   type IPaginatedResult,
   type IPaginationParams,
 } from '@types'
-import { Contract, ethers } from 'ethers'
+import { Contract, JsonRpcProvider, ethers } from 'ethers'
 import { HarmonyVotingPlugin } from '@artifacts/HarmonyVotingPlugin'
 import ProviderModule from '@modules/provider'
 import logger from '@logger'
 import Web3Utils from '@helpers/web3Utils'
 import { HarmonyRpcService } from '@services/harmonyRpcService'
+import config from '@config'
+import Utils from '@helpers/utils'
 
 const llo = logger.logMeta.bind(null, { service: 'governance:HarmonyDelegationGovernance' })
 
@@ -116,10 +118,19 @@ export class HarmonyDelegationGovernance extends BaseGovernance {
 
     // Best-effort on-chain fallback.
     try {
-      const provider = ProviderModule.getAnyRpcProvider(normalizedNetwork)
+      let provider = ProviderModule.getAnyRpcProvider(normalizedNetwork)
+
+      // `aragon-api` does not open EnumConnection.BLOCKCHAIN, so ProviderModule may not be initialized.
+      // In that case, build a direct JSON-RPC provider from config.
       if (!provider) {
-        throw new Error(`No RPC provider available for network ${normalizedNetwork}`)
+        const networkKey = Utils.networkToAragon(normalizedNetwork as any)
+        const rpcUrl = (networkKey && config.NODES?.[networkKey]?.ARAGON_RPC) || null
+        if (rpcUrl) {
+          provider = new JsonRpcProvider(rpcUrl)
+        }
       }
+
+      if (!provider) throw new Error(`No RPC provider available for network ${normalizedNetwork}`)
       const contract = new Contract(normalizedPluginAddress, HarmonyVotingPlugin.abi, provider)
 
       let validatorAddress: HexAddress | null = existing?.validatorAddress

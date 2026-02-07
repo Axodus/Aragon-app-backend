@@ -996,6 +996,10 @@ export const ProposalHandler = {
       }
 
       const plugin = await Models.Plugin.findByAddress(proposal.pluginAddress, info.network)
+      if (!plugin) {
+        logger.warn('Plugin not found', llo({ ...info, pluginAddress: proposal.pluginAddress }))
+        return
+      }
       const newStage = Number(parsedEvent.args.stageId)
       const subPlugins = plugin.subPlugins.find((subPlugin: { stageIndex: any }) => subPlugin.stageIndex === newStage)
 
@@ -1092,6 +1096,7 @@ export const ProposalHandler = {
 
         if (!subProposalDb) {
           logger.error('Error Sub Proposal not not found', llo({ proposalIndex, address, plugin }))
+          logger.warn('Sub proposal not found', llo({ proposalIndex, address, plugin }))
           continue
         }
 
