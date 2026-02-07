@@ -8,6 +8,7 @@ import { MultisigGovernance } from './multisigGovernance'
 import { AdminGovernance } from './adminGovernance'
 import { CapitalDistributorGovernance } from './capitalDistributorGovernance'
 import { GaugeGovernance } from './gaugeGovernance'
+import { HarmonyDelegationGovernance } from './harmonyDelegationGovernance'
 import Web3Utils from '@helpers/web3Utils'
 import DbTx from '@modules/dbTx'
 import type Member from '@models/schema/member'
@@ -23,6 +24,7 @@ export { MultisigGovernance }
 export { AdminGovernance }
 export { CapitalDistributorGovernance }
 export { GaugeGovernance }
+export { HarmonyDelegationGovernance }
 
 const llo = logger.logMeta.bind(null, { service: 'MemberGovernanceFactory' })
 
@@ -34,6 +36,7 @@ type GovernanceType =
   | AdminGovernance
   | CapitalDistributorGovernance
   | GaugeGovernance
+  | HarmonyDelegationGovernance
 
 /**
  * Factory class for creating governance instances based on plugin interface type.
@@ -138,6 +141,18 @@ export class MemberGovernanceFactory {
         })
       }
 
+      // Harmony validator-delegation based governance
+      if (
+        plugin.interfaceType === IPluginInterfaceType.harmonyDelegationVoting ||
+        plugin.interfaceType === IPluginInterfaceType.harmonyVoting
+      ) {
+        return MemberGovernanceFactory.create({
+          address: plugin.address,
+          network: plugin.network,
+          interfaceType: plugin.interfaceType,
+        })
+      }
+
       // If we reach here, the plugin type is not supported
       throw new Error(`Unsupported plugin interface type: ${plugin.interfaceType}`)
     } catch (error) {
@@ -185,6 +200,11 @@ export class MemberGovernanceFactory {
       case IPluginInterfaceType.gauge:
         // the address is the pluginAddress
         return new GaugeGovernance(params.address, params.network)
+
+      case IPluginInterfaceType.harmonyDelegationVoting:
+      case IPluginInterfaceType.harmonyVoting:
+        // the address is the pluginAddress
+        return new HarmonyDelegationGovernance(params.address, params.network)
 
       case IPluginInterfaceType.spp:
       case IPluginInterfaceType.unknown:

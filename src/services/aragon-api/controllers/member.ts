@@ -18,6 +18,7 @@ import RabbitMQHelper from '@helpers/rabbitMQ'
 import config from '@config'
 import { MemberGovernanceFactory } from '@src/governance'
 import ModelUtils from '@models/utils/models'
+import logger from '@logger'
 
 const MemberController = {
   getMembersWithPagination: async (
@@ -43,6 +44,14 @@ const MemberController = {
         extraParams,
       })
     } catch (error) {
+      logger.warn('Failed to resolve members governance, returning empty response', {
+        service: 'api:MemberController',
+        network: extraParams.network,
+        daoAddress: extraParams.daoAddress,
+        pluginAddress: extraParams.pluginAddress,
+        interfaceType: plugin.interfaceType,
+        error,
+      })
       return ModelUtils.paginateEmptyResponse(paginationParams.pageSize!)
     }
   },
