@@ -144,6 +144,7 @@ export class MemberGovernanceFactory {
       // Harmony validator-delegation based governance
       if (
         plugin.interfaceType === IPluginInterfaceType.harmonyDelegationVoting ||
+        plugin.interfaceType === IPluginInterfaceType.harmonyHipVoting ||
         plugin.interfaceType === IPluginInterfaceType.harmonyVoting
       ) {
         return MemberGovernanceFactory.create({
@@ -202,6 +203,7 @@ export class MemberGovernanceFactory {
         return new GaugeGovernance(params.address, params.network)
 
       case IPluginInterfaceType.harmonyDelegationVoting:
+      case IPluginInterfaceType.harmonyHipVoting:
       case IPluginInterfaceType.harmonyVoting:
         // the address is the pluginAddress
         return new HarmonyDelegationGovernance(params.address, params.network)

@@ -208,6 +208,18 @@ describe('Governance:GovernanceFactory', () => {
         expect(result?.['network']).to.equal(testNetwork)
       })
 
+      it('should create HarmonyDelegationGovernance for harmonyHipVoting', () => {
+        const result = MemberGovernanceFactory.create({
+          address: testAddress,
+          network: testNetwork,
+          interfaceType: IPluginInterfaceType.harmonyHipVoting,
+        })
+
+        expect(result).to.be.instanceOf(HarmonyDelegationGovernance)
+        expect(result?.['address']).to.equal(testAddress)
+        expect(result?.['network']).to.equal(testNetwork)
+      })
+
       it('should create HarmonyDelegationGovernance for harmonyVoting', () => {
         const result = MemberGovernanceFactory.create({
           address: testAddress,
@@ -400,6 +412,18 @@ describe('Governance:GovernanceFactory', () => {
       it('should create HarmonyDelegationGovernance for harmonyDelegationVoting plugin', () => {
         const plugin = createPlugin({
           interfaceType: IPluginInterfaceType.harmonyDelegationVoting,
+        })
+
+        const result = MemberGovernanceFactory.createFromPlugin(plugin as any)
+
+        expect(result).to.be.instanceOf(HarmonyDelegationGovernance)
+        expect(result?.['address']).to.equal(testAddress)
+        expect(result?.['network']).to.equal(testNetwork)
+      })
+
+      it('should create HarmonyDelegationGovernance for harmonyHipVoting plugin', () => {
+        const plugin = createPlugin({
+          interfaceType: IPluginInterfaceType.harmonyHipVoting,
         })
 
         const result = MemberGovernanceFactory.createFromPlugin(plugin as any)

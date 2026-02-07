@@ -115,7 +115,10 @@ export class HarmonyDelegationGovernance extends BaseGovernance {
 
     // Best-effort on-chain fallback.
     try {
-      const provider = ProviderModule.getProvider(normalizedNetwork)
+      const provider = ProviderModule.getAnyRpcProvider(normalizedNetwork)
+      if (!provider) {
+        throw new Error(`No RPC provider available for network ${normalizedNetwork}`)
+      }
       const contract = new Contract(normalizedPluginAddress, HarmonyVotingPlugin.abi, provider)
 
       let validatorAddress: HexAddress | null = existing?.validatorAddress
