@@ -3,6 +3,7 @@ import {
   type ILogPluginSetupProcessorParams,
   type IGetPluginsByDaoParams,
   type IPluginExtraParams,
+  IPluginInterfaceType,
   NetworksEnum,
 } from '@types'
 import RabbitMQHelper from '@helpers/rabbitMQ'
@@ -10,13 +11,30 @@ import config from '@config'
 import logger from '@logger'
 import { Models } from '@dbModels'
 import { HarmonyRpcService } from '@services/harmonyRpcService'
-import { formatUnits } from 'ethers'
+import ProviderModule from '@modules/provider'
+import { Contract, ethers, formatUnits } from 'ethers'
 import { toHarmonyBech32Address } from '@src/utils/harmonyAddressUtils'
 import { toHarmonyHexAddress } from '@src/utils/harmonyAddressUtils'
 
 const llo = logger.logMeta.bind(null, { service: 'PluginsController' })
 
 const harmonyNetworks = new Set<NetworksEnum>([NetworksEnum.harmonyMainnet, NetworksEnum.harmonyTestnet])
+
+function decodeProcessKey(processKey: string | null | undefined): string | null {
+  if (processKey == null) return null
+  const raw = String(processKey).trim()
+  if (raw.length === 0) return null
+
+  if (/^0x[0-9a-fA-F]{64}$/.test(raw)) {
+    try {
+      return ethers.decodeBytes32String(raw)
+    } catch {
+      return raw
+    }
+  }
+
+  return raw
+}
 
 function formatCommissionRate(rate: unknown): string {
   const numeric = typeof rate === 'string' ? Number(rate) : typeof rate === 'number' ? rate : NaN
@@ -147,11 +165,102 @@ const PluginsController = {
       .lean()
       .exec()
 
+    const decodedCfgProcessKey = decodeProcessKey(cfg?.processKey)
+    if (cfg?.validatorAddress || decodedCfgProcessKey) {
+      return {
+        pluginAddress: normalizedPluginAddress,
+        network: normalizedNetwork,
+        validatorAddress: cfg?.validatorAddress ?? null,
+        processKey: decodedCfgProcessKey,
+        lastUpdateTxHash: cfg?.lastUpdateTxHash ?? null,
+        lastUpdateBlock: cfg?.lastUpdateBlock ?? null,
+        updatedAt: cfg?.updatedAt ?? null,
+        createdAt: cfg?.createdAt ?? null,
+      }
+    }
+
+    // Fallback: for DelegationVoting, read config from the plugin contract (best-effort) and persist it.
+    try {
+      const plugin = await Models.Plugin.findByAddress(normalizedPluginAddress, network)
+      if (!plugin || plugin.interfaceType !== IPluginInterfaceType.harmonyDelegationVoting) {
+        throw new Error('Not a Harmony Delegation Voting plugin')
+      }
+
+      const provider = ProviderModule.getAnyRpcProvider(network)
+      if (!provider) {
+        throw new Error('Missing RPC provider')
+      }
+
+      const contract = new Contract(
+        normalizedPluginAddress,
+        ['function validatorAddress() view returns (address)', 'function processKey() view returns (bytes32)'],
+        provider,
+      )
+
+      const [rawValidator, rawProcessKey] = await Promise.all([
+        contract.validatorAddress().catch(() => null),
+        contract.processKey().catch(() => null),
+      ])
+
+      const validatorAddress =
+        rawValidator && rawValidator !== ethers.ZeroAddress ? ethers.getAddress(String(rawValidator)).toLowerCase() : null
+
+      const processKey = (() => {
+        if (!rawProcessKey || rawProcessKey === '0x' || rawProcessKey === ethers.ZeroHash) return null
+        const raw = String(rawProcessKey)
+        if (/^0x[0-9a-fA-F]{64}$/.test(raw)) {
+          try {
+            return ethers.decodeBytes32String(raw)
+          } catch {
+            return raw
+          }
+        }
+        return raw
+      })()
+
+      if (validatorAddress || processKey) {
+        await Models.ValidatorConfig.findOneAndUpdate(
+          { network: normalizedNetwork, pluginAddress: normalizedPluginAddress },
+          {
+            $set: {
+              id: Models.ValidatorConfig.getEntityId({ network, pluginAddress: normalizedPluginAddress }),
+              network: normalizedNetwork,
+              pluginAddress: normalizedPluginAddress,
+              ...(validatorAddress ? { validatorAddress } : {}),
+              ...(processKey ? { processKey } : {}),
+              lastUpdateBlock: plugin.blockNumber,
+            },
+          },
+          { upsert: true, new: true },
+        )
+
+        if (processKey) {
+          await Models.Plugin.updateOne(
+            { network: normalizedNetwork, address: normalizedPluginAddress },
+            { $set: { processKey } },
+          )
+        }
+      }
+
+      return {
+        pluginAddress: normalizedPluginAddress,
+        network: normalizedNetwork,
+        validatorAddress,
+        processKey,
+        lastUpdateTxHash: cfg?.lastUpdateTxHash ?? null,
+        lastUpdateBlock: cfg?.lastUpdateBlock ?? null,
+        updatedAt: cfg?.updatedAt ?? null,
+        createdAt: cfg?.createdAt ?? null,
+      }
+    } catch (error) {
+      logger.debug('Harmony validator config fallback not available', llo({ network, pluginAddress, error }))
+    }
+
     return {
       pluginAddress: normalizedPluginAddress,
       network: normalizedNetwork,
       validatorAddress: cfg?.validatorAddress ?? null,
-      processKey: cfg?.processKey ?? null,
+      processKey: decodedCfgProcessKey,
       lastUpdateTxHash: cfg?.lastUpdateTxHash ?? null,
       lastUpdateBlock: cfg?.lastUpdateBlock ?? null,
       updatedAt: cfg?.updatedAt ?? null,

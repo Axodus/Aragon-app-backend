@@ -118,7 +118,13 @@ export class HarmonyBackfillJob {
 
       try {
         const k = await contract.processKey()
-        if (k && k !== '0x' && k !== ethers.ZeroHash) processKey = String(k)
+        if (k && k !== '0x' && k !== ethers.ZeroHash) {
+          try {
+            processKey = ethers.decodeBytes32String(String(k))
+          } catch {
+            processKey = String(k)
+          }
+        }
       } catch {
         // ignore
       }

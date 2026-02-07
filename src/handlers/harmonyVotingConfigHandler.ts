@@ -9,6 +9,19 @@ function normalizeAddress(address: string): HexAddress {
   return ethers.getAddress(address).toLowerCase()
 }
 
+function decodeProcessKey(processKey: unknown): string {
+  const raw = String(processKey).trim()
+  if (/^0x[0-9a-fA-F]{64}$/.test(raw)) {
+    try {
+      return ethers.decodeBytes32String(raw)
+    } catch {
+      return raw
+    }
+  }
+
+  return raw
+}
+
 export const HarmonyVotingConfigHandler = {
   validatorAddressUpdated: async (parsedEvent: LogDescription, info: ILogInfo) => {
     try {
@@ -37,7 +50,7 @@ export const HarmonyVotingConfigHandler = {
   processKeyConfigured: async (parsedEvent: LogDescription, info: ILogInfo) => {
     try {
       const pluginAddress = normalizeAddress(info.address)
-      const processKey = String(parsedEvent.args.processKey)
+      const processKey = decodeProcessKey(parsedEvent.args.processKey)
 
       await Models.ValidatorConfig.findOneAndUpdate(
         { network: info.network, pluginAddress },
