@@ -380,17 +380,20 @@ export default class Proposal extends Model {
   public simulation!: Simulation
 
   static async create(rawData: Partial<Proposal>, tOpts?: SaveOptions) {
-    if (!rawData.id) {
-      assert(!!rawData.transactionHash, 'transactionHash is required')
-      assert(!!rawData.pluginAddress, 'pluginAddress is required')
-      assert(!!rawData?.proposalIndex, 'proposalIndex is required')
-      rawData.id = this.getEntityId({
-        transactionHash: rawData?.transactionHash!,
-        pluginAddress: rawData?.pluginAddress!,
-        proposalIndex: rawData?.proposalIndex!,
+    const dataToCreate: Partial<Proposal> = { ...(rawData as any) }
+
+    if (!dataToCreate.id) {
+      assert(!!dataToCreate.transactionHash, 'transactionHash is required')
+      assert(!!dataToCreate.pluginAddress, 'pluginAddress is required')
+      assert(!!dataToCreate?.proposalIndex, 'proposalIndex is required')
+      dataToCreate.id = this.getEntityId({
+        transactionHash: dataToCreate?.transactionHash!,
+        pluginAddress: dataToCreate?.pluginAddress!,
+        proposalIndex: dataToCreate?.proposalIndex!,
       })
     }
-    const data = new this(rawData)
+
+    const data = new this(dataToCreate)
     return await data.save(tOpts)
   }
 

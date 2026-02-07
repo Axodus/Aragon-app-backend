@@ -7,7 +7,6 @@ import {
   type IMembersResponse,
   type IPaginatedResult,
   type IPaginationParams,
-  type NetworksEnum,
 } from '@types'
 import { Contract, ethers } from 'ethers'
 import { HarmonyVotingPlugin } from '@artifacts/HarmonyVotingPlugin'
@@ -96,7 +95,9 @@ export class HarmonyDelegationGovernance extends BaseGovernance {
 
   private async ensureValidatorConfig(): Promise<{ validatorAddress: HexAddress | null; processKey: string | null }> {
     const normalizedPluginAddress = normalizeAddress(this.address)
-    const normalizedNetwork = String(this.network).toLowerCase() as NetworksEnum
+    // IMPORTANT: do NOT lowercase the network value.
+    // NetworksEnum values are case-sensitive (e.g. "harmonyMainnet").
+    const normalizedNetwork = this.network
 
     const existing = await Models.ValidatorConfig.findOne({
       network: normalizedNetwork,

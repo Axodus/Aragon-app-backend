@@ -217,7 +217,7 @@ const IndexerEventConfig: IIndexerConfig[] = [
     ],
   },
   {
-    event: 'ProposalCreated',
+    event: 'HarmonyProposalCreated',
     enableHistorical: true,
     topic: new Interface(HarmonyVotingPlugin.abi).getEvent('ProposalCreated')?.topicHash!,
     config: [
