@@ -1,36 +1,48 @@
 /* eslint-env mocha */
 
-import { afterEach, describe, it } from 'mocha'
+import { afterEach, before, describe, it } from 'mocha'
 import { expect } from 'chai'
 import sinon from 'sinon'
-import { Models } from '@dbModels'
+import { ModelProxy, Models } from '@dbModels'
 import { NetworksEnum } from '@types'
 import { HarmonyRpcService } from '@services/harmonyRpcService'
 import PluginsController from '@api/controllers/plugins'
+import { toHarmonyBech32Address } from '@src/utils/harmonyAddressUtils'
 
 describe('PluginsController.getDelegationVotingVotingPower', () => {
+  before(async function () {
+    this.timeout(10_000)
+    if (!Models.ValidatorConfig) {
+      await ModelProxy.setMongoModels()
+    }
+  })
+
   afterEach(() => {
     sinon.restore()
   })
 
   it('returns voting power based on delegation to plugin validator', async () => {
+    const validatorHex = '0x1111111111111111111111111111111111111111'
+    const validatorOne = toHarmonyBech32Address(validatorHex)
+
     const query = {
       select: () => query,
       lean: () => query,
-      exec: async () => ({ validatorAddress: 'one1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqd39ym7' }),
+      exec: async () => ({ validatorAddress: validatorOne }),
     } as any
 
+    expect(Models.ValidatorConfig, 'Models.ValidatorConfig must be initialized').to.exist
     sinon.stub(Models.ValidatorConfig, 'findOne').returns(query)
 
     sinon.stub(HarmonyRpcService.prototype, 'getDelegationsByDelegator').resolves([
       {
-        validatorAddress: '0x1111111111111111111111111111111111111111',
+        validatorAddress: '0x9999999999999999999999999999999999999999',
         delegatorAddress: '0x2222222222222222222222222222222222222222',
         amount: 0n,
         reward: 0n,
       },
       {
-        validatorAddress: 'one1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqd39ym7',
+        validatorAddress: validatorHex,
         delegatorAddress: '0x2222222222222222222222222222222222222222',
         amount: 5n * 10n ** 18n,
         reward: 0n,
@@ -55,6 +67,7 @@ describe('PluginsController.getDelegationVotingVotingPower', () => {
       exec: async () => ({ validatorAddress: '0x3333333333333333333333333333333333333333' }),
     } as any
 
+    expect(Models.ValidatorConfig, 'Models.ValidatorConfig must be initialized').to.exist
     sinon.stub(Models.ValidatorConfig, 'findOne').returns(query)
 
     sinon.stub(HarmonyRpcService.prototype, 'getDelegationsByDelegator').resolves([

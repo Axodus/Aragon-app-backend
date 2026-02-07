@@ -3,7 +3,7 @@
 import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import { getAddress } from 'ethers'
-import { isBech32Address, isHexAddress, toHarmonyBech32Address, toHarmonyHexAddress } from '@utils/harmonyAddressUtils'
+import { isBech32Address, isHexAddress, toHarmonyBech32Address, toHarmonyHexAddress } from '@src/utils/harmonyAddressUtils'
 
 describe('harmonyAddressUtils', () => {
   it('converts hex -> bech32 -> hex (round-trip)', () => {
@@ -31,6 +31,6 @@ describe('harmonyAddressUtils', () => {
 
     const corrupted = `${bech32.slice(0, -1)}${bech32.endsWith('q') ? 'p' : 'q'}`
 
-    expect(() => toHarmonyHexAddress(corrupted)).to.throw('Invalid bech32 checksum')
+    expect(() => toHarmonyHexAddress(corrupted)).to.throw(/Invalid bech32 checksum/i)
   })
 })

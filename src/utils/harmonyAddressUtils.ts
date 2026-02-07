@@ -133,8 +133,12 @@ function hexToBytes(hex: string): number[] {
   return Array.from(Buffer.from(hex, 'hex'))
 }
 
+function normalizeHexPrefix(value: string): string {
+  return value.replace(/^0X/, '0x')
+}
+
 export function isHexAddress(value: string): boolean {
-  return /^0x[0-9a-fA-F]{40}$/.test(value)
+  return /^0x[0-9a-fA-F]{40}$/i.test(value)
 }
 
 export function isBech32Address(value: string): boolean {
@@ -148,7 +152,7 @@ export function isBech32Address(value: string): boolean {
 
 export function toHarmonyHexAddress(value: string): string {
   if (isHexAddress(value)) {
-    return getAddress(value)
+    return getAddress(normalizeHexPrefix(value))
   }
 
   if (isBech32Address(value)) {
@@ -165,6 +169,12 @@ export function toHarmonyHexAddress(value: string): string {
     return getAddress(`0x${bytesToHex(bytes)}`)
   }
 
+  // If it looks like a Harmony bech32 address but checksum/format is invalid,
+  // surface the underlying decode error for clearer debugging.
+  if (value.toLowerCase().startsWith(`${HRP}1`)) {
+    bech32Decode(value)
+  }
+
   throw new Error('Address must be a valid hex or bech32 value.')
 }
 
@@ -174,7 +184,7 @@ export function toHarmonyBech32Address(value: string): string {
   }
 
   if (isHexAddress(value)) {
-    const normalized = getAddress(value)
+    const normalized = getAddress(normalizeHexPrefix(value))
     const bytes = hexToBytes(normalized.slice(2))
     if (bytes.length !== 20) {
       throw new Error('Invalid hex address length.')
