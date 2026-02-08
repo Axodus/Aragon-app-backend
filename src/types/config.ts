@@ -1,18 +1,20 @@
 import { type HexAddress, type NetworksEnum, type SupportedEnsNetworksEnum } from './networks'
 
-/* eslint-disable no-unused-vars */
-export enum IEnumEnvironment {
-  production = 'production',
-  staging = 'staging',
-  development = 'development',
-  local = 'local',
-}
+export const IEnumEnvironment = {
+  production: 'production',
+  staging: 'staging',
+  development: 'development',
+  local: 'local',
+} as const
 
-export enum IEnumNodeEnv {
-  development = 'development',
-  production = 'production',
-}
-/* eslint-enable no-unused-vars */
+export type IEnumEnvironment = (typeof IEnumEnvironment)[keyof typeof IEnumEnvironment]
+
+export const IEnumNodeEnv = {
+  development: 'development',
+  production: 'production',
+} as const
+
+export type IEnumNodeEnv = (typeof IEnumNodeEnv)[keyof typeof IEnumNodeEnv]
 
 interface ITokenData {
   address: HexAddress
