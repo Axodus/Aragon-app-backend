@@ -1,5 +1,6 @@
 import { type HexAddress, type NetworksEnum, type SupportedEnsNetworksEnum } from './networks'
 
+/* eslint-disable no-unused-vars */
 export enum IEnumEnvironment {
   production = 'production',
   staging = 'staging',
@@ -11,6 +12,7 @@ export enum IEnumNodeEnv {
   development = 'development',
   production = 'production',
 }
+/* eslint-enable no-unused-vars */
 
 interface ITokenData {
   address: HexAddress
@@ -252,8 +254,10 @@ export interface IConfig {
         INTERVAL: number
         CHECK_INTERVAL: number
         PRIVATE_KEY: string | null
+        ORACLE_FROM_ADDRESS: string | null
         TARGETS_JSON: string
         LOGS_CHUNK_SIZE: number
+        FINALIZE_BLOCKS_AFTER_ENDDATE: number
         BLOCK_ON_MERKLE_MISMATCH: boolean
         REVALIDATE_BLOCKED: boolean
       }
