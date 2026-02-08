@@ -787,6 +787,12 @@ const getConfigObject = (sourceConfig: Record<string, any>): IConfig => {
             'SERVICES_ARAGON_INDEXER_HARMONY_VOTING_FINALIZER_PRIVATE_KEY',
             null,
           ),
+          ORACLE_FROM_ADDRESS: utils.configParser(
+            sourceConfig,
+            'string',
+            'SERVICES_ARAGON_INDEXER_HARMONY_VOTING_FINALIZER_ORACLE_FROM_ADDRESS',
+            null,
+          ),
           TARGETS_JSON: utils.configParser(
             sourceConfig,
             'string',
@@ -798,6 +804,12 @@ const getConfigObject = (sourceConfig: Record<string, any>): IConfig => {
             'number',
             'SERVICES_ARAGON_INDEXER_HARMONY_VOTING_FINALIZER_LOGS_CHUNK_SIZE',
             1000,
+          ),
+          FINALIZE_BLOCKS_AFTER_ENDDATE: utils.configParser(
+            sourceConfig,
+            'number',
+            'SERVICES_ARAGON_INDEXER_HARMONY_VOTING_FINALIZER_FINALIZE_BLOCKS_AFTER_ENDDATE',
+            0,
           ),
           BLOCK_ON_MERKLE_MISMATCH: utils.configParser(
             sourceConfig,

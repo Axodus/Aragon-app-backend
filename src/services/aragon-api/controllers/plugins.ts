@@ -7,12 +7,13 @@ import {
   NetworksEnum,
 } from '@types'
 import RabbitMQHelper from '@helpers/rabbitMQ'
+import Utils from '@helpers/utils'
 import config from '@config'
 import logger from '@logger'
 import { Models } from '@dbModels'
 import { HarmonyRpcService } from '@services/harmonyRpcService'
 import ProviderModule from '@modules/provider'
-import { Contract, ethers, formatUnits } from 'ethers'
+import { Contract, JsonRpcProvider, ethers, formatUnits } from 'ethers'
 import { toHarmonyBech32Address } from '@src/utils/harmonyAddressUtils'
 import { toHarmonyHexAddress } from '@src/utils/harmonyAddressUtils'
 
@@ -155,10 +156,10 @@ const PluginsController = {
 
   getHarmonyValidatorConfig: async ({ pluginAddress, network }: IPluginExtraParams) => {
     const normalizedPluginAddress = pluginAddress.toLowerCase()
-    const normalizedNetwork = network.toLowerCase()
+    const networkVariants = [network, String(network).toLowerCase()]
 
     const cfg = await Models.ValidatorConfig.findOne({
-      network: normalizedNetwork,
+      network: { $in: networkVariants },
       pluginAddress: normalizedPluginAddress,
     })
       .select('validatorAddress processKey lastUpdateTxHash lastUpdateBlock updatedAt createdAt')
@@ -169,7 +170,7 @@ const PluginsController = {
     if (cfg?.validatorAddress || decodedCfgProcessKey) {
       return {
         pluginAddress: normalizedPluginAddress,
-        network: normalizedNetwork,
+        network,
         validatorAddress: cfg?.validatorAddress ?? null,
         processKey: decodedCfgProcessKey,
         lastUpdateTxHash: cfg?.lastUpdateTxHash ?? null,
@@ -186,10 +187,17 @@ const PluginsController = {
         throw new Error('Not a Harmony Delegation Voting plugin')
       }
 
-      const provider = ProviderModule.getAnyRpcProvider(network)
+      let provider = ProviderModule.getAnyRpcProvider(network)
+
+      // `aragon-api` does not open EnumConnection.BLOCKCHAIN, so ProviderModule may not be initialized.
+      // Build a direct JSON-RPC provider from config in that case.
       if (!provider) {
-        throw new Error('Missing RPC provider')
+        const networkKey = Utils.networkToAragon(network as any)
+        const rpcUrl = (networkKey && config.NODES?.[networkKey]?.ARAGON_RPC) || null
+        if (rpcUrl) provider = new JsonRpcProvider(rpcUrl)
       }
+
+      if (!provider) throw new Error('Missing RPC provider')
 
       const contract = new Contract(
         normalizedPluginAddress,
@@ -220,11 +228,11 @@ const PluginsController = {
 
       if (validatorAddress || processKey) {
         await Models.ValidatorConfig.findOneAndUpdate(
-          { network: normalizedNetwork, pluginAddress: normalizedPluginAddress },
+          { network, pluginAddress: normalizedPluginAddress },
           {
             $set: {
               id: Models.ValidatorConfig.getEntityId({ network, pluginAddress: normalizedPluginAddress }),
-              network: normalizedNetwork,
+              network,
               pluginAddress: normalizedPluginAddress,
               ...(validatorAddress ? { validatorAddress } : {}),
               ...(processKey ? { processKey } : {}),
@@ -235,16 +243,13 @@ const PluginsController = {
         )
 
         if (processKey) {
-          await Models.Plugin.updateOne(
-            { network: normalizedNetwork, address: normalizedPluginAddress },
-            { $set: { processKey } },
-          )
+          await Models.Plugin.updateOne({ network, address: normalizedPluginAddress }, { $set: { processKey } })
         }
       }
 
       return {
         pluginAddress: normalizedPluginAddress,
-        network: normalizedNetwork,
+        network,
         validatorAddress,
         processKey,
         lastUpdateTxHash: cfg?.lastUpdateTxHash ?? null,
@@ -258,7 +263,7 @@ const PluginsController = {
 
     return {
       pluginAddress: normalizedPluginAddress,
-      network: normalizedNetwork,
+      network,
       validatorAddress: cfg?.validatorAddress ?? null,
       processKey: decodedCfgProcessKey,
       lastUpdateTxHash: cfg?.lastUpdateTxHash ?? null,
@@ -343,7 +348,7 @@ const PluginsController = {
     const normalizedPluginAddress = pluginAddress.toLowerCase()
 
     const cfg = await Models.ValidatorConfig.findOne({
-      network: normalizedNetwork,
+      network: { $in: [network, normalizedNetwork] },
       pluginAddress: normalizedPluginAddress,
     })
       .select('validatorAddress')

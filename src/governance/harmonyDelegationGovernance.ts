@@ -9,13 +9,17 @@ import {
   type IPaginationParams,
 } from '@types'
 import { Contract, JsonRpcProvider, ethers } from 'ethers'
-import { HarmonyVotingPlugin } from '@artifacts/HarmonyVotingPlugin'
 import ProviderModule from '@modules/provider'
 import logger from '@logger'
 import Web3Utils from '@helpers/web3Utils'
 import { HarmonyRpcService } from '@services/harmonyRpcService'
 import config from '@config'
 import Utils from '@helpers/utils'
+
+const HARMONY_DELEGATION_PLUGIN_READ_ABI = [
+  'function validatorAddress() view returns (address)',
+  'function processKey() view returns (bytes32)',
+]
 
 const llo = logger.logMeta.bind(null, { service: 'governance:HarmonyDelegationGovernance' })
 
@@ -101,13 +105,23 @@ export class HarmonyDelegationGovernance extends BaseGovernance {
     // NetworksEnum values are case-sensitive (e.g. "harmonyMainnet").
     const normalizedNetwork = this.network
 
-    const existing = await Models.ValidatorConfig.findOne({
-      network: normalizedNetwork,
-      pluginAddress: normalizedPluginAddress,
-    })
-      .select('validatorAddress processKey')
-      .lean()
-      .exec()
+    const legacyNetwork = String(normalizedNetwork).toLowerCase()
+
+    const existing =
+      (await Models.ValidatorConfig.findOne({
+        network: normalizedNetwork,
+        pluginAddress: normalizedPluginAddress,
+      })
+        .select('_id network validatorAddress processKey')
+        .lean()
+        .exec()) ??
+      (await Models.ValidatorConfig.findOne({
+        network: legacyNetwork,
+        pluginAddress: normalizedPluginAddress,
+      })
+        .select('_id network validatorAddress processKey')
+        .lean()
+        .exec())
 
     if (existing?.validatorAddress && existing?.processKey) {
       return {
@@ -131,7 +145,7 @@ export class HarmonyDelegationGovernance extends BaseGovernance {
       }
 
       if (!provider) throw new Error(`No RPC provider available for network ${normalizedNetwork}`)
-      const contract = new Contract(normalizedPluginAddress, HarmonyVotingPlugin.abi, provider)
+      const contract = new Contract(normalizedPluginAddress, HARMONY_DELEGATION_PLUGIN_READ_ABI, provider)
 
       let validatorAddress: HexAddress | null = existing?.validatorAddress
         ? normalizeAddress(existing.validatorAddress)
@@ -155,19 +169,26 @@ export class HarmonyDelegationGovernance extends BaseGovernance {
       }
 
       if (validatorAddress || processKey) {
-        await Models.ValidatorConfig.findOneAndUpdate(
-          { network: normalizedNetwork, pluginAddress: normalizedPluginAddress },
-          {
-            $set: {
-              id: Models.ValidatorConfig.getEntityId({ network: normalizedNetwork, pluginAddress: normalizedPluginAddress }),
-              network: normalizedNetwork,
-              pluginAddress: normalizedPluginAddress,
-              ...(validatorAddress ? { validatorAddress } : {}),
-              ...(processKey ? { processKey } : {}),
-            },
+        const updateDoc = {
+          $set: {
+            id: Models.ValidatorConfig.getEntityId({ network: normalizedNetwork, pluginAddress: normalizedPluginAddress }),
+            network: normalizedNetwork,
+            pluginAddress: normalizedPluginAddress,
+            ...(validatorAddress ? { validatorAddress } : {}),
+            ...(processKey ? { processKey } : {}),
           },
-          { upsert: true, new: true },
-        )
+        }
+
+        // If the only stored config is legacy (lowercased network), migrate it to canonical.
+        if (existing && String((existing as any).network) === legacyNetwork && (existing as any)._id) {
+          await Models.ValidatorConfig.findOneAndUpdate({ _id: (existing as any)._id }, updateDoc, { new: true })
+        } else {
+          await Models.ValidatorConfig.findOneAndUpdate(
+            { network: normalizedNetwork, pluginAddress: normalizedPluginAddress },
+            updateDoc,
+            { upsert: true, new: true },
+          )
+        }
 
         if (processKey) {
           await Models.Plugin.updateOne(
