@@ -1013,6 +1013,11 @@ export const ProposalHandler = {
        */
       await Promise.all(
         previousStageSubProposals.map(async (subProposal: any) => {
+          // Some legacy/partial records may not contain enough data to resolve the sub proposal.
+          // Skip them silently (do not warn/error) to avoid duplicate "Sub proposal not found" logs.
+          if (!subProposal?.pluginAddress || !subProposal?.proposalIndex) {
+            return
+          }
           const subProposalDb = await Models.Proposal.findByProposalIndex(
             subProposal.proposalIndex,
             subProposal.pluginAddress,
@@ -1096,7 +1101,6 @@ export const ProposalHandler = {
 
         if (!subProposalDb) {
           logger.error('Error Sub Proposal not not found', llo({ proposalIndex, address, plugin }))
-          logger.warn('Sub proposal not found', llo({ proposalIndex, address, plugin }))
           continue
         }
 
