@@ -50,6 +50,104 @@ function paginate<T>(items: T[], page: number, pageSize: number): T[] {
   return items.slice(start, start + safePageSize)
 }
 
+async function backfillHarmonyDelegationProcessKeys(params: {
+  plugins: any[]
+  network: NetworksEnum
+}): Promise<void> {
+  const { plugins, network } = params
+
+  const targets = plugins.filter(
+    plugin =>
+      plugin?.interfaceType === IPluginInterfaceType.harmonyDelegationVoting &&
+      !decodeProcessKey(plugin?.processKey) &&
+      typeof plugin?.address === 'string' &&
+      plugin.address.length > 0,
+  )
+
+  if (targets.length === 0) return
+
+  const pluginAddresses = [...new Set(targets.map(p => String(p.address).toLowerCase()))]
+  const networkVariants = [network, String(network).toLowerCase()]
+
+  // 1) Prefer DB-backed config (populated by indexer events or other routes).
+  try {
+    const configs = await Models.ValidatorConfig.find({
+      network: { $in: networkVariants },
+      pluginAddress: { $in: pluginAddresses },
+    })
+      .select('pluginAddress processKey')
+      .lean()
+      .exec()
+
+    const cfgMap = new Map<string, string>()
+    for (const cfg of configs ?? []) {
+      const decoded = decodeProcessKey(cfg?.processKey)
+      if (decoded) cfgMap.set(String(cfg.pluginAddress).toLowerCase(), decoded)
+    }
+
+    for (const plugin of targets) {
+      const addr = String(plugin.address).toLowerCase()
+      const fromCfg = cfgMap.get(addr)
+      if (fromCfg) {
+        plugin.processKey = fromCfg
+      }
+    }
+  } catch (error) {
+    logger.debug('ValidatorConfig processKey backfill skipped', llo({ network, error }))
+  }
+
+  const stillMissing = targets.filter(p => !decodeProcessKey(p?.processKey))
+  if (stillMissing.length === 0) return
+
+  // 2) Best-effort on-chain read to prevent UI from falling back to slug.
+  try {
+    const networkKey = Utils.networkToAragon(network as any)
+    const rpcUrl = (networkKey && config.NODES?.[networkKey]?.ARAGON_RPC) || null
+    if (!rpcUrl) return
+
+    const provider = new JsonRpcProvider(rpcUrl)
+    const readAbi = ['function processKey() view returns (bytes32)']
+
+    const results = await Promise.all(
+      stillMissing.map(async plugin => {
+        const address = String(plugin.address).toLowerCase()
+        try {
+          const contract = new Contract(address, readAbi, provider)
+          const raw = await contract.processKey()
+          const decoded = decodeProcessKey(raw)
+          return { address, processKey: decoded }
+        } catch {
+          return { address, processKey: null }
+        }
+      }),
+    )
+
+    for (const { address, processKey } of results) {
+      if (!processKey) continue
+
+      const plugin = stillMissing.find(p => String(p.address).toLowerCase() === address)
+      if (plugin) plugin.processKey = processKey
+
+      // Best-effort persistence to avoid repeating RPC calls.
+      await Models.Plugin.updateOne({ network, address }, { $set: { processKey } })
+      await Models.ValidatorConfig.updateOne(
+        { network, pluginAddress: address },
+        {
+          $set: {
+            id: Models.ValidatorConfig.getEntityId({ network, pluginAddress: address }),
+            network,
+            pluginAddress: address,
+            processKey,
+          },
+        },
+        { upsert: true },
+      )
+    }
+  } catch (error) {
+    logger.debug('On-chain processKey backfill skipped', llo({ network, error }))
+  }
+}
+
 const PluginsController = {
   getInstallationData: async ({ pluginAddress, network }: IPluginExtraParams) => {
     try {
@@ -71,6 +169,8 @@ const PluginsController = {
       const plugins = await Models.Plugin.findByDaoWithFilters(params)
 
       const filteredPlugins = filterPluginsByWhitelist(plugins, params.daoAddress)
+
+      await backfillHarmonyDelegationProcessKeys({ plugins: filteredPlugins, network: params.network })
 
       logger.info(
         'Retrieved plugins by DAO',
