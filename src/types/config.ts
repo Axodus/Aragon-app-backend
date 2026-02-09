@@ -7,14 +7,14 @@ export const IEnumEnvironment = {
   local: 'local',
 } as const
 
-export type IEnumEnvironment = (typeof IEnumEnvironment)[keyof typeof IEnumEnvironment]
+export type IEnumEnvironmentValue = (typeof IEnumEnvironment)[keyof typeof IEnumEnvironment]
 
 export const IEnumNodeEnv = {
   development: 'development',
   production: 'production',
 } as const
 
-export type IEnumNodeEnv = (typeof IEnumNodeEnv)[keyof typeof IEnumNodeEnv]
+export type IEnumNodeEnvValue = (typeof IEnumNodeEnv)[keyof typeof IEnumNodeEnv]
 
 interface ITokenData {
   address: HexAddress
@@ -38,8 +38,8 @@ export interface IRawNodeConfig {
 
 export interface IConfig {
   APP_NAME: string
-  ENVIRONMENT: IEnumEnvironment
-  NODE_ENV: IEnumNodeEnv
+  ENVIRONMENT: IEnumEnvironmentValue
+  NODE_ENV: IEnumNodeEnvValue
   TIMEZONE: string
   REMOTE_EXECUTION: boolean
   PROXY: string | null
