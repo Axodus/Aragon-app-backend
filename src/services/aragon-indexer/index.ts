@@ -122,6 +122,8 @@ const AragonIndexerService: IService & { repeaters: any } = {
       networks.map(async ({ networkName }) => {
         const logService = ConfigIndexerHelper.builders.indexer(networkName)
 
+        const indexerAddresses = await getIndexerCoreAddresses(networkName)
+
         if (
           (networkName === 'harmony-mainnet' || networkName === 'harmony-testnet') &&
           config.NODES[utils.networkToAragon(networkName)]?.FROM_BLOCK === 0
@@ -140,11 +142,10 @@ const AragonIndexerService: IService & { repeaters: any } = {
         // sync historical data
         if (!existingConfig) {
           logger.info('HistoricalCrawler start', llo({ networkName }))
-          const address = await getIndexerCoreAddresses(networkName)
           const historicalCrawler = new BlockchainLogCrawler({
             onlyHistorical: true,
             network: networkName,
-            address,
+            address: indexerAddresses,
             events: utils.filterArrayByProperty(configIndexer, 'enableHistorical'),
             adaptiveConfig: getHarmonyAdaptiveConfig(networkName),
             onError: async (error: any) => logger.error('Error Indexer', llo(error)),
@@ -169,7 +170,7 @@ const AragonIndexerService: IService & { repeaters: any } = {
         logger.info('PoolingCrawler start', llo({ networkName }))
 
         const taskOptions = {
-          fn: () => [[{ poolingCrawler: PoolingCrawler, params: { logService, network: networkName } }]],
+          fn: () => [[{ poolingCrawler: PoolingCrawler, params: { logService, network: networkName, address: indexerAddresses } }]],
           interval: config.NODES[utils.networkToAragon(networkName)].POOLING_INTERVAL,
           checkInterval: config.NODES[utils.networkToAragon(networkName)].POOLING_INTERVAL / 2,
           runNow: true,

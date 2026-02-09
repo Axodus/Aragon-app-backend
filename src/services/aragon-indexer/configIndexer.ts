@@ -217,7 +217,7 @@ const IndexerEventConfig: IIndexerConfig[] = [
     ],
   },
   {
-    event: 'HarmonyProposalCreated',
+    event: 'ProposalCreated',
     enableHistorical: true,
     topic: new Interface(HarmonyVotingPlugin.abi).getEvent('ProposalCreated')?.topicHash!,
     config: [
@@ -228,7 +228,7 @@ const IndexerEventConfig: IIndexerConfig[] = [
     ],
   },
   {
-    event: 'HarmonyValidatorAddressUpdated',
+    event: 'ValidatorAddressUpdated',
     enableHistorical: true,
     topic: new Interface([
       'event ValidatorAddressUpdated(address indexed oldAddress, address indexed newAddress)',
@@ -243,7 +243,7 @@ const IndexerEventConfig: IIndexerConfig[] = [
     ],
   },
   {
-    event: 'HarmonyProcessKeyConfigured',
+    event: 'ProcessKeyConfigured',
     enableHistorical: true,
     topic: new Interface(['event ProcessKeyConfigured(bytes32 indexed processKey)']).getEvent('ProcessKeyConfigured')
       ?.topicHash!,
@@ -558,7 +558,7 @@ const IndexerEventConfig: IIndexerConfig[] = [
     ],
   },
   {
-    event: 'HarmonyVoteCast',
+    event: 'VoteCast',
     enableHistorical: true,
     topic: new Interface(HarmonyVotingPlugin.abi).getEvent('VoteCast')?.topicHash!,
     config: [

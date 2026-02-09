@@ -25,20 +25,23 @@ const PoolingCrawler = {
   async start({
     logService,
     network,
+    address,
     includeTransfer = false,
   }: {
     logService: LogServicePattern
     network: NetworksEnum
+    address?: string[]
     includeTransfer?: boolean
   }) {
     try {
-      const instanceKey = `${network}-${includeTransfer ? 'transfer' : 'main'}`
+      const instanceKey = `${network}-${includeTransfer ? 'transfer' : 'main'}-${address?.length ? 'addr' : 'noaddr'}`
       if (PoolingCrawler.instances.has(instanceKey as NetworksEnum)) {
         return PoolingCrawler.instances.get(instanceKey as NetworksEnum)!.crawl()
       }
 
       const poolingCrawler = new BlockchainLogCrawler({
         network,
+        address,
         events: includeTransfer
           ? [
               {

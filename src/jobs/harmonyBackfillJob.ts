@@ -249,7 +249,7 @@ export class HarmonyBackfillJob {
       },
       events: [
         {
-          event: 'HarmonyVoteCast',
+          event: 'VoteCast',
           topic: new Interface(HarmonyVotingPlugin.abi).getEvent('VoteCast')?.topicHash!,
           enableHistorical: true,
           config: [
@@ -281,7 +281,9 @@ export class HarmonyBackfillJob {
     try {
       logger.info('HarmonyBackfill - Starting backfill for all plugins', llo({ network }))
 
-      // Find all HarmonyVoting plugins on the network
+      // Find all Harmony voting plugins on the network.
+      // Note: do NOT restrict to isSupported=true, because support status is derived from metadata
+      // and may be false even when the plugin is installed and emitting events.
       const plugins = await Models.Plugin.find({
         network,
         interfaceType: {
@@ -291,28 +293,51 @@ export class HarmonyBackfillJob {
             IPluginInterfaceType.harmonyDelegationVoting,
           ],
         },
-        isSupported: true,
       })
 
       if (plugins.length === 0) {
-        logger.info('HarmonyBackfill - No HarmonyVoting plugins found', llo({ network }))
+        const totalByNetwork = await Models.Plugin.countDocuments({ network })
+        logger.info(
+          'HarmonyBackfill - No HarmonyVoting plugins found',
+          llo({
+            network,
+            totalPluginsOnNetwork: totalByNetwork,
+          }),
+        )
         return
       }
 
-      logger.info('HarmonyBackfill - Found plugins to backfill', llo({ network, count: plugins.length }))
+      const supportedCount = plugins.filter(p => p.isSupported).length
+      const unsupportedCount = plugins.length - supportedCount
+
+      const byInterfaceType = plugins.reduce<Record<string, number>>((acc, p) => {
+        acc[p.interfaceType] = (acc[p.interfaceType] ?? 0) + 1
+        return acc
+      }, {})
+
+      logger.info(
+        'HarmonyBackfill - Found plugins to backfill',
+        llo({
+          network,
+          count: plugins.length,
+          supportedCount,
+          unsupportedCount,
+          byInterfaceType,
+        }),
+      )
 
       // Backfill each plugin sequentially to avoid RPC rate limits
       for (const plugin of plugins) {
         try {
           await this.backfillPlugin({
-            pluginAddress: plugin.pluginAddress,
+            pluginAddress: plugin.address,
             network,
           })
         } catch (error) {
           logger.error(
             'HarmonyBackfill - Failed to backfill plugin',
             llo({
-              pluginAddress: plugin.pluginAddress,
+              pluginAddress: plugin.address,
               network,
               error,
             }),
