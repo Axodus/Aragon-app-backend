@@ -47,19 +47,18 @@ const getHarmonyVotingInterfaceType = (
   if (network !== NetworksEnum.harmonyMainnet) return undefined
 
   const cfg = harmonyMainnetContracts as unknown as ContractsConfig
-  const versionKey = Object.keys(cfg)[0]
-  const version = versionKey ? cfg[versionKey] : undefined
-  if (!version) return undefined
-
   const normalizedRepo = pluginSetupRepoAddress.toLowerCase()
-  const repoMappings: Array<[string | undefined, IPluginInterfaceType]> = [
-    [version.HarmonyHIPVotingRepoProxy?.address, IPluginInterfaceType.harmonyHipVoting],
-    [version.HarmonyDelegationVotingRepoProxy?.address, IPluginInterfaceType.harmonyDelegationVoting],
-  ]
+  const versions = Object.values(cfg)
+  for (const version of versions) {
+    const repoMappings: Array<[string | undefined, IPluginInterfaceType]> = [
+      [version?.HarmonyHIPVotingRepoProxy?.address, IPluginInterfaceType.harmonyHipVoting],
+      [version?.HarmonyDelegationVotingRepoProxy?.address, IPluginInterfaceType.harmonyDelegationVoting],
+    ]
 
-  for (const [repoAddress, interfaceType] of repoMappings) {
-    if (repoAddress && normalizedRepo === repoAddress.toLowerCase()) {
-      return interfaceType
+    for (const [repoAddress, interfaceType] of repoMappings) {
+      if (repoAddress && normalizedRepo === repoAddress.toLowerCase()) {
+        return interfaceType
+      }
     }
   }
 

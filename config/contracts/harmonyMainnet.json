@@ -91,16 +91,16 @@
     },
 
     "HarmonyHIPVotingRepoProxy": {
-      "address": "0xE6E54ac81EFB41fdf0D559eeae51DbFB3C750088",
-      "blockNumber": 83826700,
+      "address": "0xe155d19e0acd3c209173fe78c105287f75a4d4bd",
+      "blockNumber": 0,
       "deploymentTx": "0x",
-      "note": "Deployed 2026-01-16 - HIP voting plugin repository"
+      "note": "Deployed via osx-plugin-foundry DeployHarmonyVotingRepos.s.sol (see broadcast run-latest.json)"
     },
     "HarmonyDelegationVotingRepoProxy": {
-      "address": "0x4ac3dAfD88DeFd9a000076365e28B3dE3A862700",
-      "blockNumber": 83826700,
+      "address": "0x5fc989f79f34be026385645d0650687c96a41638",
+      "blockNumber": 0,
       "deploymentTx": "0x",
-      "note": "Deployed 2026-01-16 - Delegation voting plugin repository"
+      "note": "Deployed via osx-plugin-foundry DeployHarmonyVotingRepos.s.sol (see broadcast run-latest.json)"
     },
 
     "ENSRegistry": {
@@ -291,32 +291,36 @@
       "deploymentTx": "0x"
     },
     "HarmonyHIPVotingSetup": {
-      "address": "0xa8990a3Cb9aba819Bf7fAE388966B6217acB077c",
-      "blockNumber": 83274484,
-      "deploymentTx": "0x2498d70ba64ccbda02f04e809fd7e8843b14e8aa52d315bd94f7e0327e38de12"
+      "address": "0xf041f77ad08efe24cccf50c630dfa141eff2f33d",
+      "blockNumber": 0,
+      "deploymentTx": "0x",
+      "note": "Deployed via osx-plugin-foundry DeployHarmonyVotingRepos.s.sol (see broadcast run-latest.json)"
     },
     "HarmonyDelegationVotingSetup": {
-      "address": "0xb1F07C3Be7386553D7B1ADEfaE29b81610cADB8A",
-      "blockNumber": 83274558,
-      "deploymentTx": "0x0e87931af642565ddb2da04393f40d95b2de2204c4c741013967c4d7dab4bd8f"
+      "address": "0x628b4ad702005c6fdbb4f67ed8107057b7438adb",
+      "blockNumber": 0,
+      "deploymentTx": "0x",
+      "note": "Deployed via osx-plugin-foundry DeployHarmonyVotingRepos.s.sol (see broadcast run-latest.json)"
     },
     "HarmonyHIPVotingRepoProxy": {
-      "address": "0xB63fC0a5747a96F643B9f43156D8D041df48eC30",
-      "blockNumber": 83274739,
-      "deploymentTx": "0xcbd1f8cdf03b814d8846e9c0db67be7bc6d367a851a4e22c835f01d7140f11a6"
+      "address": "0xe155d19e0acd3c209173fe78c105287f75a4d4bd",
+      "blockNumber": 0,
+      "deploymentTx": "0x",
+      "note": "Deployed via osx-plugin-foundry DeployHarmonyVotingRepos.s.sol (see broadcast run-latest.json)"
     },
     "HarmonyHIPVotingRepoImplementation": {
-      "address": "0xC6213428CE42d03140a39EEC62F4Bb18DEe543bA",
+      "address": "0x380df2adf294454262ae410062cf0d10c1dd6231",
       "blockNumber": 0,
       "deploymentTx": "0x"
     },
     "HarmonyDelegationVotingRepoProxy": {
-      "address": "0xACcA531400E43aBF8d4DD778D4e63465d27b0D47",
-      "blockNumber": 83274761,
-      "deploymentTx": "0x1cd800254f2ae688409707d72471b7a6c342df84391ad778bb47b2eb1c1d5529"
+      "address": "0x5fc989f79f34be026385645d0650687c96a41638",
+      "blockNumber": 0,
+      "deploymentTx": "0x",
+      "note": "Deployed via osx-plugin-foundry DeployHarmonyVotingRepos.s.sol (see broadcast run-latest.json)"
     },
     "HarmonyDelegationVotingRepoImplementation": {
-      "address": "0xC6213428CE42d03140a39EEC62F4Bb18DEe543bA",
+      "address": "0x380df2adf294454262ae410062cf0d10c1dd6231",
       "blockNumber": 0,
       "deploymentTx": "0x"
     }
