@@ -60,6 +60,56 @@ function paginate<T>(items: T[], page: number, pageSize: number): T[] {
  * This governance is read-only: add/remove/update member is not supported.
  */
 export class HarmonyDelegationGovernance extends BaseGovernance {
+  async findMemberByAddressFromDelegations(params: {
+    memberAddress: HexAddress
+    extraParams?: IMemberExtraParams
+  }): Promise<IMembersResponse | null> {
+    const parsedAddress = Web3Utils.parseAddress(params.memberAddress)
+    if (!parsedAddress) return null
+
+    const plugin = await Models.Plugin.findByAddress(this.address, this.network)
+    const extraParams = params.extraParams ?? ({} as IMemberExtraParams)
+
+    const daoAddress = (extraParams.daoAddress ?? plugin?.daoAddress ?? ethers.ZeroAddress).toLowerCase() as HexAddress
+    const tokenAddress = (extraParams.tokenAddress ?? plugin?.tokenAddress ?? ethers.ZeroAddress).toLowerCase() as HexAddress
+    const pluginSubdomain = (plugin?.subdomain ?? '') as string
+
+    const { validatorAddress } = await this.ensureValidatorConfig()
+    if (!validatorAddress) return null
+
+    const service = new HarmonyRpcService({ network: this.network })
+    const delegations = await service.getDelegationsByDelegator(parsedAddress)
+
+    const normalizedValidator = normalizeAddress(validatorAddress)
+    const delegation = delegations.find(d => normalizeAddress(d.validatorAddress) === normalizedValidator)
+    if (!delegation) return null
+
+    const memberDoc = await Models.Member.findOne({ address: parsedAddress })
+      .select('address ens firstActivity lastActivity')
+      .lean()
+      .exec()
+
+    return {
+      network: this.network,
+      address: normalizeAddress(parsedAddress),
+      ens: (memberDoc?.ens ?? null) as any,
+      pluginSubdomain,
+      pluginAddress: normalizeAddress(this.address),
+      tokenAddress,
+      daoAddress,
+      votingPower: (delegation.amount ?? 0n).toString(),
+      tokenBalance: (delegation.amount ?? 0n).toString(),
+      currentDelegate: null,
+      metrics: {
+        firstActivity: memberDoc?.firstActivity ?? undefined,
+        lastActivity: memberDoc?.lastActivity ?? undefined,
+        delegateReceivedCount: 0,
+        voteCount: 0,
+        proposalCount: 0,
+      },
+    }
+  }
+
   async getOrCreate(memberAddress: HexAddress, params?: IGovernanceParamsOpts): Promise<any> {
     const parsedAddress = Web3Utils.parseAddress(memberAddress)
     if (!parsedAddress) return null

@@ -17,6 +17,7 @@ import PairDataModule from '@modules/pairData'
 import RabbitMQHelper from '@helpers/rabbitMQ'
 import config from '@config'
 import { MemberGovernanceFactory } from '@src/governance'
+import { HarmonyDelegationGovernance } from '@src/governance'
 import ModelUtils from '@models/utils/models'
 import logger from '@logger'
 
@@ -62,7 +63,25 @@ const MemberController = {
     pairParams: IPairParams,
   ): Promise<IMembersResponse> => {
     extraParams = await PairDataModule.pairFromExtraParams(extraParams, pairParams)
-    const member = await Models.Member.findMemberByAddress(address, extraParams)
+    let member = await Models.Member.findMemberByAddress(address, extraParams)
+
+    // Delegation voting members are derived from Harmony staking delegations and may not exist as persisted Members.
+    if (!member && extraParams.pluginAddress && extraParams.network) {
+      const plugin = await Models.Plugin.findByAddress(extraParams.pluginAddress, extraParams.network)
+      if (plugin) {
+        try {
+          const governance = MemberGovernanceFactory.createFromPlugin(plugin)
+          if (governance instanceof HarmonyDelegationGovernance) {
+            member = await governance.findMemberByAddressFromDelegations({
+              memberAddress: address,
+              extraParams,
+            })
+          }
+        } catch {
+          // ignore, handled by notFound below
+        }
+      }
+    }
 
     assertExposable(member, ErrorKeyEnum.notFound)
     if (extraParams.pluginAddress && extraParams.tokenAddress && extraParams.network) {
