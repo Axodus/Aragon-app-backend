@@ -305,6 +305,12 @@ export default class Proposal extends Model {
   @prop({ type: () => String, default: null })
   public metadataUri!: string
 
+  @prop({ type: () => Boolean, default: false })
+  public closed!: boolean
+
+  @prop({ type: () => Boolean, default: false })
+  public passed!: boolean
+
   @prop({ type: () => String, default: null })
   public title!: string
 

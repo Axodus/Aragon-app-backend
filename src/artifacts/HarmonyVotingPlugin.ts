@@ -3,7 +3,7 @@ export const HarmonyVotingPlugin = {
   abi: [
     {
       inputs: [
-        { internalType: 'bytes32', name: 'metadata', type: 'bytes32' },
+        { internalType: 'bytes', name: 'metadata', type: 'bytes' },
         { internalType: 'uint64', name: 'startDate', type: 'uint64' },
         { internalType: 'uint64', name: 'endDate', type: 'uint64' },
         { internalType: 'uint64', name: 'snapshotBlock', type: 'uint64' },
@@ -70,7 +70,7 @@ export const HarmonyVotingPlugin = {
       outputs: [
         {
           components: [
-            { internalType: 'bytes32', name: 'metadata', type: 'bytes32' },
+            { internalType: 'bytes', name: 'metadata', type: 'bytes' },
             { internalType: 'uint64', name: 'startDate', type: 'uint64' },
             { internalType: 'uint64', name: 'endDate', type: 'uint64' },
             { internalType: 'uint64', name: 'snapshotBlock', type: 'uint64' },
@@ -107,12 +107,21 @@ export const HarmonyVotingPlugin = {
       anonymous: false,
       inputs: [
         { indexed: true, internalType: 'uint256', name: 'proposalId', type: 'uint256' },
-        { indexed: true, internalType: 'bytes32', name: 'metadata', type: 'bytes32' },
+        { indexed: false, internalType: 'bytes', name: 'metadata', type: 'bytes' },
         { indexed: false, internalType: 'uint64', name: 'startDate', type: 'uint64' },
         { indexed: false, internalType: 'uint64', name: 'endDate', type: 'uint64' },
         { indexed: false, internalType: 'uint64', name: 'snapshotBlock', type: 'uint64' },
       ],
       name: 'ProposalCreated',
+      type: 'event',
+    },
+    {
+      anonymous: false,
+      inputs: [
+        { indexed: true, internalType: 'uint256', name: 'proposalId', type: 'uint256' },
+        { indexed: false, internalType: 'bool', name: 'passed', type: 'bool' },
+      ],
+      name: 'ProposalClosed',
       type: 'event',
     },
     {

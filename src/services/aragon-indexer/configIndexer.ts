@@ -228,6 +228,17 @@ const IndexerEventConfig: IIndexerConfig[] = [
     ],
   },
   {
+    event: 'ProposalClosed',
+    enableHistorical: true,
+    topic: new Interface(HarmonyVotingPlugin.abi).getEvent('ProposalClosed')?.topicHash!,
+    config: [
+      {
+        abi: HarmonyVotingPlugin.abi as unknown as any[],
+        handler: ProposalHandler.harmonyProposalClosed,
+      },
+    ],
+  },
+  {
     event: 'ValidatorAddressUpdated',
     enableHistorical: true,
     topic: new Interface([

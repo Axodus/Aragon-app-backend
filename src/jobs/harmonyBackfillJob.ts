@@ -74,6 +74,15 @@ export class HarmonyBackfillJob {
         batchSize,
       })
 
+      // Backfill ProposalClosed events
+      await this.backfillProposalClosed({
+        pluginAddress,
+        network,
+        fromBlock,
+        toBlock,
+        batchSize,
+      })
+
       logger.info('HarmonyBackfill - Backfill completed successfully', llo({ pluginAddress, network }))
     } catch (error) {
       logger.error('HarmonyBackfill - Error during backfill', llo({ ...config, error }))
@@ -265,6 +274,64 @@ export class HarmonyBackfillJob {
     const logs = await crawler.crawl()
     logger.info(
       'HarmonyBackfill - VoteCast backfill completed',
+      llo({
+        pluginAddress,
+        network,
+        logsProcessed: logs?.length || 0,
+      }),
+    )
+  }
+
+  /**
+   * Backfill ProposalClosed events for a plugin
+   */
+  private static async backfillProposalClosed(
+    config: BackfillConfig & {
+      fromBlock: number
+      toBlock: number | string
+    },
+  ): Promise<void> {
+    const { pluginAddress, network, fromBlock, toBlock, batchSize } = config
+
+    logger.info('HarmonyBackfill - Starting ProposalClosed backfill', llo({ pluginAddress, network, fromBlock, toBlock }))
+
+    const logService = ConfigIndexerHelper.builders.plugin(
+      IPluginInterfaceType.harmonyVoting,
+      network,
+      `${pluginAddress}-proposal-closed`,
+    )
+
+    const crawler = new BlockchainLogCrawler({
+      network,
+      address: pluginAddress,
+      fromBlock,
+      toBlock,
+      batchSize,
+      skipLogProcessing: false,
+      logService,
+      onlyHistorical: true,
+      stopOnError: false,
+      onError: async (error: any) => {
+        logger.error('HarmonyBackfill - Error processing ProposalClosed', llo({ pluginAddress, network, error }))
+      },
+      events: [
+        {
+          event: 'ProposalClosed',
+          topic: new Interface(HarmonyVotingPlugin.abi).getEvent('ProposalClosed')?.topicHash!,
+          enableHistorical: true,
+          config: [
+            {
+              abi: [...HarmonyVotingPlugin.abi] as any,
+              handler: ProposalHandler.harmonyProposalClosed,
+            },
+          ],
+        },
+      ],
+    })
+
+    const logs = await crawler.crawl()
+    logger.info(
+      'HarmonyBackfill - ProposalClosed backfill completed',
       llo({
         pluginAddress,
         network,

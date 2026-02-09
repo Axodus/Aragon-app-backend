@@ -459,18 +459,28 @@ export const ProposalHandler = {
       const normalizedBlockTimestamp = blockTimestamp ?? undefined
       const block = await Web3Helper.getBlock(info.blockNumber, info.network)
       const blockHash = block?.hash ?? undefined
-      const metadataHash = parsedEvent.args?.metadata
-      const metadataUri = metadataHash ? metadataHash.toString() : null
+      const metadataUri = Web3Utils.extractMetadataUri(parsedEvent?.args.metadata) || null
 
-      const proposalMetadata: IProposalMetadata = {
+      let proposalMetadata: IProposalMetadata = {
         title: `Harmony proposal #${proposalIndex}`,
-        summary: metadataUri ? `Metadata hash: ${metadataUri}` : 'Harmony voting proposal.',
+        summary: 'Harmony voting proposal.',
         description: '',
         resources: [],
         media: {
           header: null,
           logo: null,
         },
+      }
+
+      if (metadataUri) {
+        try {
+          const fetched = await ProposalHandler.fetchProposalMetadata(metadataUri)
+          if (fetched) {
+            proposalMetadata = fetched
+          }
+        } catch (err) {
+          logger.warn('HarmonyProposalCreated - failed to fetch metadata', llo({ ...info, metadataUri, error: err }))
+        }
       }
 
       const transaction = await Web3Helper.getTransaction(info.transactionHash, info.network)
@@ -732,6 +742,36 @@ export const ProposalHandler = {
       })
     } catch (error) {
       logger.error('Error VoteCast Proposal', llo({ ...info, error, parsedEvent }))
+    }
+  },
+
+  harmonyProposalClosed: async (parsedEvent: LogDescription, info: ILogInfo) => {
+    try {
+      const proposalIndex = parsedEvent.args.proposalId.toString()
+      const passed = Boolean(parsedEvent.args.passed)
+
+      const plugin = await Models.Plugin.findByAddress(info.address, info.network)
+      if (!plugin) {
+        logger.warn('HarmonyProposalClosed - Plugin not found', llo(info))
+        return
+      }
+
+      const proposal = await Models.Proposal.findByProposalIndex(proposalIndex, info.address, info.network)
+      if (!proposal) {
+        logger.warn('HarmonyProposalClosed - Proposal not found', llo({ ...info, proposalIndex }))
+        return
+      }
+
+      // Idempotent update: set closed and passed
+      await Models.Proposal.findOneAndUpdate(
+        { _id: proposal.id },
+        { $set: { closed: true, passed } },
+        { new: true },
+      )
+
+      logger.verbose('HarmonyProposalClosed - updated proposal', llo({ ...info, proposalIndex, passed }))
+    } catch (error) {
+      logger.error('Error HarmonyProposalClosed', llo({ ...info, error, parsedEvent }))
     }
   },
 
