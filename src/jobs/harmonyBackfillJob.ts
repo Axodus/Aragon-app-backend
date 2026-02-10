@@ -293,7 +293,10 @@ export class HarmonyBackfillJob {
   ): Promise<void> {
     const { pluginAddress, network, fromBlock, toBlock, batchSize } = config
 
-    logger.info('HarmonyBackfill - Starting ProposalClosed backfill', llo({ pluginAddress, network, fromBlock, toBlock }))
+    logger.info(
+      'HarmonyBackfill - Starting ProposalClosed backfill',
+      llo({ pluginAddress, network, fromBlock, toBlock }),
+    )
 
     const logService = ConfigIndexerHelper.builders.plugin(
       IPluginInterfaceType.harmonyVoting,
@@ -377,7 +380,7 @@ export class HarmonyBackfillJob {
       const supportedCount = plugins.filter(p => p.isSupported).length
       const unsupportedCount = plugins.length - supportedCount
 
-      const byInterfaceType = plugins.reduce<Record<string, number>>((acc, p) => {
+      const byInterfaceType: Record<string, number> = plugins.reduce((acc: Record<string, number>, p) => {
         acc[p.interfaceType] = (acc[p.interfaceType] ?? 0) + 1
         return acc
       }, {})
