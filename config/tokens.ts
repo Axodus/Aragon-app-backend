@@ -2,6 +2,11 @@ import { NetworksEnum } from '@types'
 
 export const TokensList = [
   {
+    network: NetworksEnum.harmonyMainnet,
+    contractAddress: '0x0000000000000000000000000000000000000000',
+    symbol: 'ONE',
+  },
+  {
     network: NetworksEnum.ethereumMainnet,
     contractAddress: '0x0000000000000000000000000000000000000000',
     symbol: 'ETH',
