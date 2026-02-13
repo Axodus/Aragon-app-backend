@@ -11,6 +11,7 @@ import Utils from '@helpers/utils'
 import config from '@config'
 import logger from '@logger'
 import { Models } from '@dbModels'
+import { PluginAuthorizationModel } from '@src/dbModels/pluginAuthorization'
 import { HarmonyRpcService } from '@services/harmonyRpcService'
 import ProviderModule from '@modules/provider'
 import { Contract, JsonRpcProvider, ethers, formatUnits } from 'ethers'
@@ -20,6 +21,27 @@ import { toHarmonyHexAddress } from '@src/utils/harmonyAddressUtils'
 const llo = logger.logMeta.bind(null, { service: 'PluginsController' })
 
 const harmonyNetworks = new Set<NetworksEnum>([NetworksEnum.harmonyMainnet, NetworksEnum.harmonyTestnet])
+const allowlistReadAbi = ['function isDAOAllowed(address) view returns (bool)']
+
+const harmonyAllowlistBySlug = new Map<string, string | null>([
+  ['harmony-hip', config.HARMONY_ALLOWLIST?.HIP_PLUGIN_ADDRESS ?? null],
+  ['harmony-delegation', config.HARMONY_ALLOWLIST?.DELEGATION_PLUGIN_ADDRESS ?? null],
+])
+
+function getAllowlistAddress(pluginSlug: string): string | null {
+  return harmonyAllowlistBySlug.get(pluginSlug) ?? null
+}
+
+function getRpcProvider(network: NetworksEnum): JsonRpcProvider | null {
+  const existing = ProviderModule.getAnyRpcProvider(network) as JsonRpcProvider | null
+  if (existing) return existing
+
+  const networkKey = Utils.networkToAragon(network as any)
+  const rpcUrl = (networkKey && config.NODES?.[networkKey]?.ARAGON_RPC) || null
+  if (!rpcUrl) return null
+
+  return new JsonRpcProvider(rpcUrl)
+}
 
 function decodeProcessKey(processKey: string | null | undefined): string | null {
   if (processKey == null) return null
@@ -168,7 +190,7 @@ const PluginsController = {
     try {
       const plugins = await Models.Plugin.findByDaoWithFilters(params)
 
-      const filteredPlugins = filterPluginsByWhitelist(plugins, params.daoAddress)
+      const filteredPlugins = await filterPluginsByWhitelist(plugins, params.daoAddress, params.network)
 
       await backfillHarmonyDelegationProcessKeys({ plugins: filteredPlugins, network: params.network })
 
@@ -547,26 +569,47 @@ const PluginsController = {
 }
 
 // Helper function to check whitelist
-function isDAOWhitelisted(daoAddress: string, pluginSlug: string): boolean {
-  // Opção 1: Whitelist hardcoded (temporário)
-  const whitelist: Record<string, string[]> = {
-    'harmony-hip': [
-      '0x76B83B6148ccA891D768cE3129585F25d0104783', // DAO autorizado
-      '0xAnotherDAOAddress',
-    ],
+async function isDAOWhitelisted(daoAddress: string, network: string, pluginSlug: string): Promise<boolean> {
+  if (!harmonyNetworks.has(network as NetworksEnum)) return false
+
+  const allowlistAddress = getAllowlistAddress(pluginSlug)
+  if (!allowlistAddress) {
+    logger.warn('Missing allowlist contract address', llo({ daoAddress, network, pluginSlug }))
+    return false
   }
 
-  return whitelist[pluginSlug]?.includes(daoAddress.toLowerCase()) || false
+  const provider = getRpcProvider(network as NetworksEnum)
+  if (!provider) {
+    logger.warn('Missing RPC provider for allowlist read', llo({ daoAddress, network, pluginSlug }))
+    return false
+  }
+
+  try {
+    const contract = new Contract(allowlistAddress, allowlistReadAbi, provider)
+    return await contract.isDAOAllowed(daoAddress)
+  } catch (error) {
+    logger.warn('Error while checking allowlist contract', llo({ error, daoAddress, network, pluginSlug }))
+    return false
+  }
 }
 
-function filterPluginsByWhitelist(plugins: any[], daoAddress: string) {
-  return plugins.filter(plugin => {
-    if (plugin.slug === 'harmony-hip' && plugin.status === 'by-request') {
-      return isDAOWhitelisted(daoAddress, 'harmony-hip')
+async function filterPluginsByWhitelist(plugins: any[], daoAddress: string, network: string) {
+  const filtered: any[] = []
+
+  for (const plugin of plugins) {
+    if ((plugin.slug === 'harmony-hip' || plugin.slug === 'harmony-delegation') && plugin.status === 'by-request') {
+      const isAllowed = await isDAOWhitelisted(daoAddress, network, plugin.slug)
+      if (!isAllowed) {
+        continue
+      }
+
+      plugin.status = 'available'
     }
 
-    return true
-  })
+    filtered.push(plugin)
+  }
+
+  return filtered
 }
 
 export default PluginsController

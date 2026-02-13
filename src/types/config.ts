@@ -101,6 +101,10 @@ export interface IConfig {
     MAX_QUEUE_SIZE: number
     THROTTLE_RETRY_DELAY: number
   }
+  HARMONY_ALLOWLIST: {
+    HIP_PLUGIN_ADDRESS: string | null
+    DELEGATION_PLUGIN_ADDRESS: string | null
+  }
   NODE_CONFIG: {
     MAX_RECONNECT_ATTEMPTS: number
     RECONNECT_INTERVAL: number

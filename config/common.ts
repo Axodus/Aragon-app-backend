@@ -31,6 +31,11 @@ const getConfigObject = (sourceConfig: Record<string, any>): IConfig => {
       THROTTLE_RETRY_DELAY: utils.configParser(sourceConfig, 'number', 'RABBITMQ_THROTTLE_RETRY_DELAY', 3000),
     },
 
+    HARMONY_ALLOWLIST: {
+      HIP_PLUGIN_ADDRESS: utils.configParser(sourceConfig, 'string', 'HIP_PLUGIN_ALLOWLIST_ADDRESS', null),
+      DELEGATION_PLUGIN_ADDRESS: utils.configParser(sourceConfig, 'string', 'HIP_PLUGIN_ALLOWLIST_ADDRESS', null),
+    },
+
     NODE_CONFIG: {
       MAX_RECONNECT_ATTEMPTS: utils.configParser(sourceConfig, 'number', 'NODE_CONFIG_MAX_RECONNECT_ATTEMPTS', 10),
       RECONNECT_INTERVAL: utils.configParser(sourceConfig, 'number', 'NODE_CONFIG_RECONNECT_INTERVAL', 100),
