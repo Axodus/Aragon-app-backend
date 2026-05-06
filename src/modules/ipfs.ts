@@ -50,33 +50,48 @@ const IPFSModule = {
     try {
       const url = `https://ipfs.io/ipfs/${cid}`
 
-      return await retry(
-        async () => {
-          const controller = new AbortController()
-          const timeout = opts?.timeout || config.IPFS.METADATA_FETCH_TIMEOUT
-          const timeoutId = setTimeout(() => controller.abort(), timeout)
+      try {
+        return await retry(
+          async () => {
+            const controller = new AbortController()
+            const timeout = opts?.timeout || config.IPFS.METADATA_FETCH_TIMEOUT
+            const timeoutId = setTimeout(() => controller.abort(), timeout)
 
-          try {
-            const response = await fetch(url, {
-              signal: controller.signal,
-            })
+            try {
+              const response = await fetch(url, {
+                signal: controller.signal,
+              })
 
-            if (!response.ok) {
-              throw new Error(`HTTP error! Status: ${response.status}`)
+              if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`)
+              }
+
+              const data = await response.json()
+              return Web3Utils.parseDaoMetadata(data)
+            } finally {
+              clearTimeout(timeoutId)
             }
+          },
+          {
+            delay: opts?.delay || config.IPFS.METADATA_FETCH_DELAY,
+            timeout: opts?.timeout || config.IPFS.METADATA_FETCH_TIMEOUT,
+          },
+        )
+      } catch (error: any) {
+        const errorMessage = error?.message || 'Unknown error'
+        const isTimeout = error?.name === 'AbortError' || errorMessage.toLowerCase().includes('timeout')
 
-            const data = await response.json()
-            return Web3Utils.parseDaoMetadata(data)
-          } finally {
-            clearTimeout(timeoutId)
-          }
-        },
-        {
-          retries: opts?.retries || config.IPFS.METADATA_FETCH_RETRY,
-          delay: opts?.delay || config.IPFS.METADATA_FETCH_DELAY,
-          timeout: opts?.timeout || config.IPFS.METADATA_FETCH_TIMEOUT,
-        },
-      )
+        if (isTimeout) {
+          logger.warn(
+            'IPFS metadata fetch timed out',
+            llo({ cid, timeout: opts?.timeout || config.IPFS.METADATA_FETCH_TIMEOUT }),
+          )
+        } else {
+          logger.error('Failed to fetch metadata from IPFS', llo({ cid, error }))
+        }
+
+        throw error
+      }
     } catch (error) {
       logger.error('Failed to fetch metadata from IPFS', llo({ cid, error }))
       return null

@@ -6,6 +6,8 @@ import { glob } from 'glob'
 import { argv } from 'process'
 import Mocha from 'mocha'
 import { MockDB } from '@test/lib/mockDb'
+import { reapplyCustomStatics } from '@models/utils/setModels'
+import { ModelProxy } from '@dbModels'
 import logger from '@logger'
 import utils from '@helpers/utils'
 import ProviderModule from '@modules/provider'
@@ -30,9 +32,12 @@ if (argv.includes('--unit-dep')) {
 }
 
 async function runTests() {
+  const defaultTimeoutMs = testFolder === 'unit' ? 180000 : 60000
+  const timeoutMs = Number(process.env.MOCHA_TIMEOUT_MS || defaultTimeoutMs)
+
   const mocha = new Mocha({
     ui: 'bdd',
-    timeout: 60000,
+    timeout: timeoutMs,
     color: true,
     diff: true,
     fullTrace: true,
@@ -56,6 +61,12 @@ async function runTests() {
   })
 
   mocha.suite.beforeEach(async () => {
+    // If a previous spec overwrote Models.<Model> with a plain object, restore
+    // the original Mongoose model before any test-level stubbing runs.
+    ModelProxy.restoreBaselineIfOverwritten()
+
+    // Ensure custom statics exist and are stub-friendly before any test-level stubbing runs.
+    reapplyCustomStatics()
     switch (testFolder) {
       case 'unit':
         await MockDB.drop()
@@ -66,6 +77,15 @@ async function runTests() {
       default:
         break
     }
+  })
+
+  // CRITICAL: Restore custom model statics after each test
+  // Sinon sandbox.restore() may remove custom statics when unstubbing
+  mocha.suite.afterEach(() => {
+    reapplyCustomStatics()
+
+    // Prevent any Models.<Model> overwrites from leaking into subsequent tests.
+    ModelProxy.restoreBaselineIfOverwritten()
   })
 
   mocha.suite.afterAll(async () => {

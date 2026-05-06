@@ -547,7 +547,7 @@ class BlockchainLogCrawler {
                 lastSync: blockNumber,
                 lastBlockHashNumber: blockNumber,
               },
-              { session }
+              { session },
             )
           } else {
             await Models.ConfigIndexer.create(
@@ -569,10 +569,13 @@ class BlockchainLogCrawler {
         const reorgResult = await ReorgDetector.detectReorg(this.crawlParams.network, blockNumber)
 
         if (reorgResult.isReorg && reorgResult.reorgBlockNumber) {
-          logger.warn('Reorg detected, initiating rollback', llo({
-            ...this.parseCrawlerInfoLog(),
-            reorgBlockNumber: reorgResult.reorgBlockNumber,
-          }))
+          logger.warn(
+            'Reorg detected, initiating rollback',
+            llo({
+              ...this.parseCrawlerInfoLog(),
+              reorgBlockNumber: reorgResult.reorgBlockNumber,
+            }),
+          )
           await ReorgDetector.rollbackFromBlock(this.crawlParams.network, reorgResult.reorgBlockNumber)
         }
       } catch (error) {

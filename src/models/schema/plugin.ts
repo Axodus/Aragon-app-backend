@@ -9,6 +9,7 @@ import {
   NetworksEnum,
 } from '@types'
 import { Model, type SaveOptions } from 'mongoose'
+import { ethers } from 'ethers'
 import * as _ from 'lodash'
 import { assert } from '@errors'
 
@@ -259,7 +260,17 @@ export default class Plugin extends Model {
   }
 
   static async findByAddress(address: HexAddress, network: NetworksEnum, tOpts?: SaveOptions) {
-    const params: any = { address, isSupported: true }
+    const addressVariants = (() => {
+      if (!address) return []
+      try {
+        const checksum = ethers.getAddress(address)
+        return Array.from(new Set([address, checksum, checksum.toLowerCase()]))
+      } catch {
+        return [address]
+      }
+    })()
+
+    const params: any = { address: { $in: addressVariants }, isSupported: true }
     if (network) {
       params.network = network
     }
@@ -267,7 +278,7 @@ export default class Plugin extends Model {
     if (supportedPlugin) {
       return supportedPlugin
     }
-    return await this.findOne({ address, network, isSupported: false }, null, tOpts)
+    return await this.findOne({ address: { $in: addressVariants }, network, isSupported: false }, null, tOpts)
   }
 
   static async findByTokenAddress(tokenAddress: HexAddress, network: NetworksEnum, tOpts?: SaveOptions) {
@@ -297,10 +308,20 @@ export default class Plugin extends Model {
   }
 
   static async getPluginIdBySlugAndDao(slug: string, daoAddress: HexAddress, network: NetworksEnum) {
+    const daoAddressVariants = (() => {
+      if (!daoAddress) return []
+      try {
+        const checksum = ethers.getAddress(daoAddress)
+        return Array.from(new Set([daoAddress, daoAddress.toLowerCase(), checksum, checksum.toLowerCase()]))
+      } catch {
+        return Array.from(new Set([daoAddress, daoAddress.toLowerCase()]))
+      }
+    })()
+
     const plugin: any = await this.aggregate([
       {
         $match: {
-          daoAddress,
+          daoAddress: { $in: daoAddressVariants },
           network,
           isSupported: true,
         },

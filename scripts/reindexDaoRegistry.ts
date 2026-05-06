@@ -18,6 +18,8 @@ import { BlockchainLogCrawler } from '@modules/crawlers'
 import configIndexer from '@indexer/configIndexer'
 import ConfigIndexerHelper from '@helpers/configIndexer'
 import utils from '@helpers/utils'
+import { type NetworksEnum } from '@src/types/networks'
+import { type LogServicePattern } from '@types'
 import harmonyMainnetContracts from '../config/contracts/harmonyMainnet.json'
 import harmonyTestnetContracts from '../config/contracts/harmonyTestnet.json'
 
@@ -175,19 +177,21 @@ async function runReplay(args: CliArgs) {
   }
 
   const events = getEventConfigs(args.events)
-  const addresses = (args.address ? [args.address] : getDaoRegistryAddresses(args.network)).map(address => address.toLowerCase())
+  const addresses = (args.address ? [args.address] : getDaoRegistryAddresses(args.network)).map(address =>
+    address.toLowerCase(),
+  )
 
   if (addresses.length === 0) {
     throw new Error(`No DAORegistry addresses configured for ${args.network}`)
   }
 
   const { fromBlock, toBlock } = resolveBlockRange(args)
-  const logService = `${ConfigIndexerHelper.builders.indexer(args.network)}-dao-replay`
+  const logService = `${ConfigIndexerHelper.builders.indexer(args.network as NetworksEnum)}-dao-replay` as LogServicePattern
 
   logger.info('Starting DAORegistry replay', llo({ args: { ...args, fromBlock, toBlock, addresses } }))
 
   const crawler = new BlockchainLogCrawler({
-    network: args.network,
+    network: args.network as NetworksEnum,
     address: addresses,
     events,
     fromBlock,

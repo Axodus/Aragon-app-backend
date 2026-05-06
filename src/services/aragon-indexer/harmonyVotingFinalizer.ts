@@ -5,7 +5,8 @@ import ProviderModule from '@modules/provider'
 import HarmonyRpc from '@helpers/harmonyRpc'
 import MerkleTreeHelper from '@helpers/merkleTree'
 import Web3Helper from '@helpers/web3'
-import { Contract, ethers, Interface, Wallet, type Log } from 'ethers'
+import utils from '@helpers/utils'
+import { Contract, ethers, Interface, JsonRpcProvider, Wallet, type Log } from 'ethers'
 import { HarmonyVotingPlugin } from '@artifacts/HarmonyVotingPlugin'
 
 const llo = logger.logMeta.bind(null, { service: 'service:indexer:HarmonyVotingFinalizer' })
@@ -45,8 +46,75 @@ function normalizeAddress(address: string): string {
   return ethers.getAddress(address).toLowerCase()
 }
 
-async function getLatestChainTimestamp(network: NetworksEnum): Promise<number> {
+function getAnyRpcProviderOrConfig(network: NetworksEnum): JsonRpcProvider | undefined {
   const provider = ProviderModule.getAnyRpcProvider(network)
+  if (provider) return provider
+
+  const networkKey = utils.networkToAragon(network)
+  const rpcUrl = networkKey ? (config.NODES as any)?.[networkKey]?.ARAGON_RPC : undefined
+  if (!rpcUrl) return undefined
+
+  return new JsonRpcProvider(rpcUrl)
+}
+
+async function getFinalizerSigner(params: {
+  provider: JsonRpcProvider
+  privateKey: string | null
+  oracleFromAddress: string | null
+}): Promise<{ signer: Wallet | ethers.JsonRpcSigner; signerAddress: HexAddress } | undefined> {
+  const { provider, privateKey, oracleFromAddress } = params
+
+  if (privateKey) {
+    const wallet = new Wallet(privateKey, provider)
+    return { signer: wallet, signerAddress: (await wallet.getAddress()) as HexAddress }
+  }
+
+  if (oracleFromAddress) {
+    const from = ethers.getAddress(oracleFromAddress)
+    const signer = await provider.getSigner(from)
+    const signerAddress = (await signer.getAddress()) as HexAddress
+    return { signer, signerAddress }
+  }
+
+  return undefined
+}
+
+async function findFirstBlockWithTimestampAtOrAfter(params: {
+  provider: JsonRpcProvider
+  fromBlock: number
+  toBlock: number
+  timestamp: number
+}): Promise<number | undefined> {
+  const { provider, timestamp } = params
+  let lo = Math.max(0, Math.floor(params.fromBlock))
+  let hi = Math.max(lo, Math.floor(params.toBlock))
+
+  // Quick guards
+  const hiBlock = await provider.getBlock(hi)
+  const hiTs = Number(hiBlock?.timestamp ?? 0)
+  if (hiTs === 0) return undefined
+  if (hiTs < timestamp) return undefined
+
+  const loBlock = await provider.getBlock(lo)
+  const loTs = Number(loBlock?.timestamp ?? 0)
+  if (loTs >= timestamp) return lo
+
+  while (lo + 1 < hi) {
+    const mid = Math.floor((lo + hi) / 2)
+    const block = await provider.getBlock(mid)
+    const ts = Number(block?.timestamp ?? 0)
+    if (ts >= timestamp && ts !== 0) {
+      hi = mid
+    } else {
+      lo = mid
+    }
+  }
+
+  return hi
+}
+
+async function getLatestChainTimestamp(network: NetworksEnum): Promise<number> {
+  const provider = getAnyRpcProviderOrConfig(network)
   if (!provider) throw new Error(`No RPC provider configured for network ${network}`)
   const latestBlockNumber = await provider.getBlockNumber()
   const block = await provider.getBlock(latestBlockNumber)
@@ -101,7 +169,7 @@ async function getValidatorAddressFromPlugin(
   network: NetworksEnum,
 ): Promise<HexAddress | undefined> {
   try {
-    const provider = ProviderModule.getAnyRpcProvider(network)
+    const provider = getAnyRpcProviderOrConfig(network)
     if (!provider) {
       logger.error('No RPC provider for network', llo({ network, pluginAddress }))
       return undefined
@@ -142,7 +210,7 @@ async function computeEligibleEntries(params: {
     const optedOutTopic = optInIface.getEvent('OptedOut')?.topicHash
     if (!optedInTopic || !optedOutTopic) return new Map()
 
-    const provider = ProviderModule.getAnyRpcProvider(target.network)
+    const provider = getAnyRpcProviderOrConfig(target.network)
     if (!provider) throw new Error(`No RPC provider configured for network ${target.network}`)
     const latestBlock = await provider.getBlockNumber()
 
@@ -330,11 +398,6 @@ export const HarmonyVotingFinalizer = {
 
     const targets = safeJsonParseTargets(cfg.TARGETS_JSON)
 
-    if (!cfg.PRIVATE_KEY) {
-      logger.warn('Harmony voting finalizer enabled but missing PRIVATE_KEY', llo({}))
-      return
-    }
-
     if (!Array.isArray(targets) || targets.length === 0) {
       logger.warn('Harmony voting finalizer enabled but no targets configured', llo({}))
       return
@@ -347,14 +410,28 @@ export const HarmonyVotingFinalizer = {
       }
 
       try {
-        const provider = ProviderModule.getAnyRpcProvider(target.network)
+        const provider = getAnyRpcProviderOrConfig(target.network)
         if (!provider) {
           logger.warn('Skipping target; missing RPC provider', llo({ target }))
           continue
         }
 
-        const wallet = new Wallet(cfg.PRIVATE_KEY, provider)
-        const contract = new Contract(target.pluginAddress, HarmonyVotingPlugin.abi as any, wallet)
+        const signerInfo = await getFinalizerSigner({
+          provider,
+          privateKey: cfg.PRIVATE_KEY,
+          oracleFromAddress: (cfg as any).ORACLE_FROM_ADDRESS ?? null,
+        })
+
+        if (!signerInfo) {
+          logger.warn(
+            'Skipping target; missing signer config (set PRIVATE_KEY or ORACLE_FROM_ADDRESS)'
+            ,
+            llo({ target }),
+          )
+          continue
+        }
+
+        const contract = new Contract(target.pluginAddress, HarmonyVotingPlugin.abi as any, signerInfo.signer)
 
         const latestBlock = await provider.getBlockNumber()
         const nowTs = await getLatestChainTimestamp(target.network)
@@ -402,6 +479,30 @@ export const HarmonyVotingFinalizer = {
           if (snapshotBlock > latestBlock) {
             logger.debug('Snapshot not reached yet, skipping', llo({ target, proposalId: proposalId.toString() }))
             continue
+          }
+
+          const finalizeBlocksAfterEndDate = Number((cfg as any).FINALIZE_BLOCKS_AFTER_ENDDATE || 0)
+          if (finalizeBlocksAfterEndDate > 0) {
+            const endBlock = await findFirstBlockWithTimestampAtOrAfter({
+              provider,
+              fromBlock: Math.max(0, snapshotBlock),
+              toBlock: latestBlock,
+              timestamp: endDate,
+            })
+
+            if (endBlock == null) {
+              logger.debug('End date block not found yet, skipping', llo({ target, proposalId: proposalId.toString() }))
+              continue
+            }
+
+            const requiredBlock = endBlock + finalizeBlocksAfterEndDate
+            if (latestBlock < requiredBlock) {
+              logger.debug(
+                'Waiting block delay after endDate',
+                llo({ target, proposalId: proposalId.toString(), latestBlock, requiredBlock }),
+              )
+              continue
+            }
           }
 
           const blockKey = `${target.network}:${normalizeAddress(target.pluginAddress)}:${proposalId.toString()}`

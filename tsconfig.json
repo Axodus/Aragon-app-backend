@@ -35,8 +35,9 @@
       "@metrics/*": ["./src/metrics/*"]
     },
     "esModuleInterop": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "skipLibCheck": true
   },
-  "include": ["./**/*", "./test/types.d.ts"],
-  "exclude": ["node_modules"]
+  "include": ["src/**/*", "runners/**/*", "scripts/**/*", "tools/**/*", "test/**/*", "index.ts"],
+  "exclude": ["node_modules", "dist"]
 }

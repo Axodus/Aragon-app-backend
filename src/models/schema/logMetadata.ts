@@ -73,13 +73,13 @@ export default class LogMetadata extends Model {
   public metadataUri!: string
 
   @prop({ type: () => String, default: null })
-  public name!: string
+  public name!: string | null
 
   @prop({ type: () => String, default: null })
-  public description!: string
+  public description!: string | null
 
   @prop({ type: () => String, default: null })
-  public avatar!: string
+  public avatar!: string | null
 
   @prop({ type: () => [Link], _id: false, default: [] })
   public links?: Link[]
@@ -88,7 +88,7 @@ export default class LogMetadata extends Model {
   public pluginAddress!: HexAddress
 
   @prop({ type: () => String, default: null })
-  public processKey!: string
+  public processKey!: string | null
 
   @prop({ type: () => [String], default: [] })
   public stageNames!: string[]

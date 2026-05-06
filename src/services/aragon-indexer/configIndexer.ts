@@ -34,6 +34,7 @@ import { CapitalDistributorHandler } from '@handlers/capitalDistributorHandler'
 import { GaugeVoter } from '@artifacts/GaugeVoter'
 import { GaugeHandler } from '@handlers/gaugeHandler'
 import { HarmonyVotingPlugin } from '@artifacts/HarmonyVotingPlugin'
+import { HarmonyVotingConfigHandler } from '@handlers/harmonyVotingConfigHandler'
 
 const IndexerEventConfig: IIndexerConfig[] = [
   // historical and realtime on startup
@@ -216,13 +217,51 @@ const IndexerEventConfig: IIndexerConfig[] = [
     ],
   },
   {
-    event: 'HarmonyProposalCreated',
+    event: 'ProposalCreated',
     enableHistorical: true,
     topic: new Interface(HarmonyVotingPlugin.abi).getEvent('ProposalCreated')?.topicHash!,
     config: [
       {
         abi: HarmonyVotingPlugin.abi as unknown as any[],
         handler: ProposalHandler.harmonyProposalCreated,
+      },
+    ],
+  },
+  {
+    event: 'ProposalClosed',
+    enableHistorical: true,
+    topic: new Interface(HarmonyVotingPlugin.abi).getEvent('ProposalClosed')?.topicHash!,
+    config: [
+      {
+        abi: HarmonyVotingPlugin.abi as unknown as any[],
+        handler: ProposalHandler.harmonyProposalClosed,
+      },
+    ],
+  },
+  {
+    event: 'ValidatorAddressUpdated',
+    enableHistorical: true,
+    topic: new Interface([
+      'event ValidatorAddressUpdated(address indexed oldAddress, address indexed newAddress)',
+    ]).getEvent('ValidatorAddressUpdated')?.topicHash!,
+    config: [
+      {
+        abi: [
+          'event ValidatorAddressUpdated(address indexed oldAddress, address indexed newAddress)',
+        ] as unknown as any[],
+        handler: HarmonyVotingConfigHandler.validatorAddressUpdated,
+      },
+    ],
+  },
+  {
+    event: 'ProcessKeyConfigured',
+    enableHistorical: true,
+    topic: new Interface(['event ProcessKeyConfigured(bytes32 indexed processKey)']).getEvent('ProcessKeyConfigured')
+      ?.topicHash!,
+    config: [
+      {
+        abi: ['event ProcessKeyConfigured(bytes32 indexed processKey)'] as unknown as any[],
+        handler: HarmonyVotingConfigHandler.processKeyConfigured,
       },
     ],
   },
@@ -530,7 +569,7 @@ const IndexerEventConfig: IIndexerConfig[] = [
     ],
   },
   {
-    event: 'HarmonyVoteCast',
+    event: 'VoteCast',
     enableHistorical: true,
     topic: new Interface(HarmonyVotingPlugin.abi).getEvent('VoteCast')?.topicHash!,
     config: [

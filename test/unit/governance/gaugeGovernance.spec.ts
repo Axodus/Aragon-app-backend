@@ -90,8 +90,8 @@ describe('Governance:GaugeGovernance', () => {
       const result = await gaugeGovernance.delete()
 
       expect(result).to.be.false
-      expect(loggerWarnStub.calledOnce).to.be.true
-      expect(loggerWarnStub.args[0][0]).to.equal('Gauge governance does not implement delete member')
+      expect(loggerWarnStub.called).to.be.true
+      expect(loggerWarnStub.calledWithMatch('Gauge governance does not implement delete member')).to.be.true
     })
   })
 

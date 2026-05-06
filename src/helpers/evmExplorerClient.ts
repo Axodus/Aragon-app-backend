@@ -17,29 +17,20 @@ import Web3Utils from '@helpers/web3Utils'
 
 const llo = logger.logMeta.bind(null, { service: 'helpers:EvmExplorerClient' })
 
-export enum EvmExplorerEnum {
-  ETHERSCAN = 'etherscan',
-  ROUTESCAN = 'routescan',
-  CHILIZ = 'chiliz',
-  BLOCKSCOUT = 'blockscout',
-  ZKSYNC = 'zksync',
-}
+export const EvmExplorerEnum = {
+  ETHERSCAN: 'etherscan',
+  ROUTESCAN: 'routescan',
+  CHILIZ: 'chiliz',
+  BLOCKSCOUT: 'blockscout',
+  ZKSYNC: 'zksync',
+} as const
 
-interface IExplorerConfig {
-  buildUrlAndParams: (
-    network: NetworksEnum,
-    customParams?: object,
-    urlSegments?: string,
-  ) => {
-    url: string
-    params: object
-  } | null
-}
+export type EvmExplorerType = (typeof EvmExplorerEnum)[keyof typeof EvmExplorerEnum]
 
 class EvmExplorerClient {
-  private readonly configs: Record<any, IExplorerConfig> = {
+  private readonly configs: Record<string, any> = {
     [EvmExplorerEnum.ETHERSCAN]: {
-      buildUrlAndParams: (network: NetworksEnum, customParams = {}, _urlSegments = '') => ({
+      buildUrlAndParams: (network: NetworksEnum, customParams = {}) => ({
         url: config.ETHERSCAN_API.BASE_URI,
         params: {
           ...customParams,
@@ -58,23 +49,23 @@ class EvmExplorerClient {
       },
     },
     [EvmExplorerEnum.BLOCKSCOUT]: {
-      buildUrlAndParams: (network: NetworksEnum, customParams = {}, _urlSegments = '') => {
+      buildUrlAndParams: (network: NetworksEnum, customParams = {}) => {
         const networkConfig = config.NODES[utils.networkToAragon(network)]
-        if (networkConfig.BLOCKSCOUT_API_KEY === undefined) {
-          return null
-        }
+        const baseUrl = networkConfig?.BLOCKSCOUT_API_URL
+        if (!baseUrl) return null
 
+        const apiKey = networkConfig?.BLOCKSCOUT_API_KEY
         return {
-          url: `${networkConfig.BLOCKSCOUT_API_URL}`,
+          url: `${baseUrl}`,
           params: {
             ...customParams,
-            apikey: networkConfig.BLOCKSCOUT_API_KEY,
+            ...(apiKey ? { apikey: apiKey } : {}),
           },
         }
       },
     },
     [EvmExplorerEnum.CHILIZ]: {
-      buildUrlAndParams: (_network: NetworksEnum, customParams = {}, _urlSegments = '') => {
+      buildUrlAndParams: (_network: NetworksEnum, customParams = {}) => {
         const baseUrl = `${config.CHILIZ_API_URL}/api`
         return {
           url: baseUrl,
@@ -85,7 +76,7 @@ class EvmExplorerClient {
       },
     },
     [EvmExplorerEnum.ZKSYNC]: {
-      buildUrlAndParams: (network: NetworksEnum, customParams = {}, _urlSegments = '') => {
+      buildUrlAndParams: (network: NetworksEnum, customParams = {}) => {
         const networkKeyName = network === NetworksEnum.zksyncMainnet ? 'MAINNET_BASE_URI' : 'SEPOLIA_BASE_URI'
         const baseUrl = config.ZKSYNC_BLOCK_EXPLORER_API[networkKeyName]
         return {
@@ -98,21 +89,33 @@ class EvmExplorerClient {
     },
   }
 
-  private async apiCall(explorerType: EvmExplorerEnum, params: object, network: NetworksEnum, urlSegments = '') {
+  private async apiCall(explorerType: EvmExplorerType, params: object, network: NetworksEnum, urlSegments = '') {
     try {
       const explorerConfig = this.configs[explorerType]
-      if (!explorerConfig) {
+      if (!explorerConfig || typeof explorerConfig.buildUrlAndParams !== 'function') {
         return null
       }
 
-      const { url, params: requestParams } = explorerConfig.buildUrlAndParams(network, params, urlSegments) as {
-        url: string
-        params: object
+      const built = explorerConfig.buildUrlAndParams(network, params, urlSegments) as
+        | {
+            url: string
+            params: object
+          }
+        | null
+      if (!built) {
+        return null
       }
 
-      const response = await retryRequest(async () =>
-        BottleneckModule.getEtherScanLimiter(network).schedule(async () => axios.get(url, { params: requestParams })),
-      )
+      const { url, params: requestParams } = built
+
+      const limiter =
+        explorerType === EvmExplorerEnum.BLOCKSCOUT
+          ? BottleneckModule.getBlockScoutLimiter(network)
+          : explorerType === EvmExplorerEnum.CHILIZ
+            ? BottleneckModule.getChilizLimiter(network)
+            : BottleneckModule.getEtherScanLimiter(network)
+
+      const response = await retryRequest(async () => limiter.schedule(async () => axios.get(url, { params: requestParams })))
 
       return response?.data
     } catch (error) {
@@ -122,7 +125,7 @@ class EvmExplorerClient {
   }
 
   async getTokenBalances(
-    explorerType: EvmExplorerEnum,
+    explorerType: EvmExplorerType,
     address: HexAddress,
     network: NetworksEnum,
   ): Promise<IWeb3TokenBalance[]> {
@@ -157,7 +160,7 @@ class EvmExplorerClient {
   }
 
   async fetchContractSourceCode(
-    explorerType: EvmExplorerEnum,
+    explorerType: EvmExplorerType,
     address: HexAddress,
     network: NetworksEnum,
   ): Promise<IEtherScanSource[] | null> {
@@ -169,7 +172,45 @@ class EvmExplorerClient {
       }
 
       const response = await this.apiCall(explorerType, params, network)
-      return this.parseSourceCodeResponse(response)
+      const parsed = this.parseSourceCodeResponse(response)
+      if (parsed) return parsed
+
+      // Fallback: some explorers (or endpoints) only expose ABI via `action=getabi`.
+      try {
+        const abiParams = {
+          module: 'contract',
+          action: 'getabi',
+          address,
+        }
+        const abiResponse = await this.apiCall(explorerType, abiParams, network)
+        const abiResult = abiResponse?.result
+        if (
+          abiResponse?.status === '1' &&
+          abiResponse?.message === 'OK' &&
+          typeof abiResult === 'string' &&
+          abiResult !== '' &&
+          abiResult !== '[]'
+        ) {
+          // Validate that it looks like JSON ABI.
+          try {
+            JSON.parse(abiResult)
+          } catch {
+            return null
+          }
+          return [
+            {
+              SourceCode: '',
+              ContractName: '',
+              ABI: abiResult,
+              CompilerVersion: '',
+            },
+          ]
+        }
+      } catch (e) {
+        logger.warn('Fallback getabi failed', llo({ error: e, address, network, explorerType }))
+      }
+
+      return null
     } catch (error) {
       logger.warn('Error fetching contract source code', llo({ error, address, network, explorerType }))
       return null
@@ -177,7 +218,7 @@ class EvmExplorerClient {
   }
 
   async fetchContractCreation(
-    explorerType: EvmExplorerEnum,
+    explorerType: EvmExplorerType,
     address: HexAddress,
     network: NetworksEnum,
   ): Promise<IWeb3ContractCreation> {
@@ -220,14 +261,16 @@ class EvmExplorerClient {
       response?.status === '1' &&
       response?.message === 'OK' &&
       response?.result?.length > 0 &&
-      response.result[0].SourceCode !== '' &&
-      response.result[0].ABI !== undefined
+      response.result[0].ABI !== undefined &&
+      response.result[0].ABI !== ''
     ) {
       const name = response.result[0].ContractName
       const ContractName = name.split(':').pop() || name
       return [
         {
-          SourceCode: response.result[0].SourceCode,
+          // Some explorers (e.g. Harmony) may return ABI but an empty SourceCode.
+          // The caller can still use the ABI (without NatSpec enrichment).
+          SourceCode: response.result[0].SourceCode || '',
           ContractName,
           ABI: response.result[0].ABI,
           CompilerVersion: response.result[0].CompilerVersion || response.result[0].CompilerType,
@@ -248,7 +291,7 @@ class EvmExplorerClient {
     return { address, transactionHash: '', blockNumber: 0 }
   }
 
-  async fetchTokenInfo(explorerType: EvmExplorerEnum, address: HexAddress, network: NetworksEnum) {
+  async fetchTokenInfo(explorerType: EvmExplorerType, address: HexAddress, network: NetworksEnum) {
     try {
       const params = {
         module: 'token',
@@ -276,7 +319,7 @@ class EvmExplorerClient {
     }
   }
 
-  async fetchNativeTokenPrice(explorerType: EvmExplorerEnum, network: NetworksEnum): Promise<string> {
+  async fetchNativeTokenPrice(explorerType: EvmExplorerType, network: NetworksEnum): Promise<string> {
     try {
       const params = {
         module: 'stats',

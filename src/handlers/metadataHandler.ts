@@ -7,6 +7,7 @@ import type LogMetadata from '@models/schema/logMetadata'
 import DbOperations from '@models/utils/dbOperations'
 import type Dao from '@models/schema/dao'
 import type Plugin from '@models/schema/plugin'
+import config from '@config'
 import { PluginSettingHandler } from '@src/handlers/pluginSettingHandler'
 import { PluginSlug } from '@helpers/pluginSlug'
 import Utils from '@helpers/utils'
@@ -33,9 +34,25 @@ export const MetadataHandler = {
 
     try {
       const metadataUri = Web3Utils.extractMetadataUri(parsedEvent.args.metadata)
-      const ipfsMetadata = await IPFSModule.fetchMetadata(metadataUri!, { retries: 4 })
+      const ipfsMetadata = await IPFSModule.fetchMetadata(metadataUri!, {
+        retries: 4,
+        timeout: config.IPFS.METADATA_FETCH_TIMEOUT,
+      })
 
-      const logMetadata = {
+      if (!ipfsMetadata) {
+        logger.warn(
+          'Metadata fetch failed or timed out, storing fallback record',
+          llo({
+            metadataUri,
+            network,
+            transactionHash,
+            transactionIndex,
+            logIndex,
+          }),
+        )
+      }
+
+      const logMetadata: Partial<LogMetadata> = {
         network,
         transactionHash,
         transactionIndex,
@@ -43,15 +60,15 @@ export const MetadataHandler = {
         metadataUri: metadataUri!,
         fetchedMetadata: !!ipfsMetadata,
         blockNumber,
-        name: ipfsMetadata?.name!,
-        description: ipfsMetadata?.description!,
-        avatar: Utils.parseAvatar(ipfsMetadata?.avatar),
-        links: ipfsMetadata?.links!,
-        processKey: ipfsMetadata?.processKey!,
-        stageNames: ipfsMetadata?.stageNames!,
-        blockedCountries: ipfsMetadata?.blockedCountries || [],
-        termsConditionsUrl: ipfsMetadata?.termsConditionsUrl || null,
-        enableOfacCheck: ipfsMetadata?.enableOfacCheck || null,
+        name: ipfsMetadata?.name ?? undefined,
+        description: ipfsMetadata?.description ?? undefined,
+        avatar: ipfsMetadata?.avatar ? (Utils.parseAvatar(ipfsMetadata.avatar) ?? undefined) : undefined,
+        links: ipfsMetadata?.links ?? [],
+        processKey: ipfsMetadata?.processKey ?? undefined,
+        stageNames: ipfsMetadata?.stageNames ?? [],
+        blockedCountries: ipfsMetadata?.blockedCountries ?? [],
+        termsConditionsUrl: ipfsMetadata?.termsConditionsUrl ?? null,
+        enableOfacCheck: ipfsMetadata?.enableOfacCheck ?? null,
       }
 
       if (daoExists) {
@@ -90,7 +107,7 @@ export const MetadataHandler = {
       await MetadataHandler._updatePluginMetadata(logDb)
 
       if (plugin.isSupported && plugin.status === IPluginStatus.installed) {
-        await PluginSlug.updateSlug(plugin, logMetadata.processKey)
+        await PluginSlug.updateSlug(plugin, logMetadata.processKey ?? undefined)
       }
 
       if (plugin.interfaceType === IPluginInterfaceType.spp && ipfsMetadata) {

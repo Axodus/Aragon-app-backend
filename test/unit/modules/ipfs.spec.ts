@@ -104,6 +104,27 @@ describe('Modules: IPFS', () => {
       config.IPFS.METADATA_FETCH_RETRY = metadatafetchretry
       config.IPFS.METADATA_FETCH_DELAY = metadatafetchdelay
     })
+
+    it('should log a warning when _fetchMetadata times out', async () => {
+      const metadatafetchretry = config.IPFS.METADATA_FETCH_RETRY
+      const metadatafetchdelay = config.IPFS.METADATA_FETCH_DELAY
+
+      config.IPFS.METADATA_FETCH_RETRY = 0
+      config.IPFS.METADATA_FETCH_DELAY = 0
+
+      const abortError = Object.assign(new Error('The operation was aborted'), { name: 'AbortError' })
+      sandbox.stub(global, 'fetch').rejects(abortError)
+
+      const loggerWarnStub = sandbox.stub(logger, 'warn')
+
+      const result = await IPFSModule._fetchMetadata('cid', { retries: 0, delay: 0, timeout: 1 })
+
+      expect(result).to.be.null
+      expect(loggerWarnStub.args[0][0]).to.eq('IPFS metadata fetch timed out')
+
+      config.IPFS.METADATA_FETCH_RETRY = metadatafetchretry
+      config.IPFS.METADATA_FETCH_DELAY = metadatafetchdelay
+    })
   })
 
   describe('fetchMetadata', function () {

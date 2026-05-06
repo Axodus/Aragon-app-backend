@@ -74,7 +74,7 @@ export const ProposalHandler = {
             config: [
               {
                 abi: TokenVoting.abi,
-                handler: async (_parsedEvent: LogDescription, _info: ILogInfo) => {},
+                handler: async () => {},
               },
             ],
           },
@@ -177,7 +177,6 @@ export const ProposalHandler = {
       }
 
       const blockTimestamp = await Web3Helper.getBlockTimestamp(info.blockNumber, info.network)
-      const normalizedBlockTimestamp = (blockTimestamp ?? undefined) as Proposal['blockTimestamp']
 
       const document: Partial<Proposal> = {
         network: info.network,
@@ -309,6 +308,14 @@ export const ProposalHandler = {
 
       document.incrementalId = incrementalId
 
+      if (!document.id) {
+        document.id = Models.Proposal.getEntityId({
+          transactionHash: info.transactionHash,
+          pluginAddress,
+          proposalIndex,
+        })
+      }
+
       // Idempotent upsert: prevent duplicates on blockchain reorgs
       // Use unique compound key: (network, transactionHash, logIndex)
       const newProposal = await Models.Proposal.findOneAndUpdate(
@@ -318,7 +325,7 @@ export const ProposalHandler = {
           logIndex: info.logIndex,
         },
         { $set: document },
-        { upsert: true, new: true }
+        { upsert: true, new: true },
       )
 
       logger.verbose('New Proposal', llo({ ...info, logId: newProposal.id }))
@@ -403,7 +410,7 @@ export const ProposalHandler = {
       info.interfaceType = relatedPlugin.interfaceType
 
       const proposalIndex = parsedEvent.args?.proposalId?.toString()
-      
+
       // Idempotency check: verify if this exact log was already processed
       const existingLog = await Models.Proposal.findExistingLog({
         transactionHash: info.transactionHash,
@@ -449,21 +456,31 @@ export const ProposalHandler = {
       }
 
       const blockTimestamp = await Web3Helper.getBlockTimestamp(info.blockNumber, info.network)
-      const normalizedBlockTimestamp = (blockTimestamp ?? undefined) as Proposal['blockTimestamp']
+      const normalizedBlockTimestamp = blockTimestamp ?? undefined
       const block = await Web3Helper.getBlock(info.blockNumber, info.network)
       const blockHash = block?.hash ?? undefined
-      const metadataHash = parsedEvent.args?.metadata
-      const metadataUri = metadataHash ? metadataHash.toString() : null
+      const metadataUri = Web3Utils.extractMetadataUri(parsedEvent?.args.metadata) || null
 
-      const proposalMetadata: IProposalMetadata = {
+      let proposalMetadata: IProposalMetadata = {
         title: `Harmony proposal #${proposalIndex}`,
-        summary: metadataUri ? `Metadata hash: ${metadataUri}` : 'Harmony voting proposal.',
+        summary: 'Harmony voting proposal.',
         description: '',
         resources: [],
         media: {
           header: null,
           logo: null,
         },
+      }
+
+      if (metadataUri) {
+        try {
+          const fetched = await ProposalHandler.fetchProposalMetadata(metadataUri)
+          if (fetched) {
+            proposalMetadata = fetched
+          }
+        } catch (err) {
+          logger.warn('HarmonyProposalCreated - failed to fetch metadata', llo({ ...info, metadataUri, error: err }))
+        }
       }
 
       const transaction = await Web3Helper.getTransaction(info.transactionHash, info.network)
@@ -473,7 +490,7 @@ export const ProposalHandler = {
         network: info.network,
         blockNumber: info.blockNumber,
         blockHash,
-          blockTimestamp: normalizedBlockTimestamp,
+        blockTimestamp: normalizedBlockTimestamp,
         transactionHash: info.transactionHash,
         title: proposalMetadata?.title!,
         description: proposalMetadata?.description!,
@@ -488,7 +505,7 @@ export const ProposalHandler = {
         startDate: Number(parsedEvent.args.startDate),
         endDate: Number(parsedEvent.args.endDate),
         allowFailureMap: 0,
-          metadataUri: metadataUri ?? undefined,
+        metadataUri: metadataUri ?? undefined,
         settings: rawSettings,
         rawActions: [],
       }
@@ -504,6 +521,14 @@ export const ProposalHandler = {
 
       document.incrementalId = incrementalId
 
+      if (!document.id) {
+        document.id = Models.Proposal.getEntityId({
+          transactionHash: info.transactionHash,
+          pluginAddress,
+          proposalIndex,
+        })
+      }
+
       // Idempotent upsert: prevent duplicates on blockchain reorgs
       // Use unique compound key: (network, transactionHash, logIndex)
       const newProposal = await Models.Proposal.findOneAndUpdate(
@@ -513,7 +538,7 @@ export const ProposalHandler = {
           logIndex: info.logIndex,
         },
         { $set: document },
-        { upsert: true, new: true }
+        { upsert: true, new: true },
       )
 
       logger.verbose('New Harmony Proposal', llo({ ...info, logId: newProposal.id }))
@@ -681,7 +706,7 @@ export const ProposalHandler = {
             logIndex: info.logIndex,
           },
           { $set: document },
-          { upsert: true, new: true, session }
+          { upsert: true, new: true, session },
         )
 
         if (isExistingVote) {
@@ -720,6 +745,36 @@ export const ProposalHandler = {
     }
   },
 
+  harmonyProposalClosed: async (parsedEvent: LogDescription, info: ILogInfo) => {
+    try {
+      const proposalIndex = parsedEvent.args.proposalId.toString()
+      const passed = Boolean(parsedEvent.args.passed)
+
+      const plugin = await Models.Plugin.findByAddress(info.address, info.network)
+      if (!plugin) {
+        logger.warn('HarmonyProposalClosed - Plugin not found', llo(info))
+        return
+      }
+
+      const proposal = await Models.Proposal.findByProposalIndex(proposalIndex, info.address, info.network)
+      if (!proposal) {
+        logger.warn('HarmonyProposalClosed - Proposal not found', llo({ ...info, proposalIndex }))
+        return
+      }
+
+      // Idempotent update: set closed and passed
+      await Models.Proposal.findOneAndUpdate(
+        { _id: proposal.id },
+        { $set: { closed: true, passed } },
+        { new: true },
+      )
+
+      logger.verbose('HarmonyProposalClosed - updated proposal', llo({ ...info, proposalIndex, passed }))
+    } catch (error) {
+      logger.error('Error HarmonyProposalClosed', llo({ ...info, error, parsedEvent }))
+    }
+  },
+
   harmonyVoteCast: async (parsedEvent: LogDescription, info: ILogInfo) => {
     const startTime = Date.now()
     try {
@@ -741,7 +796,10 @@ export const ProposalHandler = {
 
       if (!proposal) {
         logger.warn('HarmonyVoteCast - Proposal not found', llo(info))
-        HarmonyIndexingMetrics.recordError(info.network, 'Proposal not found', { proposalIndex, pluginAddress: info.address })
+        HarmonyIndexingMetrics.recordError(info.network, 'Proposal not found', {
+          proposalIndex,
+          pluginAddress: info.address,
+        })
         return
       }
 
@@ -767,7 +825,8 @@ export const ProposalHandler = {
         logIndex: info.logIndex,
         blockNumber: info.blockNumber,
         blockHash,
-        blockTimestamp: ((await Web3Helper.getBlockTimestamp(info.blockNumber, info.network)) ?? undefined) as Vote['blockTimestamp'],
+        blockTimestamp: ((await Web3Helper.getBlockTimestamp(info.blockNumber, info.network)) ??
+          undefined) as Vote['blockTimestamp'],
         daoAddress: proposal.daoAddress,
         pluginAddress: info.address,
         memberAddress: parsedEvent.args.voter,
@@ -799,7 +858,7 @@ export const ProposalHandler = {
             logIndex: info.logIndex,
           },
           { $set: document },
-          { upsert: true, new: true, session }
+          { upsert: true, new: true, session },
         )
 
         if (isExistingVote) {
@@ -977,6 +1036,10 @@ export const ProposalHandler = {
       }
 
       const plugin = await Models.Plugin.findByAddress(proposal.pluginAddress, info.network)
+      if (!plugin) {
+        logger.warn('Plugin not found', llo({ ...info, pluginAddress: proposal.pluginAddress }))
+        return
+      }
       const newStage = Number(parsedEvent.args.stageId)
       const subPlugins = plugin.subPlugins.find((subPlugin: { stageIndex: any }) => subPlugin.stageIndex === newStage)
 
@@ -990,6 +1053,11 @@ export const ProposalHandler = {
        */
       await Promise.all(
         previousStageSubProposals.map(async (subProposal: any) => {
+          // Some legacy/partial records may not contain enough data to resolve the sub proposal.
+          // Skip them silently (do not warn/error) to avoid duplicate "Sub proposal not found" logs.
+          if (!subProposal?.pluginAddress || !subProposal?.proposalIndex) {
+            return
+          }
           const subProposalDb = await Models.Proposal.findByProposalIndex(
             subProposal.proposalIndex,
             subProposal.pluginAddress,

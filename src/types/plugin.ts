@@ -40,6 +40,7 @@ export enum IPluginStatus {
 export enum IPluginSlug {
   locktovote = 'locktovote',
   tokenvoting = 'tokenvoting',
+  nativetokenvoting = 'nativetokenvoting',
   multisig = 'multisig',
   admin = 'admin',
   gauge = 'gauge',
@@ -58,6 +59,7 @@ export enum IEventLogPluginSettings {
 
 export enum IPluginInterfaceType {
   tokenVoting = 'tokenVoting',
+  nativeTokenVoting = 'nativeTokenVoting',
   multisig = 'multisig',
   admin = 'admin',
   spp = 'spp',

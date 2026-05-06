@@ -1,6 +1,7 @@
 import logger from '@logger'
 import Web3Helper from '@helpers/web3'
 import { Models } from '@dbModels'
+import { NetworksEnum } from '@types'
 
 const llo = logger.logMeta.bind(null, { service: 'helpers:ReorgDetection' })
 
@@ -15,6 +16,27 @@ interface ReorgCheckResult {
  * Helper for detecting and handling blockchain reorganizations
  */
 export class ReorgDetectionHelper {
+  private static normalizeNetwork(network: NetworksEnum | string): NetworksEnum | null {
+    if (Object.values(NetworksEnum).includes(network as NetworksEnum)) {
+      return network as NetworksEnum
+    }
+
+    const normalized = network.toLowerCase()
+    const legacyMap: Record<string, NetworksEnum> = {
+      harmony: NetworksEnum.harmonyMainnet,
+      'harmony-mainnet': NetworksEnum.harmonyMainnet,
+      'harmony-testnet': NetworksEnum.harmonyTestnet,
+      ethereum: NetworksEnum.ethereumMainnet,
+      'ethereum-mainnet': NetworksEnum.ethereumMainnet,
+      sepolia: NetworksEnum.ethereumSepolia,
+      'ethereum-sepolia': NetworksEnum.ethereumSepolia,
+      polygon: NetworksEnum.polygonMainnet,
+      'polygon-mainnet': NetworksEnum.polygonMainnet,
+    }
+
+    return legacyMap[normalized] ?? null
+  }
+
   /**
    * Check if a reorg occurred by comparing stored block hash with current chain state
    * @param blockNumber Block number to check
@@ -25,11 +47,17 @@ export class ReorgDetectionHelper {
   static async checkReorg(
     blockNumber: number,
     storedBlockHash: string,
-    network: string,
+    network: NetworksEnum | string,
   ): Promise<ReorgCheckResult> {
     try {
-      const currentBlock = await Web3Helper.getBlock(blockNumber, network)
-      
+      const normalizedNetwork = this.normalizeNetwork(network)
+      if (!normalizedNetwork) {
+        logger.warn('ReorgCheck - Unsupported network', llo({ blockNumber, network }))
+        return { isReorg: false }
+      }
+
+      const currentBlock = await Web3Helper.getBlock(blockNumber, normalizedNetwork)
+
       if (!currentBlock) {
         logger.warn('ReorgCheck - Block not found on current chain', llo({ blockNumber, network }))
         return { isReorg: false }
@@ -37,18 +65,26 @@ export class ReorgDetectionHelper {
 
       const currentHash = currentBlock.hash
 
+      if (!currentHash) {
+        logger.warn('ReorgCheck - Block hash not available on current chain', llo({ blockNumber, network }))
+        return { isReorg: false }
+      }
+
       if (currentHash !== storedBlockHash) {
-        logger.warn('ReorgDetected - Block hash mismatch', llo({
-          blockNumber,
-          network,
-          storedHash: storedBlockHash,
-          currentHash,
-        }))
+        logger.warn(
+          'ReorgDetected - Block hash mismatch',
+          llo({
+            blockNumber,
+            network,
+            storedHash: storedBlockHash,
+            currentHash: currentHash ?? undefined,
+          }),
+        )
         return {
           isReorg: true,
           affectedBlock: blockNumber,
           expectedHash: storedBlockHash,
-          actualHash: currentHash,
+          actualHash: currentHash ?? undefined,
         }
       }
 
@@ -68,8 +104,15 @@ export class ReorgDetectionHelper {
     // Harmony finality: ~2 epochs = ~7200 blocks (assuming 2s block time, 2 epochs = ~4 hours)
     // For faster UX, we use ~100 blocks (~3.3 minutes) as confirmation threshold
     const confirmationMap: Record<string, number> = {
-      harmony: 100,
+      // Current NetworksEnum values
+      'harmony-mainnet': 100,
       'harmony-testnet': 50,
+      'ethereum-mainnet': 12,
+      'ethereum-sepolia': 12,
+      'polygon-mainnet': 128,
+
+      // Legacy aliases kept for backward compatibility
+      harmony: 100,
       ethereum: 12,
       polygon: 128,
       goerli: 12,
@@ -118,12 +161,15 @@ export class ReorgDetectionHelper {
         blockNumber: { $gte: fromBlock, $lte: toBlock },
       })
 
-      logger.info('ReorgRollback - Proposals rolled back', llo({
-        fromBlock,
-        toBlock,
-        network,
-        count: affectedProposals.length,
-      }))
+      logger.info(
+        'ReorgRollback - Proposals rolled back',
+        llo({
+          fromBlock,
+          toBlock,
+          network,
+          count: affectedProposals.length,
+        }),
+      )
     } catch (error) {
       logger.error('ReorgRollback - Error rolling back proposals', llo({ fromBlock, toBlock, network, error }))
       throw error
@@ -155,12 +201,15 @@ export class ReorgDetectionHelper {
         blockNumber: { $gte: fromBlock, $lte: toBlock },
       })
 
-      logger.info('ReorgRollback - Votes rolled back', llo({
-        fromBlock,
-        toBlock,
-        network,
-        count: affectedVotes.length,
-      }))
+      logger.info(
+        'ReorgRollback - Votes rolled back',
+        llo({
+          fromBlock,
+          toBlock,
+          network,
+          count: affectedVotes.length,
+        }),
+      )
     } catch (error) {
       logger.error('ReorgRollback - Error rolling back votes', llo({ fromBlock, toBlock, network, error }))
       throw error

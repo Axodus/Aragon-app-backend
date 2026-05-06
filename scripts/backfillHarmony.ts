@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * CLI script to backfill HarmonyVoting events
- * 
+ *
  * Usage:
  *   yarn backfill:harmony --network=harmony --plugin=0x123...
  *   yarn backfill:harmony --network=harmony --all
@@ -14,6 +14,8 @@ import mongoose from 'mongoose'
 import config from '../config'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 import { ModelProxy } from '@dbModels'
+import { NetworksEnum } from '@types'
+import ProviderModule from '@modules/provider'
 
 const llo = logger.logMeta.bind(null, { service: 'scripts:HarmonyBackfill' })
 let memoryServer: MongoMemoryServer | null = null
@@ -23,14 +25,14 @@ interface CliArgs {
   plugin?: string
   all?: boolean
   from?: number
-  to?: number | string
+  to?: number | 'latest'
   batch?: number
 }
 
 function parseArgs(): CliArgs {
   const args: CliArgs = {}
 
-  process.argv.slice(2).forEach((arg) => {
+  process.argv.slice(2).forEach(arg => {
     if (arg.startsWith('--network=')) {
       args.network = arg.split('=')[1]
     } else if (arg.startsWith('--plugin=')) {
@@ -80,43 +82,57 @@ async function disconnectDatabase() {
 }
 
 async function main() {
-  console.log('[BackfillHarmony] Script started')
+  logger.info('BackfillHarmony - Script started', llo())
   const args = parseArgs()
-  console.log('[BackfillHarmony] Args parsed:', args)
+  logger.info('BackfillHarmony - Args parsed', llo({ args }))
 
   if (!args.network) {
-    console.error('Error: --network is required')
-    console.log('Usage:')
-    console.log('  yarn backfill:harmony --network=harmony --plugin=0x123...')
-    console.log('  yarn backfill:harmony --network=harmony --all')
-    console.log('  yarn backfill:harmony --network=harmony --plugin=0x123... --from=12345 --to=67890')
+    logger.error('BackfillHarmony - Missing required flag: --network', llo())
+    logger.info(
+      'BackfillHarmony - Usage:\n  yarn backfill:harmony --network=harmony --plugin=0x123...\n  yarn backfill:harmony --network=harmony --all\n  yarn backfill:harmony --network=harmony --plugin=0x123... --from=12345 --to=67890',
+      llo(),
+    )
     process.exit(1)
   }
 
+  if (!Object.values(NetworksEnum).includes(args.network as NetworksEnum)) {
+    logger.error(
+      `BackfillHarmony - Invalid --network. Must be one of: ${Object.values(NetworksEnum).join(', ')}`,
+      llo({ network: args.network }),
+    )
+    process.exit(1)
+  }
+
+  const network = args.network as NetworksEnum
+
   if (!args.plugin && !args.all) {
-    console.error('Error: Either --plugin or --all is required')
+    logger.error('BackfillHarmony - Either --plugin or --all is required', llo())
     process.exit(1)
   }
 
   try {
-    console.log('[BackfillHarmony] Attempting database connection...')
+    logger.info('BackfillHarmony - Attempting database connection...', llo())
     await connectDatabase()
-    console.log('[BackfillHarmony] Database connected successfully')
+    logger.info('BackfillHarmony - Database connected successfully', llo())
 
-    console.log('[BackfillHarmony] Registering Mongo models...')
+    logger.info('BackfillHarmony - Registering Mongo models...', llo())
     await ModelProxy.setMongoModels()
-    console.log('[BackfillHarmony] Mongo models ready')
+    logger.info('BackfillHarmony - Mongo models ready', llo())
+
+    logger.info('BackfillHarmony - Initializing blockchain providers...', llo())
+    await ProviderModule.connectToAllNetworks()
+    logger.info('BackfillHarmony - Blockchain providers ready', llo())
 
     logger.info('HarmonyBackfill CLI - Starting', llo({ args }))
 
     if (args.all) {
       // Backfill all HarmonyVoting plugins on the network
-      await HarmonyBackfillJob.backfillAllPlugins(args.network)
+      await HarmonyBackfillJob.backfillAllPlugins(network)
     } else if (args.plugin) {
       // Backfill specific plugin
       await HarmonyBackfillJob.backfillPlugin({
         pluginAddress: args.plugin,
-        network: args.network,
+        network,
         startBlock: args.from,
         endBlock: args.to,
         batchSize: args.batch,

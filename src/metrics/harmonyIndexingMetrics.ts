@@ -15,7 +15,7 @@ interface IndexingMetrics {
  * Metrics tracker for HarmonyVoting indexing
  */
 export class HarmonyIndexingMetrics {
-  private static metrics: Map<string, IndexingMetrics> = new Map()
+  private static readonly metrics = new Map<string, IndexingMetrics>()
 
   /**
    * Initialize metrics for a network
@@ -45,12 +45,15 @@ export class HarmonyIndexingMetrics {
     metrics.averageProcessingTime =
       (metrics.averageProcessingTime * (metrics.proposalsIndexed - 1) + processingTime) / metrics.proposalsIndexed
 
-    logger.verbose('HarmonyIndexing - Proposal indexed', llo({
-      network,
-      blockNumber,
-      processingTime,
-      totalProposals: metrics.proposalsIndexed,
-    }))
+    logger.verbose(
+      'HarmonyIndexing - Proposal indexed',
+      llo({
+        network,
+        blockNumber,
+        processingTime,
+        totalProposals: metrics.proposalsIndexed,
+      }),
+    )
   }
 
   /**
@@ -65,12 +68,15 @@ export class HarmonyIndexingMetrics {
     metrics.averageProcessingTime =
       (metrics.averageProcessingTime * (metrics.votesIndexed - 1) + processingTime) / metrics.votesIndexed
 
-    logger.verbose('HarmonyIndexing - Vote indexed', llo({
-      network,
-      blockNumber,
-      processingTime,
-      totalVotes: metrics.votesIndexed,
-    }))
+    logger.verbose(
+      'HarmonyIndexing - Vote indexed',
+      llo({
+        network,
+        blockNumber,
+        processingTime,
+        totalVotes: metrics.votesIndexed,
+      }),
+    )
   }
 
   /**
@@ -82,12 +88,15 @@ export class HarmonyIndexingMetrics {
 
     metrics.indexingErrors += 1
 
-    logger.error('HarmonyIndexing - Indexing error', llo({
-      network,
-      error,
-      context,
-      totalErrors: metrics.indexingErrors,
-    }))
+    logger.error(
+      'HarmonyIndexing - Indexing error',
+      llo({
+        network,
+        error,
+        context,
+        totalErrors: metrics.indexingErrors,
+      }),
+    )
   }
 
   /**
@@ -101,12 +110,15 @@ export class HarmonyIndexingMetrics {
 
     // Log warning if lag is high
     if (metrics.indexingLag > 1000) {
-      logger.warn('HarmonyIndexing - High indexing lag detected', llo({
-        network,
-        currentBlock,
-        lastIndexedBlock,
-        lag: metrics.indexingLag,
-      }))
+      logger.warn(
+        'HarmonyIndexing - High indexing lag detected',
+        llo({
+          network,
+          currentBlock,
+          lastIndexedBlock,
+          lag: metrics.indexingLag,
+        }),
+      )
     }
   }
 
@@ -127,15 +139,18 @@ export class HarmonyIndexingMetrics {
       return
     }
 
-    logger.info('HarmonyIndexing - Metrics Summary', llo({
-      network,
-      proposalsIndexed: metrics.proposalsIndexed,
-      votesIndexed: metrics.votesIndexed,
-      indexingErrors: metrics.indexingErrors,
-      lastProcessedBlock: metrics.lastProcessedBlock,
-      indexingLag: metrics.indexingLag,
-      averageProcessingTimeMs: Math.round(metrics.averageProcessingTime * 100) / 100,
-    }))
+    logger.info(
+      'HarmonyIndexing - Metrics Summary',
+      llo({
+        network,
+        proposalsIndexed: metrics.proposalsIndexed,
+        votesIndexed: metrics.votesIndexed,
+        indexingErrors: metrics.indexingErrors,
+        lastProcessedBlock: metrics.lastProcessedBlock,
+        indexingLag: metrics.indexingLag,
+        averageProcessingTimeMs: Math.round(metrics.averageProcessingTime * 100) / 100,
+      }),
+    )
   }
 
   /**

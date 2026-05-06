@@ -1,16 +1,20 @@
 import { type HexAddress, type NetworksEnum, type SupportedEnsNetworksEnum } from './networks'
 
-export enum IEnumEnvironment {
-  production = 'production',
-  staging = 'staging',
-  development = 'development',
-  local = 'local',
-}
+export const IEnumEnvironment = {
+  production: 'production',
+  staging: 'staging',
+  development: 'development',
+  local: 'local',
+} as const
 
-export enum IEnumNodeEnv {
-  development = 'development',
-  production = 'production',
-}
+export type IEnumEnvironmentValue = (typeof IEnumEnvironment)[keyof typeof IEnumEnvironment]
+
+export const IEnumNodeEnv = {
+  development: 'development',
+  production: 'production',
+} as const
+
+export type IEnumNodeEnvValue = (typeof IEnumNodeEnv)[keyof typeof IEnumNodeEnv]
 
 interface ITokenData {
   address: HexAddress
@@ -34,8 +38,8 @@ export interface IRawNodeConfig {
 
 export interface IConfig {
   APP_NAME: string
-  ENVIRONMENT: IEnumEnvironment
-  NODE_ENV: IEnumNodeEnv
+  ENVIRONMENT: IEnumEnvironmentValue
+  NODE_ENV: IEnumNodeEnvValue
   TIMEZONE: string
   REMOTE_EXECUTION: boolean
   PROXY: string | null
@@ -96,6 +100,10 @@ export interface IConfig {
     HEARTBEAT_INTERVAL_SECONDS: number
     MAX_QUEUE_SIZE: number
     THROTTLE_RETRY_DELAY: number
+  }
+  HARMONY_ALLOWLIST: {
+    HIP_PLUGIN_ADDRESS: string | null
+    DELEGATION_PLUGIN_ADDRESS: string | null
   }
   NODE_CONFIG: {
     MAX_RECONNECT_ATTEMPTS: number
@@ -252,8 +260,10 @@ export interface IConfig {
         INTERVAL: number
         CHECK_INTERVAL: number
         PRIVATE_KEY: string | null
+        ORACLE_FROM_ADDRESS: string | null
         TARGETS_JSON: string
         LOGS_CHUNK_SIZE: number
+        FINALIZE_BLOCKS_AFTER_ENDDATE: number
         BLOCK_ON_MERKLE_MISMATCH: boolean
         REVALIDATE_BLOCKED: boolean
       }

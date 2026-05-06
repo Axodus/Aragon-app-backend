@@ -1,3 +1,10 @@
+/* eslint-env mocha */
+
+declare const describe: any
+declare const it: any
+declare const beforeEach: any
+declare const afterEach: any
+
 import * as sinon from 'sinon'
 import { SinonSandbox } from 'sinon'
 import { expect } from 'chai'
@@ -193,22 +200,22 @@ describe('Helpers:RetryRequest', () => {
       }
     })
 
-    it('should throw a rate limit error when response message is NOTOK', async () => {
-      const mockResponse = { data: { message: 'NOTOK' } }
+    it('should retry and throw after max retries when response message is NOTOK due to rate limit', async () => {
+      const mockResponse = { data: { message: 'NOTOK', result: 'Max rate limit reached' } }
       const requestFunction = sandbox.stub().resolves(mockResponse)
 
-      sandbox.stub(Utils, 'wait').resolves()
-      sandbox.stub(Logger, 'warn')
-      const assertStub = sandbox.stub().throws(new Error('Rate limit'))
-      sandbox.stub(require('@errors'), 'assert').value(assertStub)
+      const waitStub = sandbox.stub(Utils, 'wait').resolves()
+      const warnStub = sandbox.stub(Logger, 'warn')
 
       try {
         await RetryRequest.retryRequest(requestFunction, { maxRetries: 5 })
         expect.fail('should have thrown an error')
       } catch (error: any) {
-        expect(error.message).to.equal('Rate limit')
-        expect(requestFunction.calledOnce).to.be.true
-        expect(assertStub.calledOnce).to.be.true
+        expect(error.message).to.equal('Request failed after 5 retries')
+        expect(requestFunction.callCount).to.equal(5)
+        expect(waitStub.callCount).to.equal(5)
+        expect(warnStub.callCount).to.equal(5)
+        expect(warnStub.calledWithMatch('Rate limit exceeded, retrying...' as any)).to.be.true
       }
     })
 

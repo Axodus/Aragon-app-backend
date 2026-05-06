@@ -24,7 +24,7 @@ export class ReorgDetector {
     try {
       // Get current block hash from the blockchain
       const currentBlockHash = await Web3Helper.getBlockHash(blockNumber, network)
-      
+
       if (!currentBlockHash) {
         logger.warn('Could not fetch current block hash', llo({ network, blockNumber }))
         return { isReorg: false }
@@ -106,7 +106,7 @@ export class ReorgDetector {
         llo({
           network,
           reorgBlockNumber,
-          deletedCount: deletedProposals.deletedCount,
+          deletedCount: deletedProposals?.deletedCount ?? 0,
         }),
       )
 
@@ -121,14 +121,15 @@ export class ReorgDetector {
         llo({
           network,
           reorgBlockNumber,
-          deletedCount: deletedVotes.deletedCount,
+          deletedCount: deletedVotes?.deletedCount ?? 0,
         }),
       )
 
       // Rollback other event-based models as needed
       const rollbackModels = [
         { model: Models.Transaction, name: 'Transaction' },
-        { model: Models.Permission, name: 'Permission' },
+        { model: Models.DaoPermission, name: 'DaoPermission' },
+        { model: Models.SelectorPermission, name: 'SelectorPermission' },
         { model: Models.Setting, name: 'Setting' },
       ]
 
@@ -139,13 +140,14 @@ export class ReorgDetector {
             blockNumber: { $gte: reorgBlockNumber },
           })
 
-          if (result.deletedCount > 0) {
+          const deletedCount = result?.deletedCount ?? 0
+          if (deletedCount > 0) {
             logger.info(
               `Rolled back ${name}`,
               llo({
                 network,
                 reorgBlockNumber,
-                deletedCount: result.deletedCount,
+                deletedCount,
               }),
             )
           }

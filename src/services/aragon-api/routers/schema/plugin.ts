@@ -44,6 +44,49 @@ const PluginSchema = {
       .required(),
     pluginAddress: ValidationSchema.joiAddress.required(),
   }),
+
+  getHarmonyValidatorConfig: Joi.object({
+    network: Joi.string()
+      .valid(...Object.values(NetworksEnum))
+      .required(),
+    pluginAddress: ValidationSchema.joiAddress.required(),
+  }),
+
+  getHarmonyValidatorInfo: Joi.object({
+    network: Joi.string()
+      .valid(...Object.values(NetworksEnum))
+      .required(),
+    validatorAddress: ValidationSchema.joiHarmonyAddress.required(),
+  }),
+
+  getHarmonyDelegationsByValidator: Joi.object({
+    network: Joi.string()
+      .valid(...Object.values(NetworksEnum))
+      .required(),
+    validatorAddress: ValidationSchema.joiHarmonyAddress.required(),
+  }),
+
+  getHarmonyDelegationsByDelegator: Joi.object({
+    network: Joi.string()
+      .valid(...Object.values(NetworksEnum))
+      .required(),
+    delegatorAddress: ValidationSchema.joiHarmonyAddress.required(),
+  }),
+
+  getDelegationVotingValidator: Joi.object({
+    network: Joi.string()
+      .valid(...Object.values(NetworksEnum))
+      .required(),
+    pluginAddress: ValidationSchema.joiAddress.required(),
+  }),
+
+  getDelegationVotingVotingPower: Joi.object({
+    network: Joi.string()
+      .valid(...Object.values(NetworksEnum))
+      .required(),
+    pluginAddress: ValidationSchema.joiAddress.required(),
+    voterAddress: ValidationSchema.joiHarmonyAddress.required(),
+  }),
 }
 
 export default PluginSchema

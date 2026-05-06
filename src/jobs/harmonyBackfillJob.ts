@@ -1,19 +1,20 @@
 import logger from '@logger'
 import { Models } from '@dbModels'
 import { BlockchainLogCrawler } from '@modules/crawlers'
-import { Interface } from 'ethers'
+import { Contract, ethers, Interface } from 'ethers'
 import { HarmonyVotingPlugin } from '@artifacts/HarmonyVotingPlugin'
 import { ProposalHandler } from '@handlers/proposalHandler'
-import type { ILogInfo } from '@types'
-import type { LogDescription } from 'ethers'
+import { IPluginInterfaceType, type NetworksEnum } from '@types'
+import ProviderModule from '@modules/provider'
+import ConfigIndexerHelper from '@helpers/configIndexer'
 
 const llo = logger.logMeta.bind(null, { service: 'jobs:HarmonyBackfill' })
 
 interface BackfillConfig {
   pluginAddress: string
-  network: string
+  network: NetworksEnum
   startBlock?: number
-  endBlock?: number
+  endBlock?: number | 'latest'
   batchSize?: number
 }
 
@@ -42,12 +43,18 @@ export class HarmonyBackfillJob {
       const fromBlock = startBlock || plugin.blockNumber
       const toBlock = endBlock || 'latest'
 
-      logger.info('HarmonyBackfill - Backfill range determined', llo({
-        pluginAddress,
-        network,
-        fromBlock,
-        toBlock,
-      }))
+      logger.info(
+        'HarmonyBackfill - Backfill range determined',
+        llo({
+          pluginAddress,
+          network,
+          fromBlock,
+          toBlock,
+        }),
+      )
+
+      // Backfill validator/processKey config (best-effort, does not depend on log ranges)
+      await this.backfillValidatorConfig({ pluginAddress, network })
 
       // Backfill ProposalCreated events
       await this.backfillProposalCreated({
@@ -67,6 +74,15 @@ export class HarmonyBackfillJob {
         batchSize,
       })
 
+      // Backfill ProposalClosed events
+      await this.backfillProposalClosed({
+        pluginAddress,
+        network,
+        fromBlock,
+        toBlock,
+        batchSize,
+      })
+
       logger.info('HarmonyBackfill - Backfill completed successfully', llo({ pluginAddress, network }))
     } catch (error) {
       logger.error('HarmonyBackfill - Error during backfill', llo({ ...config, error }))
@@ -74,16 +90,100 @@ export class HarmonyBackfillJob {
     }
   }
 
+  private static async backfillValidatorConfig(config: {
+    pluginAddress: string
+    network: NetworksEnum
+  }): Promise<void> {
+    const { pluginAddress, network } = config
+
+    try {
+      const plugin = await Models.Plugin.findByAddress(pluginAddress, network)
+      if (!plugin) return
+
+      // Only delegation voting plugins expose validatorAddress/processKey.
+      if (plugin.interfaceType !== IPluginInterfaceType.harmonyDelegationVoting) return
+
+      const provider = ProviderModule.getAnyRpcProvider(network)
+      if (!provider) {
+        logger.warn('HarmonyBackfill - Missing RPC provider for validator config', llo({ pluginAddress, network }))
+        return
+      }
+
+      const contract = new Contract(
+        pluginAddress,
+        ['function validatorAddress() view returns (address)', 'function processKey() view returns (bytes32)'],
+        provider,
+      )
+
+      let validatorAddress: string | null = null
+      let processKey: string | null = null
+
+      try {
+        const v = await contract.validatorAddress()
+        if (v && v !== ethers.ZeroAddress) validatorAddress = String(v)
+      } catch {
+        // ignore
+      }
+
+      try {
+        const k = await contract.processKey()
+        if (k && k !== '0x' && k !== ethers.ZeroHash) {
+          try {
+            processKey = ethers.decodeBytes32String(String(k))
+          } catch {
+            processKey = String(k)
+          }
+        }
+      } catch {
+        // ignore
+      }
+
+      if (!validatorAddress && !processKey) return
+
+      await Models.ValidatorConfig.findOneAndUpdate(
+        { network, pluginAddress: pluginAddress.toLowerCase() },
+        {
+          $set: {
+            id: Models.ValidatorConfig.getEntityId({ network, pluginAddress: pluginAddress.toLowerCase() }),
+            network,
+            pluginAddress: pluginAddress.toLowerCase(),
+            ...(validatorAddress ? { validatorAddress: validatorAddress.toLowerCase() } : {}),
+            ...(processKey ? { processKey } : {}),
+            lastUpdateBlock: plugin.blockNumber,
+          },
+        },
+        { upsert: true, new: true },
+      )
+
+      if (processKey) {
+        await Models.Plugin.updateOne({ network, address: pluginAddress.toLowerCase() }, { $set: { processKey } })
+      }
+    } catch (error) {
+      logger.warn('HarmonyBackfill - Failed to backfill validator config', llo({ pluginAddress, network, error }))
+    }
+  }
+
   /**
    * Backfill ProposalCreated events
    */
-  private static async backfillProposalCreated(config: BackfillConfig & {
-    fromBlock: number
-    toBlock: number | string
-  }): Promise<void> {
+  private static async backfillProposalCreated(
+    config: BackfillConfig & {
+      fromBlock: number
+      toBlock: number | string
+    },
+  ): Promise<void> {
     const { pluginAddress, network, fromBlock, toBlock, batchSize } = config
 
-    logger.info('HarmonyBackfill - Starting ProposalCreated backfill', llo({ pluginAddress, network, fromBlock, toBlock }))
+    logger.info(
+      'HarmonyBackfill - Starting ProposalCreated backfill',
+      llo({ pluginAddress, network, fromBlock, toBlock }),
+    )
+
+    const logService = ConfigIndexerHelper.builders.plugin(
+      IPluginInterfaceType.harmonyVoting,
+      network,
+      `${pluginAddress}-proposals`,
+    )
 
     const crawler = new BlockchainLogCrawler({
       network,
@@ -92,7 +192,7 @@ export class HarmonyBackfillJob {
       toBlock,
       batchSize,
       skipLogProcessing: false,
-      logService: 'harmony-backfill-proposals',
+      logService,
       onlyHistorical: true,
       stopOnError: false,
       onError: async (error: any) => {
@@ -100,12 +200,12 @@ export class HarmonyBackfillJob {
       },
       events: [
         {
-          event: 'HarmonyProposalCreated',
+          event: 'ProposalCreated',
           topic: new Interface(HarmonyVotingPlugin.abi).getEvent('ProposalCreated')?.topicHash!,
           enableHistorical: true,
           config: [
             {
-              abi: HarmonyVotingPlugin.abi,
+              abi: [...HarmonyVotingPlugin.abi] as any,
               handler: ProposalHandler.harmonyProposalCreated,
             },
           ],
@@ -114,23 +214,34 @@ export class HarmonyBackfillJob {
     })
 
     const logs = await crawler.crawl()
-    logger.info('HarmonyBackfill - ProposalCreated backfill completed', llo({
-      pluginAddress,
-      network,
-      logsProcessed: logs?.length || 0,
-    }))
+    logger.info(
+      'HarmonyBackfill - ProposalCreated backfill completed',
+      llo({
+        pluginAddress,
+        network,
+        logsProcessed: logs?.length || 0,
+      }),
+    )
   }
 
   /**
    * Backfill VoteCast events
    */
-  private static async backfillVoteCast(config: BackfillConfig & {
-    fromBlock: number
-    toBlock: number | string
-  }): Promise<void> {
+  private static async backfillVoteCast(
+    config: BackfillConfig & {
+      fromBlock: number
+      toBlock: number | string
+    },
+  ): Promise<void> {
     const { pluginAddress, network, fromBlock, toBlock, batchSize } = config
 
     logger.info('HarmonyBackfill - Starting VoteCast backfill', llo({ pluginAddress, network, fromBlock, toBlock }))
+
+    const logService = ConfigIndexerHelper.builders.plugin(
+      IPluginInterfaceType.harmonyVoting,
+      network,
+      `${pluginAddress}-votes`,
+    )
 
     const crawler = new BlockchainLogCrawler({
       network,
@@ -139,7 +250,7 @@ export class HarmonyBackfillJob {
       toBlock,
       batchSize,
       skipLogProcessing: false,
-      logService: 'harmony-backfill-votes',
+      logService,
       onlyHistorical: true,
       stopOnError: false,
       onError: async (error: any) => {
@@ -147,12 +258,12 @@ export class HarmonyBackfillJob {
       },
       events: [
         {
-          event: 'HarmonyVoteCast',
+          event: 'VoteCast',
           topic: new Interface(HarmonyVotingPlugin.abi).getEvent('VoteCast')?.topicHash!,
           enableHistorical: true,
           config: [
             {
-              abi: HarmonyVotingPlugin.abi,
+              abi: [...HarmonyVotingPlugin.abi] as any,
               handler: ProposalHandler.harmonyVoteCast,
             },
           ],
@@ -161,48 +272,146 @@ export class HarmonyBackfillJob {
     })
 
     const logs = await crawler.crawl()
-    logger.info('HarmonyBackfill - VoteCast backfill completed', llo({
-      pluginAddress,
+    logger.info(
+      'HarmonyBackfill - VoteCast backfill completed',
+      llo({
+        pluginAddress,
+        network,
+        logsProcessed: logs?.length || 0,
+      }),
+    )
+  }
+
+  /**
+   * Backfill ProposalClosed events for a plugin
+   */
+  private static async backfillProposalClosed(
+    config: BackfillConfig & {
+      fromBlock: number
+      toBlock: number | string
+    },
+  ): Promise<void> {
+    const { pluginAddress, network, fromBlock, toBlock, batchSize } = config
+
+    logger.info(
+      'HarmonyBackfill - Starting ProposalClosed backfill',
+      llo({ pluginAddress, network, fromBlock, toBlock }),
+    )
+
+    const logService = ConfigIndexerHelper.builders.plugin(
+      IPluginInterfaceType.harmonyVoting,
       network,
-      logsProcessed: logs?.length || 0,
-    }))
+      `${pluginAddress}-proposal-closed`,
+    )
+
+    const crawler = new BlockchainLogCrawler({
+      network,
+      address: pluginAddress,
+      fromBlock,
+      toBlock,
+      batchSize,
+      skipLogProcessing: false,
+      logService,
+      onlyHistorical: true,
+      stopOnError: false,
+      onError: async (error: any) => {
+        logger.error('HarmonyBackfill - Error processing ProposalClosed', llo({ pluginAddress, network, error }))
+      },
+      events: [
+        {
+          event: 'ProposalClosed',
+          topic: new Interface(HarmonyVotingPlugin.abi).getEvent('ProposalClosed')?.topicHash!,
+          enableHistorical: true,
+          config: [
+            {
+              abi: [...HarmonyVotingPlugin.abi] as any,
+              handler: ProposalHandler.harmonyProposalClosed,
+            },
+          ],
+        },
+      ],
+    })
+
+    const logs = await crawler.crawl()
+    logger.info(
+      'HarmonyBackfill - ProposalClosed backfill completed',
+      llo({
+        pluginAddress,
+        network,
+        logsProcessed: logs?.length || 0,
+      }),
+    )
   }
 
   /**
    * Backfill all HarmonyVoting plugins for a network
    * @param network Network identifier
    */
-  static async backfillAllPlugins(network: string): Promise<void> {
+  static async backfillAllPlugins(network: NetworksEnum): Promise<void> {
     try {
       logger.info('HarmonyBackfill - Starting backfill for all plugins', llo({ network }))
 
-      // Find all HarmonyVoting plugins on the network
+      // Find all Harmony voting plugins on the network.
+      // Note: do NOT restrict to isSupported=true, because support status is derived from metadata
+      // and may be false even when the plugin is installed and emitting events.
       const plugins = await Models.Plugin.find({
         network,
-        interfaceType: { $in: ['HarmonyVoting', 'HarmonyHIPVoting', 'HarmonyDelegationVoting'] },
-        isSupported: true,
+        interfaceType: {
+          $in: [
+            IPluginInterfaceType.harmonyVoting,
+            IPluginInterfaceType.harmonyHipVoting,
+            IPluginInterfaceType.harmonyDelegationVoting,
+          ],
+        },
       })
 
       if (plugins.length === 0) {
-        logger.info('HarmonyBackfill - No HarmonyVoting plugins found', llo({ network }))
+        const totalByNetwork = await Models.Plugin.countDocuments({ network })
+        logger.info(
+          'HarmonyBackfill - No HarmonyVoting plugins found',
+          llo({
+            network,
+            totalPluginsOnNetwork: totalByNetwork,
+          }),
+        )
         return
       }
 
-      logger.info('HarmonyBackfill - Found plugins to backfill', llo({ network, count: plugins.length }))
+      const supportedCount = plugins.filter(p => p.isSupported).length
+      const unsupportedCount = plugins.length - supportedCount
+
+      const byInterfaceType: Record<string, number> = plugins.reduce((acc: Record<string, number>, p) => {
+        acc[p.interfaceType] = (acc[p.interfaceType] ?? 0) + 1
+        return acc
+      }, {})
+
+      logger.info(
+        'HarmonyBackfill - Found plugins to backfill',
+        llo({
+          network,
+          count: plugins.length,
+          supportedCount,
+          unsupportedCount,
+          byInterfaceType,
+        }),
+      )
 
       // Backfill each plugin sequentially to avoid RPC rate limits
       for (const plugin of plugins) {
         try {
           await this.backfillPlugin({
-            pluginAddress: plugin.pluginAddress,
+            pluginAddress: plugin.address,
             network,
           })
         } catch (error) {
-          logger.error('HarmonyBackfill - Failed to backfill plugin', llo({
-            pluginAddress: plugin.pluginAddress,
-            network,
-            error,
-          }))
+          logger.error(
+            'HarmonyBackfill - Failed to backfill plugin',
+            llo({
+              pluginAddress: plugin.address,
+              network,
+              error,
+            }),
+          )
           // Continue with next plugin even if one fails
         }
       }
@@ -236,11 +445,14 @@ export class HarmonyBackfillJob {
       // If we have 0 proposals but the plugin was deployed some time ago, it might need backfill
       // (or the DAO simply hasn't created any proposals yet)
       if (proposalCount === 0) {
-        logger.info('HarmonyBackfill - Plugin has no proposals, might need backfill', llo({
-          pluginAddress,
-          network,
-          deployBlock: plugin.blockNumber,
-        }))
+        logger.info(
+          'HarmonyBackfill - Plugin has no proposals, might need backfill',
+          llo({
+            pluginAddress,
+            network,
+            deployBlock: plugin.blockNumber,
+          }),
+        )
         return true
       }
 

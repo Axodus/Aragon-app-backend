@@ -1,11 +1,13 @@
+/* global describe, it, beforeEach, afterEach */
+
 import * as sinon from 'sinon'
 import { SinonSandbox } from 'sinon'
 import { expect } from 'chai'
 import Plugin from '@models/schema/plugin'
 import { Models } from '@dbModels'
-import { beforeEach } from 'mocha'
 import { PluginList } from '@test/mock/fakePlugins'
 import { IPluginInterfaceType, IPluginSlug, IPluginStatus, NetworksEnum } from '@types'
+import { ethers } from 'ethers'
 
 describe('Model: Plugin', () => {
   let sandbox: SinonSandbox
@@ -179,6 +181,27 @@ describe('Model: Plugin', () => {
       expect(pluginId).to.eq(plugin.id)
     })
 
+    it('should getPluginIdBySlugAndDao with daoAddress casing mismatch', async () => {
+      const slug = IPluginSlug.tokenvoting
+      const daoAddressLower = String(rawPlugin.daoAddress).toLowerCase()
+      const daoAddressChecksum = ethers.getAddress(daoAddressLower)
+
+      const plugin = await Models.Plugin.create({
+        ...rawPlugin,
+        daoAddress: daoAddressLower,
+        isSupported: true,
+      })
+      await Models.PluginSlug.create({
+        pluginAddress: plugin.address,
+        daoAddress: plugin.daoAddress,
+        network: plugin.network,
+        slug,
+      })
+
+      const pluginId = await Models.Plugin.getPluginIdBySlugAndDao(slug, daoAddressChecksum, plugin.network)
+      expect(pluginId).to.eq(plugin.id)
+    })
+
     it('should not find getPluginIdBySlugAndDao', async () => {
       const slug = IPluginSlug.tokenvoting
       const plugin = await Models.Plugin.create(rawPlugin)
@@ -200,7 +223,7 @@ describe('Model: Plugin', () => {
     const daoAddress = '0x1234567890123456789012345678901234567890'
     const network = NetworksEnum.ethereumMainnet
 
-    const installedPlugin1 = await Models.Plugin.create({
+    await Models.Plugin.create({
       ...rawPlugin,
       daoAddress,
       network,
@@ -208,7 +231,7 @@ describe('Model: Plugin', () => {
       address: '0xPlugin1',
     })
 
-    const installedPlugin2 = await Models.Plugin.create({
+    await Models.Plugin.create({
       ...rawPlugin,
       daoAddress,
       network,

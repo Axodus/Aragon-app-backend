@@ -1,6 +1,7 @@
 import * as sinon from 'sinon'
 import { SinonSandbox } from 'sinon'
 import { expect } from 'chai'
+import { afterEach, beforeEach, describe, it } from 'mocha'
 import PluginRouter from '@api/routers/v2/plugins'
 import PluginController from '@api/controllers/plugins'
 import { IEventLogPluginType, NetworksEnum } from '@types'
@@ -549,7 +550,7 @@ describe('RouterV2: Plugin', () => {
       const daoAddress = '0xe2e445489b0356D3087efF7e79DB7Ff3f16c4fEA'
       const network = NetworksEnum.polygonMainnet
 
-      const controllerStub = sandbox.stub(PluginController, 'getPluginsByDao').resolves(null)
+      const controllerStub = sandbox.stub(PluginController, 'getPluginsByDao').resolves(null as any)
 
       const ctx: any = {
         params: { daoAddress, network },

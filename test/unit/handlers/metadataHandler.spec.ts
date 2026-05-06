@@ -11,6 +11,7 @@ import DbOperations from '@models/utils/dbOperations'
 import { PluginSettingHandler } from '@handlers/pluginSettingHandler'
 import { PluginSlug } from '@helpers/pluginSlug'
 import Web3Utils from '@helpers/web3Utils'
+import config from '@config'
 
 describe('Indexer: MetadataHandler', () => {
   let sandbox: SinonSandbox
@@ -56,7 +57,12 @@ describe('Indexer: MetadataHandler', () => {
       expect(decodeHelper.calledWith(fakeEvent.args.metadata)).to.be.true
 
       expect(fetchHelper.calledOnce).to.be.true
-      expect(fetchHelper.calledWith('ipfs://fake-uri')).to.be.true
+      expect(
+        fetchHelper.calledWith('ipfs://fake-uri', {
+          retries: 4,
+          timeout: config.IPFS.METADATA_FETCH_TIMEOUT,
+        }),
+      ).to.be.true
       expect(verboseStub.args[0][0]).to.be.eq('Created new document - Dao Metadata Set')
     })
 
@@ -93,7 +99,12 @@ describe('Indexer: MetadataHandler', () => {
       expect(decodeHelper.calledWith(fakeEvent.args.metadata)).to.be.true
 
       expect(fetchHelper.calledOnce).to.be.true
-      expect(fetchHelper.calledWith('ipfs://fake-uri')).to.be.true
+      expect(
+        fetchHelper.calledWith('ipfs://fake-uri', {
+          retries: 4,
+          timeout: config.IPFS.METADATA_FETCH_TIMEOUT,
+        }),
+      ).to.be.true
       expect(verboseStub.args[0][0]).to.be.eq('Created new document - Dao Metadata Set')
     })
 
@@ -134,7 +145,12 @@ describe('Indexer: MetadataHandler', () => {
       expect(decodeHelper.calledWith(fakeEvent.args.metadata)).to.be.true
 
       expect(fetchHelper.calledOnce).to.be.true
-      expect(fetchHelper.calledWith('ipfs://fake-uri')).to.be.true
+      expect(
+        fetchHelper.calledWith('ipfs://fake-uri', {
+          retries: 4,
+          timeout: config.IPFS.METADATA_FETCH_TIMEOUT,
+        }),
+      ).to.be.true
       expect(verboseStub.args[0][0]).to.be.eq('Created new document - Plugin Metadata Set')
     })
 
@@ -173,10 +189,49 @@ describe('Indexer: MetadataHandler', () => {
       expect(decodeHelper.calledWith(fakeEvent.args.metadata)).to.be.true
 
       expect(fetchHelper.calledOnce).to.be.true
-      expect(fetchHelper.calledWith('ipfs://fake-uri')).to.be.true
+      expect(
+        fetchHelper.calledWith('ipfs://fake-uri', {
+          retries: 4,
+          timeout: config.IPFS.METADATA_FETCH_TIMEOUT,
+        }),
+      ).to.be.true
       expect(verboseStub.args[0][0]).to.be.eq('Created new document - Dao Metadata Set')
       expect(createDocumentStub.calledOnce).to.be.true
       expect(updateDaoMetadataStub.calledOnce).to.be.true
+    })
+
+    it('should store fallback metadata when fetch returns null', async () => {
+      const fakeEvent = {
+        args: { metadata: 'fake-metadata' },
+      }
+      const logInfo = {
+        network: NetworksEnum.ethereumMainnet,
+        blockNumber: 3,
+        transactionIndex: 1,
+        logIndex: 1,
+        transactionHash: '0x0123123',
+        address: '0x0123123',
+        eventName: 'test',
+      }
+
+      sandbox.stub(Models.Dao, 'findByAddress').resolves({
+        address: '0x123',
+        network: NetworksEnum.ethereumMainnet,
+      } as any)
+
+      sandbox.stub(Web3Utils, 'extractMetadataUri').returns('ipfs://fake-uri')
+      sandbox.stub(IPFSModule, 'fetchMetadata').resolves(null)
+
+      const createDocumentStub = sandbox.stub(DbOperations, 'createDocument').resolves({} as any)
+      sandbox.stub(MetadataHandler, '_updateDaoMetadata').resolves()
+
+      await MetadataHandler.metadataSet(fakeEvent as any, logInfo)
+
+      const logMetadata = createDocumentStub.args[0][1]
+      expect(logMetadata.fetchedMetadata).to.be.false
+      expect(logMetadata.name).to.eq(undefined)
+      expect(logMetadata.description).to.eq(undefined)
+      expect(logMetadata.metadataUri).to.eq('ipfs://fake-uri')
     })
 
     it('should return if the dao and plugin didnot exist', async () => {

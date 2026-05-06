@@ -17,7 +17,7 @@ const parseArgs = (argv: string[]): ArgsMap => {
   }, {})
 }
 
-const validateArgs = (args: ArgsMap): asserts args is ArgsMap & Record<RequiredArg, string> => {
+const validateArgs: (args: ArgsMap) => asserts args is ArgsMap & Record<RequiredArg, string> = (args: ArgsMap): asserts args is ArgsMap & Record<RequiredArg, string> => {
   const missing = REQUIRED_ARGS.filter(key => !args[key])
   if (missing.length > 0) {
     throw new Error(`Missing required args: ${missing.map(arg => `--${arg}=`).join(', ')}`)

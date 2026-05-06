@@ -1,3 +1,5 @@
+/* global describe, it, beforeEach, afterEach */
+
 import * as sinon from 'sinon'
 import { SinonSandbox } from 'sinon'
 import { expect } from 'chai'
@@ -12,14 +14,13 @@ import PluginMember from '@models/schema/pluginMember'
 import TokenMember from '@models/schema/tokenMember'
 import { FakeToken } from '@test/mock/fakeToken'
 import { ProposalList } from '@test/mock/fakeProposal'
-import { fakePluginMembers } from '@test/mock/fakePluginMember'
-import { fakeTokenMembers } from '@test/mock/fakeTokenMember'
 import { FakeMember } from '@test/mock/fakeMember'
 import Setting from '@models/schema/setting'
 import { fakeSettings } from '@test/mock/fakeSettings'
 import { PluginList } from '@test/mock/fakePlugins'
 import RabbitMQHelper from '@helpers/rabbitMQ'
 import Logger from '@logger'
+import { ethers } from 'ethers'
 
 describe('Controller: Proposal', () => {
   let sandbox: SinonSandbox
@@ -303,6 +304,60 @@ describe('Controller: Proposal', () => {
       sandbox.stub(Models.Plugin, 'getPluginIdBySlugAndDao').resolves(pluginId)
 
       const fullSlug = 'tokenvoting-0'
+      const proposal = await ProposalController.getProposalBySlug(fullSlug, { daoId: 'test-dao' })
+      expect(proposal.id).to.eq(proposalDbId)
+    })
+
+    it('should getProposalBySlug when proposal pluginAddress is lowercased', async () => {
+      const pluginAddressChecksummed = ethers.getAddress('0x1234567890abcdef1234567890abcdef12345678')
+      const pluginAddressLowercased = pluginAddressChecksummed.toLowerCase()
+
+      const plugin = await Models.Plugin.create({
+        ...PluginList[0],
+        id: 'case-insensitive-plugin',
+        daoAddress: rawProposal.daoAddress,
+        network: rawProposal.network,
+        address: pluginAddressChecksummed,
+        tokenAddress: FakeToken.address,
+        interfaceType: IPluginInterfaceType.multisig,
+      })
+
+      const proposalIndex = '17'
+      const incrementalId = 17
+      const transactionHash = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+
+      const proposalDbId = await Models.Proposal.getEntityId({
+        transactionHash,
+        pluginAddress: pluginAddressLowercased as any,
+        proposalIndex,
+      })
+
+      await Models.Proposal.create({
+        ...(rawProposal as any),
+        transactionHash,
+        proposalIndex,
+        incrementalId,
+        pluginAddress: pluginAddressLowercased,
+        settings: {
+          ...(rawProposal.settings as any),
+          id: `${(rawProposal.settings as any)?.transactionHash || transactionHash}-${pluginAddressLowercased}`,
+          pluginAddress: pluginAddressLowercased,
+        },
+      })
+
+      await Models.Setting.create({
+        ...fakeSettings,
+        pluginAddress: pluginAddressLowercased,
+        daoAddress: rawProposal.daoAddress,
+        network: rawProposal.network,
+      })
+
+      sandbox
+        .stub(PairDataModule, 'pairFromExtraParams')
+        .resolves({ daoAddress: rawProposal.daoAddress, network: rawProposal.network })
+      sandbox.stub(Models.Plugin, 'getPluginIdBySlugAndDao').resolves(plugin.id)
+
+      const fullSlug = 'tokenvoting-17'
       const proposal = await ProposalController.getProposalBySlug(fullSlug, { daoId: 'test-dao' })
       expect(proposal.id).to.eq(proposalDbId)
     })

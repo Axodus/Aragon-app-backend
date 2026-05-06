@@ -17,17 +17,6 @@ Goal: index blockchain events from Aragon OSx and expose API(s) the app consumes
    - [ ] Dependencies and integration points
    - [ ] Expected outcomes and acceptance criteria
 
-2. **Sync with GitHub Project**: Using GitHub CLI (`gh` - already authenticated as mzfshark):
-   ```bash
-   # Create issue from PLAN.md
-   gh issue create --title "[Plan] <descriptive-title>" --body-file PLAN.md --project "https://github.com/users/mzfshark/projects/5"
-   ```
-
-3. **Update Plan Progress**: As tasks complete, update checkboxes in `PLAN.md` and sync with issue:
-   ```bash
-   # Update the issue body with current PLAN.md
-   gh issue edit <issue-number> --body-file PLAN.md
-   ```
 
 **IMPORTANT**: Never run `git commit` or `git push` automatically. Always ask the user before any git operations.
 
@@ -83,6 +72,10 @@ git commit -m "adiciona suporte a domínios .country no serviço de resolução 
   - Unit tests: `yarn test:unit`
   - Coverage: `yarn test:unit:coverage && yarn test:unit:coverage:report`
 
+  ## Terminal Timing (tests/build/type-check)
+
+  After running `test`, `type-check`, or `build` commands, wait 120 seconds before attempting to read terminal output.
+
 ## Conventions & Tooling
 - Module resolution: `tsconfig-paths` at runtime and `tsc-alias` post-build. Keep import aliases consistent with `tsconfig.json`.
 - Validation: `class-validator`/`joi` at API boundaries; validate request payloads and config.
@@ -103,3 +96,7 @@ git commit -m "adiciona suporte a domínios .country no serviço de resolução 
 - Add an endpoint: define schema/DTO, implement controller in `src/**`, wire route in the service runner, add validation, return typed responses.
 - Add an indexer job: define queue/topic, write a worker that reads on-chain events (Ethers v6), persist via Typegoose, emit metrics and logs.
 - Add a migration: use `mig:create`, implement idempotent changes, verify with `mig:status` on a test DB.
+
+## wsl Notes
+- do not use wsl paths in any configuration or script.
+- never try to run commands wsl terminal that interact with codacy cli.

@@ -3,7 +3,6 @@ import { SinonSandbox } from 'sinon'
 import { expect } from 'chai'
 import * as fs from 'fs'
 import logger from '@logger'
-import { getModelForClass } from '@typegoose/typegoose'
 import { setMongoModels } from '@models/utils/setModels'
 
 describe('Model/Utils: setModels', () => {
@@ -18,12 +17,12 @@ describe('Model/Utils: setModels', () => {
   })
 
   it('successfully loads models', async function () {
+    sandbox.stub(fs.promises, 'readdir').resolves(['jwt.ts'] as any)
     const stubLogger = sandbox.stub(logger, 'error')
-    sandbox.stub(getModelForClass as any, 'call').returnsArg(0)
 
     const schemas = await setMongoModels()
 
-    expect(schemas).to.have.property('Dao')
+    expect(schemas).to.have.property('Jwt')
     expect(stubLogger.notCalled).to.be.true
   })
 

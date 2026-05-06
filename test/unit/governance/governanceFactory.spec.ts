@@ -1,4 +1,7 @@
+/* eslint-env mocha */
+
 import '@test/environment'
+import { afterEach, beforeEach, describe, it } from 'mocha'
 import * as sinon from 'sinon'
 import { SinonSandbox } from 'sinon'
 import { expect } from 'chai'
@@ -13,6 +16,7 @@ import {
   AdminGovernance,
   CapitalDistributorGovernance,
   GaugeGovernance,
+  HarmonyDelegationGovernance,
 } from '@src/governance'
 import { NetworksEnum, IPluginInterfaceType, ITokenType, type HexAddress } from '@types'
 import Web3Utils from '@helpers/web3Utils'
@@ -191,6 +195,44 @@ describe('Governance:GovernanceFactory', () => {
       })
     })
 
+    describe('harmony delegation interface types', () => {
+      it('should create HarmonyDelegationGovernance for harmonyDelegationVoting', () => {
+        const result = MemberGovernanceFactory.create({
+          address: testAddress,
+          network: testNetwork,
+          interfaceType: IPluginInterfaceType.harmonyDelegationVoting,
+        })
+
+        expect(result).to.be.instanceOf(HarmonyDelegationGovernance)
+        expect(result?.['address']).to.equal(testAddress)
+        expect(result?.['network']).to.equal(testNetwork)
+      })
+
+      it('should create HarmonyDelegationGovernance for harmonyHipVoting', () => {
+        const result = MemberGovernanceFactory.create({
+          address: testAddress,
+          network: testNetwork,
+          interfaceType: IPluginInterfaceType.harmonyHipVoting,
+        })
+
+        expect(result).to.be.instanceOf(HarmonyDelegationGovernance)
+        expect(result?.['address']).to.equal(testAddress)
+        expect(result?.['network']).to.equal(testNetwork)
+      })
+
+      it('should create HarmonyDelegationGovernance for harmonyVoting', () => {
+        const result = MemberGovernanceFactory.create({
+          address: testAddress,
+          network: testNetwork,
+          interfaceType: IPluginInterfaceType.harmonyVoting,
+        })
+
+        expect(result).to.be.instanceOf(HarmonyDelegationGovernance)
+        expect(result?.['address']).to.equal(testAddress)
+        expect(result?.['network']).to.equal(testNetwork)
+      })
+    })
+
     describe('unsupported interface types', () => {
       it('should throw error for spp interface type', () => {
         expect(() => {
@@ -361,6 +403,44 @@ describe('Governance:GovernanceFactory', () => {
         const result = MemberGovernanceFactory.createFromPlugin(plugin as any)
 
         expect(result).to.be.instanceOf(GaugeGovernance)
+        expect(result?.['address']).to.equal(testAddress)
+        expect(result?.['network']).to.equal(testNetwork)
+      })
+    })
+
+    describe('harmony delegation plugins', () => {
+      it('should create HarmonyDelegationGovernance for harmonyDelegationVoting plugin', () => {
+        const plugin = createPlugin({
+          interfaceType: IPluginInterfaceType.harmonyDelegationVoting,
+        })
+
+        const result = MemberGovernanceFactory.createFromPlugin(plugin as any)
+
+        expect(result).to.be.instanceOf(HarmonyDelegationGovernance)
+        expect(result?.['address']).to.equal(testAddress)
+        expect(result?.['network']).to.equal(testNetwork)
+      })
+
+      it('should create HarmonyDelegationGovernance for harmonyHipVoting plugin', () => {
+        const plugin = createPlugin({
+          interfaceType: IPluginInterfaceType.harmonyHipVoting,
+        })
+
+        const result = MemberGovernanceFactory.createFromPlugin(plugin as any)
+
+        expect(result).to.be.instanceOf(HarmonyDelegationGovernance)
+        expect(result?.['address']).to.equal(testAddress)
+        expect(result?.['network']).to.equal(testNetwork)
+      })
+
+      it('should create HarmonyDelegationGovernance for harmonyVoting plugin', () => {
+        const plugin = createPlugin({
+          interfaceType: IPluginInterfaceType.harmonyVoting,
+        })
+
+        const result = MemberGovernanceFactory.createFromPlugin(plugin as any)
+
+        expect(result).to.be.instanceOf(HarmonyDelegationGovernance)
         expect(result?.['address']).to.equal(testAddress)
         expect(result?.['network']).to.equal(testNetwork)
       })

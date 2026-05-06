@@ -11,6 +11,7 @@ environments
 aws-new
 remote
 .env.docker
+dist/
 
 # Claude AI assistant files
 CLAUDE.md
@@ -22,3 +23,7 @@ CLAUDE.md
 .env*.local
 .yarn
 .gitissuer
+.gitissuer/state.json
+tmp/
+docs/plans/archive
+test.log

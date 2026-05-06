@@ -14,6 +14,7 @@ import {
 } from '@types'
 import { Model, type SaveOptions, Schema } from 'mongoose'
 import * as _ from 'lodash'
+import { ethers } from 'ethers'
 import { assert } from '@errors'
 import ModelUtils from '@models/utils/models'
 import { AggregationQueryHelper } from '@models/utils/aggregation'
@@ -238,7 +239,17 @@ class TxInfo {
 @index({ network: 1 })
 @index({ isSubProposal: 1, 'executed.status': 1 })
 @index({ daoAddress: 1, createdAt: -1, transactionIndex: -1 })
-@index({ network: 1, blockHash: 1, logIndex: 1, eventType: 1 }, { unique: true })
+@index(
+  { network: 1, blockHash: 1, logIndex: 1, eventType: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      blockHash: { $exists: true, $type: 'string' },
+      logIndex: { $exists: true, $type: 'number' },
+      eventType: { $exists: true, $type: 'string' },
+    },
+  },
+)
 export default class Proposal extends Model {
   @prop({ type: () => String, required: true, unique: true })
   public id!: string
@@ -246,7 +257,7 @@ export default class Proposal extends Model {
   @prop({ type: () => String, required: true })
   public transactionHash!: HexAddress
 
-  @prop({ type: () => Number, required: true })
+  @prop({ type: () => Number })
   public transactionIndex?: number
 
   @prop({ type: () => Number, required: true })
@@ -260,15 +271,6 @@ export default class Proposal extends Model {
 
   @prop({ type: () => String })
   public eventType?: string // ProposalCreated, ProposalExecuted, etc.
-
-  @prop({ type: () => Number })
-  public logIndex?: number
-
-  @prop({ type: () => Number })
-  public transactionIndex?: number
-
-  @prop({ type: () => String })
-  public eventType?: string // ProposalCreated, etc.
 
   @prop({ type: () => Number })
   public blockTimestamp!: number
@@ -302,6 +304,12 @@ export default class Proposal extends Model {
 
   @prop({ type: () => String, default: null })
   public metadataUri!: string
+
+  @prop({ type: () => Boolean, default: false })
+  public closed!: boolean
+
+  @prop({ type: () => Boolean, default: false })
+  public passed!: boolean
 
   @prop({ type: () => String, default: null })
   public title!: string
@@ -378,17 +386,20 @@ export default class Proposal extends Model {
   public simulation!: Simulation
 
   static async create(rawData: Partial<Proposal>, tOpts?: SaveOptions) {
-    if (!rawData.id) {
-      assert(!!rawData.transactionHash, 'transactionHash is required')
-      assert(!!rawData.pluginAddress, 'pluginAddress is required')
-      assert(!!rawData?.proposalIndex, 'proposalIndex is required')
-      rawData.id = this.getEntityId({
-        transactionHash: rawData?.transactionHash!,
-        pluginAddress: rawData?.pluginAddress!,
-        proposalIndex: rawData?.proposalIndex!,
+    const dataToCreate: Partial<Proposal> = { ...(rawData as any) }
+
+    if (!dataToCreate.id) {
+      assert(!!dataToCreate.transactionHash, 'transactionHash is required')
+      assert(!!dataToCreate.pluginAddress, 'pluginAddress is required')
+      assert(!!dataToCreate?.proposalIndex, 'proposalIndex is required')
+      dataToCreate.id = this.getEntityId({
+        transactionHash: dataToCreate?.transactionHash!,
+        pluginAddress: dataToCreate?.pluginAddress!,
+        proposalIndex: dataToCreate?.proposalIndex!,
       })
     }
-    const data = new this(rawData)
+
+    const data = new this(dataToCreate)
     return await data.save(tOpts)
   }
 
@@ -432,12 +443,43 @@ export default class Proposal extends Model {
   }
 
   static async findByProposalIncrementalId(
-    incrementalId: string,
+    incrementalId: string | number,
     pluginAddress: HexAddress,
     network: NetworksEnum,
     tOpts?: SaveOptions,
   ) {
-    return await this.findOne({ incrementalId, pluginAddress, network }, null, tOpts)
+    const incrementalIdCandidates = new Set<string | number>()
+    incrementalIdCandidates.add(incrementalId)
+    incrementalIdCandidates.add(String(incrementalId))
+
+    if (typeof incrementalId === 'string') {
+      const asNumber = Number(incrementalId)
+      if (!Number.isNaN(asNumber)) {
+        incrementalIdCandidates.add(asNumber)
+      }
+    }
+
+    const pluginAddressCandidates = new Set<string>()
+    pluginAddressCandidates.add(pluginAddress)
+    pluginAddressCandidates.add(pluginAddress.toLowerCase())
+
+    try {
+      const checksummed = ethers.getAddress(pluginAddress)
+      pluginAddressCandidates.add(checksummed)
+      pluginAddressCandidates.add(checksummed.toLowerCase())
+    } catch {
+      // Ignore invalid address formatting; query will fallback to raw candidates.
+    }
+
+    return await this.findOne(
+      {
+        incrementalId: { $in: Array.from(incrementalIdCandidates) },
+        pluginAddress: { $in: Array.from(pluginAddressCandidates) },
+        network,
+      },
+      null,
+      tOpts,
+    )
   }
 
   static async findLatestProposal(pluginAddress: HexAddress, network: NetworksEnum) {

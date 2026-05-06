@@ -31,6 +31,11 @@ const getConfigObject = (sourceConfig: Record<string, any>): IConfig => {
       THROTTLE_RETRY_DELAY: utils.configParser(sourceConfig, 'number', 'RABBITMQ_THROTTLE_RETRY_DELAY', 3000),
     },
 
+    HARMONY_ALLOWLIST: {
+      HIP_PLUGIN_ADDRESS: utils.configParser(sourceConfig, 'string', 'HIP_PLUGIN_ALLOWLIST_ADDRESS', null),
+      DELEGATION_PLUGIN_ADDRESS: utils.configParser(sourceConfig, 'string', 'HIP_PLUGIN_ALLOWLIST_ADDRESS', null),
+    },
+
     NODE_CONFIG: {
       MAX_RECONNECT_ATTEMPTS: utils.configParser(sourceConfig, 'number', 'NODE_CONFIG_MAX_RECONNECT_ATTEMPTS', 10),
       RECONNECT_INTERVAL: utils.configParser(sourceConfig, 'number', 'NODE_CONFIG_RECONNECT_INTERVAL', 100),
@@ -291,7 +296,7 @@ const getConfigObject = (sourceConfig: Record<string, any>): IConfig => {
           'NODES_HARMONY_MAINNET_ARAGON_RPC',
           'https://api.harmony.one',
         ),
-        FROM_BLOCK: utils.configParser(sourceConfig, 'number', 'NODES_HARMONY_MAINNET_FROM_BLOCK', 0),
+        FROM_BLOCK: utils.configParser(sourceConfig, 'number', 'NODES_HARMONY_MAINNET_FROM_BLOCK', 82991977),
         OFFSET_TO_BLOCK: utils.configParser(sourceConfig, 'number', 'NODES_HARMONY_MAINNET_OFFSET_TO_BLOCK', 0),
         POOLING_INTERVAL: utils.configParser(
           sourceConfig,
@@ -704,7 +709,7 @@ const getConfigObject = (sourceConfig: Record<string, any>): IConfig => {
     IPFS: {
       METADATA_FETCH_RETRY: utils.configParser(sourceConfig, 'number', 'IPFS_METADATA_FETCH_RETRY', 2),
       METADATA_FETCH_DELAY: utils.configParser(sourceConfig, 'number', 'IPFS_METADATA_FETCH_DELAY', 500),
-      METADATA_FETCH_TIMEOUT: utils.configParser(sourceConfig, 'number', 'IPFS_METADATA_FETCH_TIMEOUT', 10000),
+      METADATA_FETCH_TIMEOUT: utils.configParser(sourceConfig, 'number', 'IPFS_METADATA_FETCH_TIMEOUT', 5000),
     },
 
     RETRY_REQUEST: {
@@ -787,6 +792,12 @@ const getConfigObject = (sourceConfig: Record<string, any>): IConfig => {
             'SERVICES_ARAGON_INDEXER_HARMONY_VOTING_FINALIZER_PRIVATE_KEY',
             null,
           ),
+          ORACLE_FROM_ADDRESS: utils.configParser(
+            sourceConfig,
+            'string',
+            'SERVICES_ARAGON_INDEXER_HARMONY_VOTING_FINALIZER_ORACLE_FROM_ADDRESS',
+            null,
+          ),
           TARGETS_JSON: utils.configParser(
             sourceConfig,
             'string',
@@ -798,6 +809,12 @@ const getConfigObject = (sourceConfig: Record<string, any>): IConfig => {
             'number',
             'SERVICES_ARAGON_INDEXER_HARMONY_VOTING_FINALIZER_LOGS_CHUNK_SIZE',
             1000,
+          ),
+          FINALIZE_BLOCKS_AFTER_ENDDATE: utils.configParser(
+            sourceConfig,
+            'number',
+            'SERVICES_ARAGON_INDEXER_HARMONY_VOTING_FINALIZER_FINALIZE_BLOCKS_AFTER_ENDDATE',
+            0,
           ),
           BLOCK_ON_MERKLE_MISMATCH: utils.configParser(
             sourceConfig,

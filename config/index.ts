@@ -1,3 +1,5 @@
+import 'dotenv/config'
+
 import { type IConfig } from '@types'
 import { getConfigObject } from './common'
 
