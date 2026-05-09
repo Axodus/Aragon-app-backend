@@ -29,4 +29,19 @@ describe('Controller: Status', () => {
     expect(status.appVersionPackage).to.eq(packageJson.version)
     expect(status.time).to.exist
   })
+
+  it('returns chain registry capabilities for frontend permission guards', async () => {
+    const registry = await StatusController.getChainRegistry()
+    const sepolia = registry.find(chain => chain.slug === 'ethereum-sepolia')
+    const harmony = registry.find(chain => chain.slug === 'harmony-mainnet')
+    const tokenVoting = sepolia?.capabilities.pluginCapabilities.tokenVoting
+    const harmonyVoting = harmony?.capabilities.pluginCapabilities.harmonyVoting
+
+    expect(tokenVoting).to.exist
+    expect(harmonyVoting).to.exist
+    expect(tokenVoting?.actions.vote).to.equal(true)
+    expect(tokenVoting?.executionModes).to.include('federal')
+    expect(sepolia?.indexingStatus.status).to.be.oneOf(['configured', 'notConfigured', 'disabled'])
+    expect(harmonyVoting?.legacy).to.equal(true)
+  })
 })

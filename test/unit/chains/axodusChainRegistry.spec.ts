@@ -50,4 +50,21 @@ describe('Chains:AxodusChainRegistry', () => {
       axodusChainRegistry.isSupportedPlugin(NetworksEnum.harmonyMainnet, IPluginInterfaceType.harmonyVoting),
     ).to.equal(true)
   })
+
+  it('exposes action-level plugin capability metadata', () => {
+    const tokenVoting = axodusChainRegistry.pluginCapability(
+      NetworksEnum.ethereumSepolia,
+      IPluginInterfaceType.tokenVoting,
+    )
+    const harmonyVoting = axodusChainRegistry.pluginCapability(
+      NetworksEnum.harmonyMainnet,
+      IPluginInterfaceType.harmonyVoting,
+    )
+
+    expect(tokenVoting?.actions.vote).to.equal(true)
+    expect(tokenVoting?.actions.execute).to.equal(true)
+    expect(tokenVoting?.executionModes).to.include('federal')
+    expect(harmonyVoting?.legacy).to.equal(true)
+    expect(harmonyVoting?.votingPowerStrategy).to.equal('harmony-validator-snapshot')
+  })
 })

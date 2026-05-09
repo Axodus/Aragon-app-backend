@@ -8,6 +8,22 @@ export type ChainEnvironment = 'mainnet' | 'testnet' | 'local'
 
 export type ChainAdapterKey = 'evm' | 'harmony'
 
+export type GovernancePluginAction = 'createProposal' | 'vote' | 'execute' | 'settings'
+
+export type VotingPowerStrategy =
+  | 'erc20-votes'
+  | 'native-token-adapter'
+  | 'multisig-membership'
+  | 'admin-permission'
+  | 'lock-to-vote'
+  | 'gauge-weight'
+  | 'treasury-policy'
+  | 'staged-proposal'
+  | 'harmony-validator-snapshot'
+  | 'harmony-delegation-snapshot'
+
+export type GovernanceExecutionMode = 'direct' | 'remote' | 'federal' | 'legacy-adapter'
+
 export type ChainConfigKey =
   | 'ETHEREUM_MAINNET'
   | 'ETHEREUM_SEPOLIA'
@@ -56,6 +72,20 @@ export interface ChainCapabilities {
   readonly remoteExecution: boolean
   readonly constitutionalConditions: boolean
   readonly supportedPluginTypes: readonly IPluginInterfaceType[]
+  readonly pluginCapabilities: Readonly<Partial<Record<IPluginInterfaceType, GovernancePluginCapability>>>
+}
+
+export interface GovernancePluginCapability {
+  readonly interfaceType: IPluginInterfaceType
+  readonly label: string
+  readonly adapter: ChainAdapterKey
+  readonly actions: Readonly<Record<GovernancePluginAction, boolean>>
+  readonly executionModes: readonly GovernanceExecutionMode[]
+  readonly votingPowerStrategy: VotingPowerStrategy
+  readonly compatibleRoles: readonly ChainRole[]
+  readonly requiresDeployment: boolean
+  readonly requiresIndexer: boolean
+  readonly legacy?: boolean
 }
 
 export interface ChainRegistryEntry {

@@ -1,5 +1,211 @@
-import type { ChainRegistryEntry, ChainRole } from '../types'
+import type { ChainRegistryEntry, ChainRole, GovernancePluginCapability } from '../types'
 import { IPluginInterfaceType, NetworksEnum } from '@types'
+
+const evmPluginCapabilities: Readonly<Partial<Record<IPluginInterfaceType, GovernancePluginCapability>>> = {
+  [IPluginInterfaceType.tokenVoting]: {
+    interfaceType: IPluginInterfaceType.tokenVoting,
+    label: 'Token Voting',
+    adapter: 'evm',
+    actions: { createProposal: true, vote: true, execute: true, settings: true },
+    executionModes: ['direct', 'remote', 'federal'],
+    votingPowerStrategy: 'erc20-votes',
+    compatibleRoles: ['execution', 'voting', 'spoke'],
+    requiresDeployment: true,
+    requiresIndexer: true,
+  },
+  [IPluginInterfaceType.nativeTokenVoting]: {
+    interfaceType: IPluginInterfaceType.nativeTokenVoting,
+    label: 'Native Token Voting',
+    adapter: 'evm',
+    actions: { createProposal: true, vote: true, execute: true, settings: true },
+    executionModes: ['direct', 'remote', 'federal'],
+    votingPowerStrategy: 'native-token-adapter',
+    compatibleRoles: ['execution', 'voting', 'spoke'],
+    requiresDeployment: true,
+    requiresIndexer: true,
+  },
+  [IPluginInterfaceType.multisig]: {
+    interfaceType: IPluginInterfaceType.multisig,
+    label: 'Multisig',
+    adapter: 'evm',
+    actions: { createProposal: true, vote: true, execute: true, settings: true },
+    executionModes: ['direct', 'remote', 'federal'],
+    votingPowerStrategy: 'multisig-membership',
+    compatibleRoles: ['execution', 'voting', 'spoke'],
+    requiresDeployment: true,
+    requiresIndexer: true,
+  },
+  [IPluginInterfaceType.admin]: {
+    interfaceType: IPluginInterfaceType.admin,
+    label: 'Admin',
+    adapter: 'evm',
+    actions: { createProposal: true, vote: false, execute: true, settings: true },
+    executionModes: ['direct', 'remote', 'federal'],
+    votingPowerStrategy: 'admin-permission',
+    compatibleRoles: ['execution', 'spoke'],
+    requiresDeployment: true,
+    requiresIndexer: true,
+  },
+  [IPluginInterfaceType.lockToVote]: {
+    interfaceType: IPluginInterfaceType.lockToVote,
+    label: 'Lock To Vote',
+    adapter: 'evm',
+    actions: { createProposal: true, vote: true, execute: true, settings: true },
+    executionModes: ['direct', 'remote', 'federal'],
+    votingPowerStrategy: 'lock-to-vote',
+    compatibleRoles: ['execution', 'voting', 'spoke'],
+    requiresDeployment: true,
+    requiresIndexer: true,
+  },
+  [IPluginInterfaceType.gauge]: {
+    interfaceType: IPluginInterfaceType.gauge,
+    label: 'Gauge',
+    adapter: 'evm',
+    actions: { createProposal: true, vote: true, execute: true, settings: true },
+    executionModes: ['direct', 'remote', 'federal'],
+    votingPowerStrategy: 'gauge-weight',
+    compatibleRoles: ['execution', 'voting', 'spoke'],
+    requiresDeployment: true,
+    requiresIndexer: true,
+  },
+  [IPluginInterfaceType.capitalDistributor]: {
+    interfaceType: IPluginInterfaceType.capitalDistributor,
+    label: 'Capital Distributor',
+    adapter: 'evm',
+    actions: { createProposal: true, vote: false, execute: true, settings: true },
+    executionModes: ['direct', 'remote', 'federal'],
+    votingPowerStrategy: 'treasury-policy',
+    compatibleRoles: ['execution', 'spoke'],
+    requiresDeployment: true,
+    requiresIndexer: true,
+  },
+  [IPluginInterfaceType.spp]: {
+    interfaceType: IPluginInterfaceType.spp,
+    label: 'Staged Proposal Processor',
+    adapter: 'evm',
+    actions: { createProposal: true, vote: false, execute: true, settings: true },
+    executionModes: ['direct', 'remote', 'federal'],
+    votingPowerStrategy: 'staged-proposal',
+    compatibleRoles: ['execution', 'spoke'],
+    requiresDeployment: true,
+    requiresIndexer: true,
+  },
+}
+
+const harmonyPluginCapabilities: Readonly<Partial<Record<IPluginInterfaceType, GovernancePluginCapability>>> = {
+  [IPluginInterfaceType.tokenVoting]: {
+    interfaceType: IPluginInterfaceType.tokenVoting,
+    label: 'Token Voting',
+    adapter: 'harmony',
+    actions: { createProposal: true, vote: true, execute: true, settings: true },
+    executionModes: ['legacy-adapter'],
+    votingPowerStrategy: 'erc20-votes',
+    compatibleRoles: ['voting', 'spoke'],
+    requiresDeployment: true,
+    requiresIndexer: true,
+    legacy: true,
+  },
+  [IPluginInterfaceType.nativeTokenVoting]: {
+    interfaceType: IPluginInterfaceType.nativeTokenVoting,
+    label: 'Native Token Voting',
+    adapter: 'harmony',
+    actions: { createProposal: true, vote: true, execute: true, settings: true },
+    executionModes: ['legacy-adapter'],
+    votingPowerStrategy: 'native-token-adapter',
+    compatibleRoles: ['voting', 'spoke'],
+    requiresDeployment: true,
+    requiresIndexer: true,
+    legacy: true,
+  },
+  [IPluginInterfaceType.multisig]: {
+    interfaceType: IPluginInterfaceType.multisig,
+    label: 'Multisig',
+    adapter: 'harmony',
+    actions: { createProposal: true, vote: true, execute: true, settings: true },
+    executionModes: ['legacy-adapter'],
+    votingPowerStrategy: 'multisig-membership',
+    compatibleRoles: ['voting', 'spoke'],
+    requiresDeployment: true,
+    requiresIndexer: true,
+    legacy: true,
+  },
+  [IPluginInterfaceType.admin]: {
+    interfaceType: IPluginInterfaceType.admin,
+    label: 'Admin',
+    adapter: 'harmony',
+    actions: { createProposal: true, vote: false, execute: true, settings: true },
+    executionModes: ['legacy-adapter'],
+    votingPowerStrategy: 'admin-permission',
+    compatibleRoles: ['spoke'],
+    requiresDeployment: true,
+    requiresIndexer: true,
+    legacy: true,
+  },
+  [IPluginInterfaceType.harmonyVoting]: {
+    interfaceType: IPluginInterfaceType.harmonyVoting,
+    label: 'Harmony Voting',
+    adapter: 'harmony',
+    actions: { createProposal: true, vote: true, execute: true, settings: true },
+    executionModes: ['legacy-adapter'],
+    votingPowerStrategy: 'harmony-validator-snapshot',
+    compatibleRoles: ['voting', 'spoke'],
+    requiresDeployment: true,
+    requiresIndexer: true,
+    legacy: true,
+  },
+  [IPluginInterfaceType.harmonyHipVoting]: {
+    interfaceType: IPluginInterfaceType.harmonyHipVoting,
+    label: 'Harmony HIP Voting',
+    adapter: 'harmony',
+    actions: { createProposal: true, vote: true, execute: true, settings: true },
+    executionModes: ['legacy-adapter'],
+    votingPowerStrategy: 'harmony-validator-snapshot',
+    compatibleRoles: ['voting', 'spoke'],
+    requiresDeployment: true,
+    requiresIndexer: true,
+    legacy: true,
+  },
+  [IPluginInterfaceType.harmonyDelegationVoting]: {
+    interfaceType: IPluginInterfaceType.harmonyDelegationVoting,
+    label: 'Harmony Delegation Voting',
+    adapter: 'harmony',
+    actions: { createProposal: true, vote: true, execute: true, settings: true },
+    executionModes: ['legacy-adapter'],
+    votingPowerStrategy: 'harmony-delegation-snapshot',
+    compatibleRoles: ['voting', 'spoke'],
+    requiresDeployment: true,
+    requiresIndexer: true,
+    legacy: true,
+  },
+}
+
+const supportedPluginTypes = (
+  pluginCapabilities: Readonly<Partial<Record<IPluginInterfaceType, GovernancePluginCapability>>>,
+): readonly IPluginInterfaceType[] => Object.keys(pluginCapabilities) as IPluginInterfaceType[]
+
+const chainCapabilities = ({
+  governance,
+  voting,
+  treasury,
+  remoteExecution,
+  constitutionalConditions,
+  pluginCapabilities,
+}: {
+  governance: boolean
+  voting: boolean
+  treasury: boolean
+  remoteExecution: boolean
+  constitutionalConditions: boolean
+  pluginCapabilities: Readonly<Partial<Record<IPluginInterfaceType, GovernancePluginCapability>>>
+}) => ({
+  governance,
+  voting,
+  treasury,
+  remoteExecution,
+  constitutionalConditions,
+  supportedPluginTypes: supportedPluginTypes(pluginCapabilities),
+  pluginCapabilities,
+})
 
 const registry: readonly ChainRegistryEntry[] = [
   {
@@ -17,23 +223,14 @@ const registry: readonly ChainRegistryEntry[] = [
     finality: { confirmationBlocks: 12, reorgWindowBlocks: 96 },
     rpc: [],
     contracts: {},
-    capabilities: {
+    capabilities: chainCapabilities({
       governance: true,
       voting: true,
       treasury: true,
       remoteExecution: true,
       constitutionalConditions: true,
-      supportedPluginTypes: [
-        IPluginInterfaceType.tokenVoting,
-        IPluginInterfaceType.nativeTokenVoting,
-        IPluginInterfaceType.multisig,
-        IPluginInterfaceType.admin,
-        IPluginInterfaceType.lockToVote,
-        IPluginInterfaceType.gauge,
-        IPluginInterfaceType.capitalDistributor,
-        IPluginInterfaceType.spp,
-      ],
-    },
+      pluginCapabilities: evmPluginCapabilities,
+    }),
   },
   {
     chainId: 1666600000,
@@ -51,22 +248,14 @@ const registry: readonly ChainRegistryEntry[] = [
     finality: { confirmationBlocks: 100, reorgWindowBlocks: 7200 },
     rpc: [{ url: 'https://api.harmony.one', priority: 1 }],
     contracts: {},
-    capabilities: {
+    capabilities: chainCapabilities({
       governance: true,
       voting: true,
       treasury: true,
       remoteExecution: false,
       constitutionalConditions: false,
-      supportedPluginTypes: [
-        IPluginInterfaceType.tokenVoting,
-        IPluginInterfaceType.nativeTokenVoting,
-        IPluginInterfaceType.multisig,
-        IPluginInterfaceType.admin,
-        IPluginInterfaceType.harmonyVoting,
-        IPluginInterfaceType.harmonyHipVoting,
-        IPluginInterfaceType.harmonyDelegationVoting,
-      ],
-    },
+      pluginCapabilities: harmonyPluginCapabilities,
+    }),
   },
   {
     chainId: 1666700000,
@@ -84,22 +273,14 @@ const registry: readonly ChainRegistryEntry[] = [
     finality: { confirmationBlocks: 50, reorgWindowBlocks: 3600 },
     rpc: [],
     contracts: {},
-    capabilities: {
+    capabilities: chainCapabilities({
       governance: true,
       voting: true,
       treasury: true,
       remoteExecution: false,
       constitutionalConditions: false,
-      supportedPluginTypes: [
-        IPluginInterfaceType.tokenVoting,
-        IPluginInterfaceType.nativeTokenVoting,
-        IPluginInterfaceType.multisig,
-        IPluginInterfaceType.admin,
-        IPluginInterfaceType.harmonyVoting,
-        IPluginInterfaceType.harmonyHipVoting,
-        IPluginInterfaceType.harmonyDelegationVoting,
-      ],
-    },
+      pluginCapabilities: harmonyPluginCapabilities,
+    }),
   },
   {
     chainId: 1,
@@ -116,23 +297,14 @@ const registry: readonly ChainRegistryEntry[] = [
     finality: { confirmationBlocks: 12, reorgWindowBlocks: 96 },
     rpc: [],
     contracts: {},
-    capabilities: {
+    capabilities: chainCapabilities({
       governance: true,
       voting: true,
       treasury: true,
       remoteExecution: true,
       constitutionalConditions: true,
-      supportedPluginTypes: [
-        IPluginInterfaceType.tokenVoting,
-        IPluginInterfaceType.nativeTokenVoting,
-        IPluginInterfaceType.multisig,
-        IPluginInterfaceType.admin,
-        IPluginInterfaceType.lockToVote,
-        IPluginInterfaceType.gauge,
-        IPluginInterfaceType.capitalDistributor,
-        IPluginInterfaceType.spp,
-      ],
-    },
+      pluginCapabilities: evmPluginCapabilities,
+    }),
   },
   {
     chainId: 8453,
@@ -149,23 +321,14 @@ const registry: readonly ChainRegistryEntry[] = [
     finality: { confirmationBlocks: 30, reorgWindowBlocks: 300 },
     rpc: [],
     contracts: {},
-    capabilities: {
+    capabilities: chainCapabilities({
       governance: true,
       voting: true,
       treasury: true,
       remoteExecution: true,
       constitutionalConditions: true,
-      supportedPluginTypes: [
-        IPluginInterfaceType.tokenVoting,
-        IPluginInterfaceType.nativeTokenVoting,
-        IPluginInterfaceType.multisig,
-        IPluginInterfaceType.admin,
-        IPluginInterfaceType.lockToVote,
-        IPluginInterfaceType.gauge,
-        IPluginInterfaceType.capitalDistributor,
-        IPluginInterfaceType.spp,
-      ],
-    },
+      pluginCapabilities: evmPluginCapabilities,
+    }),
   },
   {
     chainId: 42161,
@@ -182,23 +345,14 @@ const registry: readonly ChainRegistryEntry[] = [
     finality: { confirmationBlocks: 30, reorgWindowBlocks: 300 },
     rpc: [],
     contracts: {},
-    capabilities: {
+    capabilities: chainCapabilities({
       governance: true,
       voting: true,
       treasury: true,
       remoteExecution: true,
       constitutionalConditions: true,
-      supportedPluginTypes: [
-        IPluginInterfaceType.tokenVoting,
-        IPluginInterfaceType.nativeTokenVoting,
-        IPluginInterfaceType.multisig,
-        IPluginInterfaceType.admin,
-        IPluginInterfaceType.lockToVote,
-        IPluginInterfaceType.gauge,
-        IPluginInterfaceType.capitalDistributor,
-        IPluginInterfaceType.spp,
-      ],
-    },
+      pluginCapabilities: evmPluginCapabilities,
+    }),
   },
   {
     chainId: 137,
@@ -215,23 +369,14 @@ const registry: readonly ChainRegistryEntry[] = [
     finality: { confirmationBlocks: 128, reorgWindowBlocks: 512 },
     rpc: [],
     contracts: {},
-    capabilities: {
+    capabilities: chainCapabilities({
       governance: true,
       voting: true,
       treasury: true,
       remoteExecution: true,
       constitutionalConditions: true,
-      supportedPluginTypes: [
-        IPluginInterfaceType.tokenVoting,
-        IPluginInterfaceType.nativeTokenVoting,
-        IPluginInterfaceType.multisig,
-        IPluginInterfaceType.admin,
-        IPluginInterfaceType.lockToVote,
-        IPluginInterfaceType.gauge,
-        IPluginInterfaceType.capitalDistributor,
-        IPluginInterfaceType.spp,
-      ],
-    },
+      pluginCapabilities: evmPluginCapabilities,
+    }),
   },
 ]
 
@@ -272,6 +417,11 @@ export class AxodusChainRegistry {
   isSupportedPlugin(network: string, interfaceType: IPluginInterfaceType): boolean {
     const chain = this.byNetwork(network)
     return chain?.capabilities.supportedPluginTypes.includes(interfaceType) ?? false
+  }
+
+  pluginCapability(network: string, interfaceType: IPluginInterfaceType): GovernancePluginCapability | undefined {
+    const chain = this.byNetwork(network)
+    return chain?.capabilities.pluginCapabilities[interfaceType]
   }
 }
 
