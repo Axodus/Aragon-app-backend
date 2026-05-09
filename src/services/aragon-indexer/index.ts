@@ -13,7 +13,13 @@ import RabbitMQHelper from '@helpers/rabbitMQ'
 import ConfigIndexerHelper from '@helpers/configIndexer'
 import HarmonyVotingFinalizer from './harmonyVotingFinalizer'
 import { resolveActiveContractsVersion } from '@helpers/contractsConfigVersion'
+import { axodusChainRegistry } from '@src/chains'
 
+import ethereumMainnetContracts from '../../../config/contracts/ethereumMainnet.json'
+import ethereumSepoliaContracts from '../../../config/contracts/ethereumSepolia.json'
+import polygonMainnetContracts from '../../../config/contracts/polygonMainnet.json'
+import baseMainnetContracts from '../../../config/contracts/baseMainnet.json'
+import arbitrumMainnetContracts from '../../../config/contracts/arbitrumMainnet.json'
 import harmonyMainnetContracts from '../../../config/contracts/harmonyMainnet.json'
 import harmonyTestnetContracts from '../../../config/contracts/harmonyTestnet.json'
 
@@ -44,6 +50,11 @@ const backfillInstalledPlugins = async (networkName: string) => {
 
 const getIndexerCoreAddresses = async (networkName: string): Promise<string[] | undefined> => {
   const configByNetwork: Partial<Record<string, ContractsConfig>> = {
+    'ethereum-mainnet': ethereumMainnetContracts as unknown as ContractsConfig,
+    'ethereum-sepolia': ethereumSepoliaContracts as unknown as ContractsConfig,
+    'polygon-mainnet': polygonMainnetContracts as unknown as ContractsConfig,
+    'base-mainnet': baseMainnetContracts as unknown as ContractsConfig,
+    'arbitrum-mainnet': arbitrumMainnetContracts as unknown as ContractsConfig,
     'harmony-mainnet': harmonyMainnetContracts as unknown as ContractsConfig,
     'harmony-testnet': harmonyTestnetContracts as unknown as ContractsConfig,
   }
@@ -51,12 +62,8 @@ const getIndexerCoreAddresses = async (networkName: string): Promise<string[] | 
   const cfg = configByNetwork[networkName]
   if (!cfg) return undefined
 
-  const overrideEnvVar =
-    networkName === 'harmony-mainnet'
-      ? 'HARMONY_MAINNET_CONTRACTS_VERSION'
-      : networkName === 'harmony-testnet'
-        ? 'HARMONY_TESTNET_CONTRACTS_VERSION'
-        : undefined
+  const chain = axodusChainRegistry.byNetwork(networkName)
+  const overrideEnvVar = chain ? `${chain.configKey}_CONTRACTS_VERSION` : undefined
 
   const version = resolveActiveContractsVersion(cfg, {
     overrideVersionKey: overrideEnvVar ? process.env[overrideEnvVar] : undefined,
@@ -132,10 +139,11 @@ const AragonIndexerService: IService & { repeaters: any } = {
 
         const indexerAddresses = await getIndexerCoreAddresses(networkName)
 
-        if (
-          (networkName === 'harmony-mainnet' || networkName === 'harmony-testnet') &&
-          config.NODES[utils.networkToAragon(networkName)]?.FROM_BLOCK === 0
-        ) {
+        const chain = axodusChainRegistry.byNetwork(networkName)
+        const networkConfigKey = chain?.configKey || utils.networkToAragon(networkName)
+        const networkConfig = config.NODES[networkConfigKey]
+
+        if (chain?.legacyHarmonyAdapter && networkConfig?.FROM_BLOCK === 0) {
           logger.warn(
             'Harmony FROM_BLOCK is 0; historical sync can be extremely slow. Consider setting NODES_HARMONY_*_FROM_BLOCK near your deployment/first DAO block.',
             llo({ networkName }),
@@ -155,7 +163,7 @@ const AragonIndexerService: IService & { repeaters: any } = {
             network: networkName,
             address: indexerAddresses,
             events: utils.filterArrayByProperty(configIndexer, 'enableHistorical'),
-            adaptiveConfig: getHarmonyAdaptiveConfig(networkName),
+            adaptiveConfig: chain?.legacyHarmonyAdapter ? getHarmonyAdaptiveConfig(networkName) : undefined,
             onError: async (error: any) => logger.error('Error Indexer', llo(error)),
             logService,
             stopOnError: true,
@@ -178,9 +186,16 @@ const AragonIndexerService: IService & { repeaters: any } = {
         logger.info('PoolingCrawler start', llo({ networkName }))
 
         const taskOptions = {
-          fn: () => [[{ poolingCrawler: PoolingCrawler, params: { logService, network: networkName, address: indexerAddresses } }]],
-          interval: config.NODES[utils.networkToAragon(networkName)].POOLING_INTERVAL,
-          checkInterval: config.NODES[utils.networkToAragon(networkName)].POOLING_INTERVAL / 2,
+          fn: () => [
+            [
+              {
+                poolingCrawler: PoolingCrawler,
+                params: { logService, network: networkName, address: indexerAddresses },
+              },
+            ],
+          ],
+          interval: networkConfig.POOLING_INTERVAL,
+          checkInterval: networkConfig.POOLING_INTERVAL / 2,
           runNow: true,
           stopOnError: false,
           onError: (error: any) => logger.error('Error pooling logs', llo({ networkName, error })),

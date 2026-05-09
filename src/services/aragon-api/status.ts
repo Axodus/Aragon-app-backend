@@ -6,6 +6,10 @@ const StatusRouter = {
     ctx.body = StatusController.getStatus()
   },
 
+  chainRegistry(ctx: RouterContext) {
+    ctx.body = StatusController.getChainRegistry()
+  },
+
   router(): Router {
     const router = new Router()
 
@@ -19,6 +23,7 @@ const StatusRouter = {
      *
      */
     router.get('/', StatusRouter.status)
+    router.get('/registry/chains', StatusRouter.chainRegistry)
 
     return router
   },

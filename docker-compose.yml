@@ -4,13 +4,13 @@ services:
   # --------------------------------------------------
   rabbitmq:
     image: rabbitmq:3.9-management
-    container_name: rabbitmq-${ENV_SUFFIX}
+    container_name: rabbitmq-${ENV_SUFFIX:-local}
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-guest}
     ports:
-      - '${RABBITMQ_AMQP_PORT}:${RABBITMQ_AMQP_PORT}'               # AMQP port
-      - '${RABBITMQ_MANAGEMENT_PORT}:${RABBITMQ_MANAGEMENT_PORT}'    # HTTP management UI
+      - '${RABBITMQ_AMQP_PORT:-5672}:5672'               # AMQP port
+      - '${RABBITMQ_MANAGEMENT_PORT:-15672}:15672'       # HTTP management UI
     healthcheck:
       test: [ "CMD-SHELL", "rabbitmqctl status" ]
       interval: 10s
@@ -24,13 +24,14 @@ services:
   # Migration Service (runs once and exits)
   # --------------------------------------------------
   migration:
-    image: service-migration-${ENV_SUFFIX}
-    container_name: service-migration-${ENV_SUFFIX}
+    image: service-migration-${ENV_SUFFIX:-local}
+    container_name: service-migration-${ENV_SUFFIX:-local}
     build:
       context: .
       dockerfile: Dockerfile
     env_file:
-      - .env.aragon-indexer-${ENV_SUFFIX} # Use the same env file as the indexer
+      - path: .env.aragon-indexer-${ENV_SUFFIX:-local} # Use the same env file as the indexer
+        required: false
     depends_on:
       - rabbitmq
     command: bash -c "yarn wait:rabbitmq && yarn mig:run && echo 'Migration Service completed'"
@@ -42,20 +43,29 @@ services:
   # Microservices
   # --------------------------------------------------
   service-aragon-api:
-    image: service-aragon-api-${ENV_SUFFIX}
-    container_name: service-aragon-api-${ENV_SUFFIX}
+    image: service-aragon-api-${ENV_SUFFIX:-local}
+    container_name: service-aragon-api-${ENV_SUFFIX:-local}
     build:
       context: .
     ports:
-      # Host port can be overridden via SERVICES_API_PORT
-      - '${SERVICES_API_PORT:-4000}:4000'
-    env_file:
-      - .env.aragon-api-${ENV_SUFFIX}
-    depends_on:
-      - rabbitmq
-    command: bash -c "yarn wait:rabbitmq && yarn service:aragon-api"
+      # Axodus Governance API consumed by AxodusAPP /governance-api proxy.
+      - '${SERVICES_API_PORT:-4002}:4002'
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      NODE_ENV: ${NODE_ENV:-production}
+      SERVICES_ARAGON_API_PORT: ${SERVICES_ARAGON_API_PORT:-4002}
+      SERVICES_ARAGON_API_BASE_URL: ${SERVICES_ARAGON_API_BASE_URL:-http://localhost:4002}
+      # Bootstrap mode exposes public/static endpoints such as /registry/chains
+      # without requiring MongoDB/RabbitMQ. Set false when running the full indexer stack.
+      SERVICES_ARAGON_API_SKIP_CONNECTIONS: ${SERVICES_ARAGON_API_SKIP_CONNECTIONS:-true}
+      SUPPORTED_NETWORKS: ${SUPPORTED_NETWORKS:-ethereum-sepolia,ethereum-mainnet,base-mainnet,arbitrum-mainnet,polygon-mainnet,harmony-mainnet}
+    command: >
+      bash -c "if [ \"$$SERVICES_ARAGON_API_SKIP_CONNECTIONS\" = \"true\" ];
+      then yarn service:aragon-api;
+      else yarn wait:rabbitmq && yarn service:aragon-api;
+      fi"
     healthcheck:
-      test: ['CMD-SHELL', 'curl -f http://localhost:4000/health || exit 1']
+      test: ['CMD-SHELL', 'curl -f http://localhost:4002/registry/chains || exit 1']
       interval: 10s
       timeout: 5s
       retries: 10
@@ -65,15 +75,16 @@ services:
       - public-net
 
   service-aragon-admin-api:
-    image: service-aragon-admin-api-${ENV_SUFFIX}
-    container_name: service-aragon-admin-api-${ENV_SUFFIX}
+    image: service-aragon-admin-api-${ENV_SUFFIX:-local}
+    container_name: service-aragon-admin-api-${ENV_SUFFIX:-local}
     build:
       context: .
     ports:
       # Host port can be overridden via SERVICES_ADMIN_API_PORT
       - '${SERVICES_ADMIN_API_PORT:-4001}:4001'
     env_file:
-      - .env.aragon-admin-api-${ENV_SUFFIX}
+      - path: .env.aragon-admin-api-${ENV_SUFFIX:-local}
+        required: false
     depends_on:
       - rabbitmq
     command: bash -c "yarn wait:rabbitmq && yarn service:aragon-admin-api"
@@ -88,12 +99,13 @@ services:
       - public-net
 
   service-aragon-indexer:
-    image: service-aragon-indexer-${ENV_SUFFIX}
-    container_name: service-aragon-indexer-${ENV_SUFFIX}
+    image: service-aragon-indexer-${ENV_SUFFIX:-local}
+    container_name: service-aragon-indexer-${ENV_SUFFIX:-local}
     build:
       context: .
     env_file:
-      - .env.aragon-indexer-${ENV_SUFFIX}
+      - path: .env.aragon-indexer-${ENV_SUFFIX:-local}
+        required: false
     depends_on:
       - rabbitmq
     command: bash -c "yarn wait:rabbitmq && yarn service:aragon-indexer"
@@ -108,12 +120,13 @@ services:
       - public-net
 
   service-aragon-dao:
-    image: service-aragon-dao-${ENV_SUFFIX}
-    container_name: service-aragon-dao-${ENV_SUFFIX}
+    image: service-aragon-dao-${ENV_SUFFIX:-local}
+    container_name: service-aragon-dao-${ENV_SUFFIX:-local}
     build:
       context: .
     env_file:
-      - .env.aragon-dao-${ENV_SUFFIX}
+      - path: .env.aragon-dao-${ENV_SUFFIX:-local}
+        required: false
     depends_on:
       - rabbitmq
     command: bash -c "yarn wait:rabbitmq && yarn service:aragon-dao"
@@ -128,12 +141,13 @@ services:
       - public-net
 
   service-aragon-transfers:
-    image: service-aragon-transfers-${ENV_SUFFIX}
-    container_name: service-aragon-transfers-${ENV_SUFFIX}
+    image: service-aragon-transfers-${ENV_SUFFIX:-local}
+    container_name: service-aragon-transfers-${ENV_SUFFIX:-local}
     build:
       context: .
     env_file:
-      - .env.aragon-transfers-${ENV_SUFFIX}
+      - path: .env.aragon-transfers-${ENV_SUFFIX:-local}
+        required: false
     depends_on:
       - rabbitmq
     command: bash -c "yarn wait:rabbitmq && yarn service:aragon-transfers"
@@ -148,12 +162,13 @@ services:
       - public-net
 
   service-aragon-gateway:
-    image: service-aragon-gateway-${ENV_SUFFIX}
-    container_name: service-aragon-gateway-${ENV_SUFFIX}
+    image: service-aragon-gateway-${ENV_SUFFIX:-local}
+    container_name: service-aragon-gateway-${ENV_SUFFIX:-local}
     build:
       context: .
     env_file:
-      - .env.aragon-gateway-${ENV_SUFFIX}
+      - path: .env.aragon-gateway-${ENV_SUFFIX:-local}
+        required: false
     depends_on:
       - rabbitmq
     command: bash -c "yarn wait:rabbitmq && yarn service:aragon-gateway"
@@ -168,11 +183,12 @@ services:
       - public-net
 
   service-aragon-plugins:
-    image: service-aragon-plugins-${ENV_SUFFIX}
+    image: service-aragon-plugins-${ENV_SUFFIX:-local}
     build:
       context: .
     env_file:
-      - .env.aragon-plugins-${ENV_SUFFIX}
+      - path: .env.aragon-plugins-${ENV_SUFFIX:-local}
+        required: false
     depends_on:
       - rabbitmq
     command: bash -c "yarn wait:rabbitmq && yarn service:aragon-plugins"
@@ -189,12 +205,13 @@ services:
       replicas: 2
 
   service-aragon-rates:
-    image: service-aragon-rates-${ENV_SUFFIX}
-    container_name: service-aragon-rates-${ENV_SUFFIX}
+    image: service-aragon-rates-${ENV_SUFFIX:-local}
+    container_name: service-aragon-rates-${ENV_SUFFIX:-local}
     build:
       context: .
     env_file:
-      - .env.aragon-rates-${ENV_SUFFIX}
+      - path: .env.aragon-rates-${ENV_SUFFIX:-local}
+        required: false
     depends_on:
       - rabbitmq
     command: bash -c "yarn wait:rabbitmq && yarn service:aragon-rates"
@@ -209,12 +226,13 @@ services:
       - public-net
 
   service-aragon-requeue:
-    image: service-aragon-requeue-${ENV_SUFFIX}
-    container_name: service-aragon-requeue-${ENV_SUFFIX}
+    image: service-aragon-requeue-${ENV_SUFFIX:-local}
+    container_name: service-aragon-requeue-${ENV_SUFFIX:-local}
     build:
       context: .
     env_file:
-      - .env.aragon-requeue-${ENV_SUFFIX}
+      - path: .env.aragon-requeue-${ENV_SUFFIX:-local}
+        required: false
     depends_on:
       - rabbitmq
     command: bash -c "yarn wait:rabbitmq && yarn service:aragon-requeue"
@@ -230,6 +248,6 @@ services:
 
 networks:
   internal-net:
-    external: true
+    driver: bridge
   public-net:
-    external: true
+    driver: bridge

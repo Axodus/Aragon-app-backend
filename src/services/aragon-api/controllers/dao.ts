@@ -17,6 +17,32 @@ import PairDataModule from '@modules/pairData'
 import NameResolver from '@helpers/nameResolver'
 import DaoEnsHelper from '@helpers/daoEns'
 import { ethers } from 'ethers'
+import logger from '@logger'
+
+const llo = logger.logMeta.bind(null, { service: 'DaoController' })
+
+async function aggregateMemberModel<T>(modelName: string, pipeline: Record<string, unknown>[]): Promise<T[]> {
+  const model = Models[modelName]
+
+  if (!model || typeof model.aggregate !== 'function') {
+    logger.warn('Membership model is not available, skipping DAO membership source', llo({ modelName }))
+    return []
+  }
+
+  return await model.aggregate(pipeline)
+}
+
+function emptyPaginatedDaoResponse(pageSize = 50): IPaginatedResult<IDaoResponse> {
+  return {
+    metadata: {
+      page: 1,
+      pageSize,
+      totalRecords: 0,
+      totalPages: 1,
+    },
+    data: [],
+  }
+}
 
 const DaoController = {
   getDaosWithPagination: async (
@@ -121,24 +147,32 @@ const DaoController = {
 
     const extraQueryData = { daoAddresses: allDaoAddresses }
 
+    if (!Models.Dao || typeof Models.Dao.findWithPagination !== 'function') {
+      logger.warn(
+        'Dao model is not available, returning empty DAO member response',
+        llo({ memberAddress: extraParams.memberAddress }),
+      )
+      return emptyPaginatedDaoResponse(paginationParams.pageSize)
+    }
+
     return await Models.Dao.findWithPagination({ extraParams, paginationParams, extraQueryData })
   },
 
   getDaosOfMemberInNetwork: async (memberAddress: string, networkFilter: any = {}): Promise<string[]> => {
     const [tokenMembersQuery, veMembersQuery, lockMembersQuery, pluginMembersQuery] = await Promise.all([
-      Models.TokenMember.aggregate([
+      aggregateMemberModel<MembershipData>('TokenMember', [
         { $match: { memberAddress, ...networkFilter } },
         { $project: { _id: 0, tokenAddress: 1, network: 1 } },
       ]),
-      Models.Lock.aggregate([
+      aggregateMemberModel<MembershipData>('Lock', [
         { $match: { delegateReceiverAddress: memberAddress, ...networkFilter } },
         { $project: { _id: 0, tokenAddress: 1, network: 1 } },
       ]),
-      Models.LockToVoteMember.aggregate([
+      aggregateMemberModel<MembershipData>('LockToVoteMember', [
         { $match: { memberAddress, ...networkFilter } },
         { $project: { _id: 0, lockManagerAddress: 1, network: 1 } },
       ]),
-      Models.PluginMember.aggregate([
+      aggregateMemberModel<MembershipData>('PluginMember', [
         { $match: { memberAddress, ...networkFilter } },
         { $project: { _id: 0, pluginAddress: 1, network: 1 } },
       ]),
@@ -155,15 +189,12 @@ const DaoController = {
 
     const orQueries: any[] = []
 
-    const tokenMembersByNetwork = DaoController.groupByNetwork(tokenMembersQuery as MembershipData[], 'tokenAddress')
-    const veMembersByNetwork = DaoController.groupByNetwork(veMembersQuery as MembershipData[], 'tokenAddress')
+    const tokenMembersByNetwork = DaoController.groupByNetwork(tokenMembersQuery, 'tokenAddress')
+    const veMembersByNetwork = DaoController.groupByNetwork(veMembersQuery, 'tokenAddress')
 
-    const lockMembersByNetwork = DaoController.groupByNetwork(
-      lockMembersQuery as MembershipData[],
-      'lockManagerAddress',
-    )
+    const lockMembersByNetwork = DaoController.groupByNetwork(lockMembersQuery, 'lockManagerAddress')
 
-    const pluginMembersByNetwork = DaoController.groupByNetwork(pluginMembersQuery as MembershipData[], 'pluginAddress')
+    const pluginMembersByNetwork = DaoController.groupByNetwork(pluginMembersQuery, 'pluginAddress')
 
     Object.keys(tokenMembersByNetwork).forEach(network => {
       if (tokenMembersByNetwork[network].length > 0) {

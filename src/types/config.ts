@@ -240,6 +240,7 @@ export interface IConfig {
       NAME: string
       PORT: number
       TIMEOUT: number
+      SKIP_CONNECTIONS: boolean
     }
     ARAGON_ADMIN_API: {
       BASE_URL: string

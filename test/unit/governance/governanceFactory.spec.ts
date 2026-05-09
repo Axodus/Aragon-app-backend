@@ -16,8 +16,8 @@ import {
   AdminGovernance,
   CapitalDistributorGovernance,
   GaugeGovernance,
-  HarmonyDelegationGovernance,
 } from '@src/governance'
+import { HarmonyDelegationGovernance } from '@src/chains/adapters/harmony'
 import { NetworksEnum, IPluginInterfaceType, ITokenType, type HexAddress } from '@types'
 import Web3Utils from '@helpers/web3Utils'
 import DbTx from '@modules/dbTx'
@@ -29,6 +29,7 @@ describe('Governance:GovernanceFactory', () => {
 
   const testAddress = '0x1234567890123456789012345678901234567890' as HexAddress
   const testNetwork = NetworksEnum.ethereumMainnet
+  const harmonyNetwork = NetworksEnum.harmonyMainnet
   const escrowAdapterAddress = '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd' as HexAddress
 
   beforeEach(async () => {
@@ -195,41 +196,65 @@ describe('Governance:GovernanceFactory', () => {
       })
     })
 
+    describe('nativeTokenVoting interface type', () => {
+      it('should create Erc20Governance', () => {
+        const result = MemberGovernanceFactory.create({
+          address: testAddress,
+          network: testNetwork,
+          interfaceType: IPluginInterfaceType.nativeTokenVoting,
+        })
+
+        expect(result).to.be.instanceOf(Erc20Governance)
+        expect(result?.['address']).to.equal(testAddress)
+        expect(result?.['network']).to.equal(testNetwork)
+      })
+    })
+
     describe('harmony delegation interface types', () => {
       it('should create HarmonyDelegationGovernance for harmonyDelegationVoting', () => {
         const result = MemberGovernanceFactory.create({
           address: testAddress,
-          network: testNetwork,
+          network: harmonyNetwork,
           interfaceType: IPluginInterfaceType.harmonyDelegationVoting,
         })
 
         expect(result).to.be.instanceOf(HarmonyDelegationGovernance)
         expect(result?.['address']).to.equal(testAddress)
-        expect(result?.['network']).to.equal(testNetwork)
+        expect(result?.['network']).to.equal(harmonyNetwork)
       })
 
       it('should create HarmonyDelegationGovernance for harmonyHipVoting', () => {
         const result = MemberGovernanceFactory.create({
           address: testAddress,
-          network: testNetwork,
+          network: harmonyNetwork,
           interfaceType: IPluginInterfaceType.harmonyHipVoting,
         })
 
         expect(result).to.be.instanceOf(HarmonyDelegationGovernance)
         expect(result?.['address']).to.equal(testAddress)
-        expect(result?.['network']).to.equal(testNetwork)
+        expect(result?.['network']).to.equal(harmonyNetwork)
       })
 
       it('should create HarmonyDelegationGovernance for harmonyVoting', () => {
         const result = MemberGovernanceFactory.create({
           address: testAddress,
-          network: testNetwork,
+          network: harmonyNetwork,
           interfaceType: IPluginInterfaceType.harmonyVoting,
         })
 
         expect(result).to.be.instanceOf(HarmonyDelegationGovernance)
         expect(result?.['address']).to.equal(testAddress)
-        expect(result?.['network']).to.equal(testNetwork)
+        expect(result?.['network']).to.equal(harmonyNetwork)
+      })
+
+      it('should reject Harmony delegation governance outside Harmony networks', () => {
+        expect(() => {
+          MemberGovernanceFactory.create({
+            address: testAddress,
+            network: testNetwork,
+            interfaceType: IPluginInterfaceType.harmonyVoting,
+          })
+        }).to.throw(`Plugin ${IPluginInterfaceType.harmonyVoting} is not supported on ${testNetwork}`)
       })
     })
 
@@ -242,8 +267,6 @@ describe('Governance:GovernanceFactory', () => {
             interfaceType: IPluginInterfaceType.spp,
           })
         }).to.throw('Unsupported plugin interface type')
-
-        expect(loggerWarnStub.calledWith('Unsupported plugin interface type, returning null')).to.be.true
       })
 
       it('should throw error for unknown interface type', () => {
@@ -254,8 +277,6 @@ describe('Governance:GovernanceFactory', () => {
             interfaceType: IPluginInterfaceType.unknown,
           })
         }).to.throw('Unsupported plugin interface type')
-
-        expect(loggerWarnStub.calledWith('Unsupported plugin interface type, returning null')).to.be.true
       })
 
       it('should throw error for undefined interface type', () => {
@@ -266,8 +287,6 @@ describe('Governance:GovernanceFactory', () => {
             interfaceType: 'invalid' as any,
           })
         }).to.throw('Unsupported plugin interface type')
-
-        expect(loggerWarnStub.calledWith('Unsupported plugin interface type, returning null')).to.be.true
       })
     })
   })
@@ -408,9 +427,25 @@ describe('Governance:GovernanceFactory', () => {
       })
     })
 
+    describe('nativeTokenVoting plugins', () => {
+      it('should create Erc20Governance for nativeTokenVoting plugin', () => {
+        const plugin = createPlugin({
+          interfaceType: IPluginInterfaceType.nativeTokenVoting,
+          tokenAddress: testAddress,
+        })
+
+        const result = MemberGovernanceFactory.createFromPlugin(plugin as any)
+
+        expect(result).to.be.instanceOf(Erc20Governance)
+        expect(result?.['address']).to.equal(testAddress)
+        expect(result?.['network']).to.equal(testNetwork)
+      })
+    })
+
     describe('harmony delegation plugins', () => {
       it('should create HarmonyDelegationGovernance for harmonyDelegationVoting plugin', () => {
         const plugin = createPlugin({
+          network: harmonyNetwork,
           interfaceType: IPluginInterfaceType.harmonyDelegationVoting,
         })
 
@@ -418,11 +453,12 @@ describe('Governance:GovernanceFactory', () => {
 
         expect(result).to.be.instanceOf(HarmonyDelegationGovernance)
         expect(result?.['address']).to.equal(testAddress)
-        expect(result?.['network']).to.equal(testNetwork)
+        expect(result?.['network']).to.equal(harmonyNetwork)
       })
 
       it('should create HarmonyDelegationGovernance for harmonyHipVoting plugin', () => {
         const plugin = createPlugin({
+          network: harmonyNetwork,
           interfaceType: IPluginInterfaceType.harmonyHipVoting,
         })
 
@@ -430,11 +466,12 @@ describe('Governance:GovernanceFactory', () => {
 
         expect(result).to.be.instanceOf(HarmonyDelegationGovernance)
         expect(result?.['address']).to.equal(testAddress)
-        expect(result?.['network']).to.equal(testNetwork)
+        expect(result?.['network']).to.equal(harmonyNetwork)
       })
 
       it('should create HarmonyDelegationGovernance for harmonyVoting plugin', () => {
         const plugin = createPlugin({
+          network: harmonyNetwork,
           interfaceType: IPluginInterfaceType.harmonyVoting,
         })
 
@@ -442,7 +479,7 @@ describe('Governance:GovernanceFactory', () => {
 
         expect(result).to.be.instanceOf(HarmonyDelegationGovernance)
         expect(result?.['address']).to.equal(testAddress)
-        expect(result?.['network']).to.equal(testNetwork)
+        expect(result?.['network']).to.equal(harmonyNetwork)
       })
     })
 

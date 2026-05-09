@@ -17,7 +17,7 @@ import PairDataModule from '@modules/pairData'
 import RabbitMQHelper from '@helpers/rabbitMQ'
 import config from '@config'
 import { MemberGovernanceFactory } from '@src/governance'
-import { HarmonyDelegationGovernance } from '@src/governance'
+import { HarmonyDelegationGovernance } from '@src/chains/adapters/harmony'
 import ModelUtils from '@models/utils/models'
 import logger from '@logger'
 

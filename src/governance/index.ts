@@ -8,12 +8,12 @@ import { MultisigGovernance } from './multisigGovernance'
 import { AdminGovernance } from './adminGovernance'
 import { CapitalDistributorGovernance } from './capitalDistributorGovernance'
 import { GaugeGovernance } from './gaugeGovernance'
-import { HarmonyDelegationGovernance } from './harmonyDelegationGovernance'
 import Web3Utils from '@helpers/web3Utils'
 import DbTx from '@modules/dbTx'
 import type Member from '@models/schema/member'
 import type Plugin from '@models/schema/plugin'
 import logger from '@logger'
+import { governanceAdapterRegistry, type GovernanceInstance } from './adapters'
 
 export { BaseGovernance }
 export { PluginGovernance }
@@ -24,19 +24,11 @@ export { MultisigGovernance }
 export { AdminGovernance }
 export { CapitalDistributorGovernance }
 export { GaugeGovernance }
-export { HarmonyDelegationGovernance }
+export * from './adapters'
 
 const llo = logger.logMeta.bind(null, { service: 'MemberGovernanceFactory' })
 
-type GovernanceType =
-  | VeGovernance
-  | Erc20Governance
-  | LockToVoteGovernance
-  | MultisigGovernance
-  | AdminGovernance
-  | CapitalDistributorGovernance
-  | GaugeGovernance
-  | HarmonyDelegationGovernance
+type GovernanceType = GovernanceInstance
 
 /**
  * Factory class for creating governance instances based on plugin interface type.
@@ -96,6 +88,16 @@ export class MemberGovernanceFactory {
             interfaceType: IPluginInterfaceType.tokenVoting,
           })
         }
+
+        throw new Error(`Unsupported plugin interface type: ${plugin.interfaceType}`)
+      }
+
+      if (plugin.interfaceType === IPluginInterfaceType.nativeTokenVoting) {
+        return MemberGovernanceFactory.create({
+          address: plugin.tokenAddress || plugin.address,
+          network: plugin.network,
+          interfaceType: IPluginInterfaceType.nativeTokenVoting,
+        })
       }
 
       if (plugin.interfaceType === IPluginInterfaceType.gauge) {
@@ -141,21 +143,11 @@ export class MemberGovernanceFactory {
         })
       }
 
-      // Harmony validator-delegation based governance
-      if (
-        plugin.interfaceType === IPluginInterfaceType.harmonyDelegationVoting ||
-        plugin.interfaceType === IPluginInterfaceType.harmonyHipVoting ||
-        plugin.interfaceType === IPluginInterfaceType.harmonyVoting
-      ) {
-        return MemberGovernanceFactory.create({
-          address: plugin.address,
-          network: plugin.network,
-          interfaceType: plugin.interfaceType,
-        })
-      }
-
-      // If we reach here, the plugin type is not supported
-      throw new Error(`Unsupported plugin interface type: ${plugin.interfaceType}`)
+      return MemberGovernanceFactory.create({
+        address: plugin.address,
+        network: plugin.network,
+        interfaceType: plugin.interfaceType,
+      })
     } catch (error) {
       logger.warn('Unable to create governance from plugin', llo({ plugin, error }))
       throw error
@@ -171,49 +163,7 @@ export class MemberGovernanceFactory {
       escrowAdapterAddress?: HexAddress
     }
   }): GovernanceType {
-    switch (params.interfaceType) {
-      case IPluginInterfaceType.tokenVoting:
-        switch (params.tokenType) {
-          case ITokenType.escrowAdapter:
-            // the address is the escrowAddress
-            return new VeGovernance(params.address, params.network, params.extraParams)
-          default:
-            // the address is the tokenAddress
-            return new Erc20Governance(params.address, params.network)
-        }
-
-      case IPluginInterfaceType.lockToVote:
-        // the address is the lockManagerAddress
-        return new LockToVoteGovernance(params.address, params.network)
-
-      case IPluginInterfaceType.multisig:
-        // the address is the pluginAddress
-        return new MultisigGovernance(params.address, params.network)
-
-      case IPluginInterfaceType.admin:
-        // the address is the pluginAddress
-        return new AdminGovernance(params.address, params.network)
-
-      case IPluginInterfaceType.capitalDistributor:
-        // the address is the pluginAddress
-        return new CapitalDistributorGovernance(params.address, params.network)
-
-      case IPluginInterfaceType.gauge:
-        // the address is the pluginAddress
-        return new GaugeGovernance(params.address, params.network)
-
-      case IPluginInterfaceType.harmonyDelegationVoting:
-      case IPluginInterfaceType.harmonyHipVoting:
-      case IPluginInterfaceType.harmonyVoting:
-        // the address is the pluginAddress
-        return new HarmonyDelegationGovernance(params.address, params.network)
-
-      case IPluginInterfaceType.spp:
-      case IPluginInterfaceType.unknown:
-      default:
-        logger.warn('Unsupported plugin interface type, returning null', llo(params))
-        throw new Error('Unsupported plugin interface type')
-    }
+    return governanceAdapterRegistry.create(params)
   }
 
   /**

@@ -2,6 +2,7 @@ import logger from '@logger'
 import Web3Helper from '@helpers/web3'
 import { Models } from '@dbModels'
 import { NetworksEnum } from '@types'
+import { axodusChainRegistry } from '@src/chains'
 
 const llo = logger.logMeta.bind(null, { service: 'helpers:ReorgDetection' })
 
@@ -17,9 +18,8 @@ interface ReorgCheckResult {
  */
 export class ReorgDetectionHelper {
   private static normalizeNetwork(network: NetworksEnum | string): NetworksEnum | null {
-    if (Object.values(NetworksEnum).includes(network as NetworksEnum)) {
-      return network as NetworksEnum
-    }
+    const registryEntry = axodusChainRegistry.byNetwork(network)
+    if (registryEntry) return registryEntry.network
 
     const normalized = network.toLowerCase()
     const legacyMap: Record<string, NetworksEnum> = {
@@ -101,25 +101,19 @@ export class ReorgDetectionHelper {
    * @returns Number of confirmation blocks
    */
   static getConfirmationThreshold(network: string): number {
-    // Harmony finality: ~2 epochs = ~7200 blocks (assuming 2s block time, 2 epochs = ~4 hours)
-    // For faster UX, we use ~100 blocks (~3.3 minutes) as confirmation threshold
-    const confirmationMap: Record<string, number> = {
-      // Current NetworksEnum values
-      'harmony-mainnet': 100,
-      'harmony-testnet': 50,
-      'ethereum-mainnet': 12,
-      'ethereum-sepolia': 12,
-      'polygon-mainnet': 128,
+    const registryEntry = axodusChainRegistry.byNetwork(network)
+    if (registryEntry) return registryEntry.finality.confirmationBlocks
 
-      // Legacy aliases kept for backward compatibility
-      harmony: 100,
-      ethereum: 12,
-      polygon: 128,
-      goerli: 12,
-      sepolia: 12,
+    const legacyMap: Record<string, string> = {
+      harmony: NetworksEnum.harmonyMainnet,
+      ethereum: NetworksEnum.ethereumMainnet,
+      polygon: NetworksEnum.polygonMainnet,
+      goerli: NetworksEnum.ethereumSepolia,
+      sepolia: NetworksEnum.ethereumSepolia,
     }
 
-    return confirmationMap[network.toLowerCase()] || 12
+    const legacyNetwork = legacyMap[network.toLowerCase()]
+    return legacyNetwork ? (axodusChainRegistry.byNetwork(legacyNetwork)?.finality.confirmationBlocks ?? 12) : 12
   }
 
   /**
