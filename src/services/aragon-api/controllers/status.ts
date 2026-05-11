@@ -27,6 +27,7 @@ const getIndexingStatus = (chain: ChainRegistryEntry) => {
       requested,
       rpcConfigured,
       status: 'disabled',
+      reasonCode: 'INDEXER_STATE_NOT_READY',
       message: 'Chain is present in the Axodus registry but is not enabled in SUPPORTED_NETWORKS.',
     }
   }
@@ -36,6 +37,7 @@ const getIndexingStatus = (chain: ChainRegistryEntry) => {
       requested,
       rpcConfigured,
       status: 'notConfigured',
+      reasonCode: 'INDEXER_STATE_NOT_READY',
       message: 'Chain is enabled but no RPC provider is configured for indexing.',
     }
   }
@@ -44,6 +46,7 @@ const getIndexingStatus = (chain: ChainRegistryEntry) => {
     requested,
     rpcConfigured,
     status: 'configured',
+    reasonCode: null,
     message: 'Chain is enabled and has at least one RPC provider available for indexing.',
   }
 }

@@ -39,9 +39,16 @@ describe('Controller: Status', () => {
 
     expect(tokenVoting).to.exist
     expect(harmonyVoting).to.exist
+    expect(sepolia?.capabilities.governanceNuclei).to.deep.equal(['constitutional', 'local'])
+    expect(sepolia?.capabilities.constitutionalCompatibility.reasonCodes).to.deep.equal([])
+    expect(sepolia?.capabilities.localGovernanceModels).to.include('auto-generated-platform-token')
     expect(tokenVoting?.actions.vote).to.equal(true)
     expect(tokenVoting?.executionModes).to.include('federal')
+    expect(tokenVoting?.constitutionalCompatibility.status).to.equal('compatible')
     expect(sepolia?.indexingStatus.status).to.be.oneOf(['configured', 'notConfigured', 'disabled'])
+    if (sepolia?.indexingStatus.status !== 'configured') {
+      expect(sepolia?.indexingStatus.reasonCode).to.equal('INDEXER_STATE_NOT_READY')
+    }
     expect(harmonyVoting?.legacy).to.equal(true)
   })
 })

@@ -8,6 +8,8 @@ export type ChainEnvironment = 'mainnet' | 'testnet' | 'local'
 
 export type ChainAdapterKey = 'evm' | 'harmony'
 
+export type GovernanceNucleus = 'constitutional' | 'local'
+
 export type GovernancePluginAction = 'createProposal' | 'vote' | 'execute' | 'settings'
 
 export type VotingPowerStrategy =
@@ -23,6 +25,24 @@ export type VotingPowerStrategy =
   | 'harmony-delegation-snapshot'
 
 export type GovernanceExecutionMode = 'direct' | 'remote' | 'federal' | 'legacy-adapter'
+
+export type ConstitutionalCompatibilityStatus = 'compatible' | 'requires-review' | 'incompatible'
+
+export type ConstitutionalGuardrailReasonCode =
+  | 'CHAIN_NOT_CONSTITUTIONALLY_ENABLED'
+  | 'PLUGIN_CAPABILITY_NOT_REGISTERED'
+  | 'LOCAL_GOVERNANCE_MODEL_INCOMPATIBLE'
+  | 'TREASURY_POLICY_REQUIRES_REVIEW'
+  | 'EXECUTION_CHAIN_NOT_AUTHORIZED'
+  | 'VOTING_POWER_SOURCE_NOT_VERIFIED'
+  | 'INDEXER_STATE_NOT_READY'
+  | 'REMOTE_EXECUTION_GUARDRAIL_ACTIVE'
+  | 'AGENT_PERMISSION_SCOPE_EXCEEDED'
+
+export interface ConstitutionalCompatibility {
+  readonly status: ConstitutionalCompatibilityStatus
+  readonly reasonCodes: readonly ConstitutionalGuardrailReasonCode[]
+}
 
 export type ChainConfigKey =
   | 'ETHEREUM_MAINNET'
@@ -71,6 +91,9 @@ export interface ChainCapabilities {
   readonly treasury: boolean
   readonly remoteExecution: boolean
   readonly constitutionalConditions: boolean
+  readonly governanceNuclei: readonly GovernanceNucleus[]
+  readonly constitutionalCompatibility: ConstitutionalCompatibility
+  readonly localGovernanceModels: readonly string[]
   readonly supportedPluginTypes: readonly IPluginInterfaceType[]
   readonly pluginCapabilities: Readonly<Partial<Record<IPluginInterfaceType, GovernancePluginCapability>>>
 }
@@ -79,10 +102,12 @@ export interface GovernancePluginCapability {
   readonly interfaceType: IPluginInterfaceType
   readonly label: string
   readonly adapter: ChainAdapterKey
+  readonly governanceNucleus: GovernanceNucleus
   readonly actions: Readonly<Record<GovernancePluginAction, boolean>>
   readonly executionModes: readonly GovernanceExecutionMode[]
   readonly votingPowerStrategy: VotingPowerStrategy
   readonly compatibleRoles: readonly ChainRole[]
+  readonly constitutionalCompatibility: ConstitutionalCompatibility
   readonly requiresDeployment: boolean
   readonly requiresIndexer: boolean
   readonly legacy?: boolean
