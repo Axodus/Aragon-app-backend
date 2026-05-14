@@ -24,10 +24,19 @@ describe('Chains:AxodusChainRegistry', () => {
     expect(sepolia?.adapter).to.equal('evm')
     expect(sepolia?.capabilities.remoteExecution).to.equal(true)
     expect(sepolia?.capabilities.governanceNuclei).to.deep.equal(['constitutional', 'local'])
+    expect(sepolia?.governanceStatus).to.equal('compliant')
+    expect(sepolia?.federationMember).to.equal(true)
+    expect(sepolia?.federationTier).to.equal('root')
+    expect(sepolia?.capabilities.constitutionalStanding.status).to.equal('compliant')
     expect(sepolia?.capabilities.constitutionalCompatibility.status).to.equal('compatible')
     expect(sepolia?.capabilities.localGovernanceModels).to.include('$Neurons')
     expect(sepolia?.capabilities.localGovernanceModels).to.include('plugin-defined')
     expect(harmony?.legacyHarmonyAdapter).to.equal(true)
+    expect(harmony?.governanceStatus).to.equal('under-review')
+    expect(harmony?.federationTier).to.equal('observer')
+    expect(harmony?.capabilities.constitutionalStanding.reasonCodes).to.deep.equal([
+      'REMOTE_EXECUTION_GUARDRAIL_ACTIVE',
+    ])
     expect(harmony?.roles).to.not.include('execution')
   })
 
@@ -69,6 +78,8 @@ describe('Chains:AxodusChainRegistry', () => {
     expect(tokenVoting?.actions.execute).to.equal(true)
     expect(tokenVoting?.executionModes).to.include('federal')
     expect(tokenVoting?.governanceNucleus).to.equal('local')
+    expect(tokenVoting?.governanceStatus).to.equal('compliant')
+    expect(tokenVoting?.constitutionalStanding.status).to.equal('compliant')
     expect(tokenVoting?.constitutionalCompatibility.status).to.equal('compatible')
     expect(harmonyVoting?.legacy).to.equal(true)
     expect(harmonyVoting?.votingPowerStrategy).to.equal('harmony-validator-snapshot')

@@ -1,9 +1,37 @@
-import type { ChainRegistryEntry, ChainRole, ConstitutionalCompatibility, GovernancePluginCapability } from '../types'
+import type {
+  ChainRegistryEntry,
+  ChainRole,
+  ConstitutionalCompatibility,
+  ConstitutionalStanding,
+  FederationTier,
+  GovernancePluginCapability,
+  GovernanceStatus,
+} from '../types'
 import { IPluginInterfaceType, NetworksEnum } from '@types'
 
 const compatible: ConstitutionalCompatibility = {
   status: 'compatible',
   reasonCodes: [],
+}
+
+const compliantStanding: ConstitutionalStanding = {
+  status: 'compliant',
+  reasonCodes: [],
+  reasonSeverity: null,
+}
+
+const harmonyObserverStanding: ConstitutionalStanding = {
+  status: 'under-review',
+  reasonCodes: ['REMOTE_EXECUTION_GUARDRAIL_ACTIVE'],
+  reasonSeverity: 'constitutional',
+}
+
+const governanceStatusFromStanding = (standing: ConstitutionalStanding): GovernanceStatus => standing.status
+
+const federationTierForRoles = (roles: readonly ChainRole[], legacyHarmonyAdapter?: boolean): FederationTier => {
+  if (roles.includes('execution')) return 'root'
+  if (legacyHarmonyAdapter) return 'observer'
+  return 'partner'
 }
 
 const evmPluginCapabilities: Readonly<Partial<Record<IPluginInterfaceType, GovernancePluginCapability>>> = {
@@ -17,6 +45,8 @@ const evmPluginCapabilities: Readonly<Partial<Record<IPluginInterfaceType, Gover
     votingPowerStrategy: 'erc20-votes',
     compatibleRoles: ['execution', 'voting', 'spoke'],
     constitutionalCompatibility: compatible,
+    constitutionalStanding: compliantStanding,
+    governanceStatus: 'compliant',
     requiresDeployment: true,
     requiresIndexer: true,
   },
@@ -30,6 +60,8 @@ const evmPluginCapabilities: Readonly<Partial<Record<IPluginInterfaceType, Gover
     votingPowerStrategy: 'native-token-adapter',
     compatibleRoles: ['execution', 'voting', 'spoke'],
     constitutionalCompatibility: compatible,
+    constitutionalStanding: compliantStanding,
+    governanceStatus: 'compliant',
     requiresDeployment: true,
     requiresIndexer: true,
   },
@@ -43,6 +75,8 @@ const evmPluginCapabilities: Readonly<Partial<Record<IPluginInterfaceType, Gover
     votingPowerStrategy: 'multisig-membership',
     compatibleRoles: ['execution', 'voting', 'spoke'],
     constitutionalCompatibility: compatible,
+    constitutionalStanding: compliantStanding,
+    governanceStatus: 'compliant',
     requiresDeployment: true,
     requiresIndexer: true,
   },
@@ -56,6 +90,8 @@ const evmPluginCapabilities: Readonly<Partial<Record<IPluginInterfaceType, Gover
     votingPowerStrategy: 'admin-permission',
     compatibleRoles: ['execution', 'spoke'],
     constitutionalCompatibility: compatible,
+    constitutionalStanding: compliantStanding,
+    governanceStatus: 'compliant',
     requiresDeployment: true,
     requiresIndexer: true,
   },
@@ -69,6 +105,8 @@ const evmPluginCapabilities: Readonly<Partial<Record<IPluginInterfaceType, Gover
     votingPowerStrategy: 'lock-to-vote',
     compatibleRoles: ['execution', 'voting', 'spoke'],
     constitutionalCompatibility: compatible,
+    constitutionalStanding: compliantStanding,
+    governanceStatus: 'compliant',
     requiresDeployment: true,
     requiresIndexer: true,
   },
@@ -82,6 +120,8 @@ const evmPluginCapabilities: Readonly<Partial<Record<IPluginInterfaceType, Gover
     votingPowerStrategy: 'gauge-weight',
     compatibleRoles: ['execution', 'voting', 'spoke'],
     constitutionalCompatibility: compatible,
+    constitutionalStanding: compliantStanding,
+    governanceStatus: 'compliant',
     requiresDeployment: true,
     requiresIndexer: true,
   },
@@ -95,6 +135,8 @@ const evmPluginCapabilities: Readonly<Partial<Record<IPluginInterfaceType, Gover
     votingPowerStrategy: 'treasury-policy',
     compatibleRoles: ['execution', 'spoke'],
     constitutionalCompatibility: compatible,
+    constitutionalStanding: compliantStanding,
+    governanceStatus: 'compliant',
     requiresDeployment: true,
     requiresIndexer: true,
   },
@@ -108,6 +150,8 @@ const evmPluginCapabilities: Readonly<Partial<Record<IPluginInterfaceType, Gover
     votingPowerStrategy: 'staged-proposal',
     compatibleRoles: ['execution', 'spoke'],
     constitutionalCompatibility: compatible,
+    constitutionalStanding: compliantStanding,
+    governanceStatus: 'compliant',
     requiresDeployment: true,
     requiresIndexer: true,
   },
@@ -124,6 +168,8 @@ const harmonyPluginCapabilities: Readonly<Partial<Record<IPluginInterfaceType, G
     votingPowerStrategy: 'erc20-votes',
     compatibleRoles: ['voting', 'spoke'],
     constitutionalCompatibility: compatible,
+    constitutionalStanding: compliantStanding,
+    governanceStatus: 'compliant',
     requiresDeployment: true,
     requiresIndexer: true,
     legacy: true,
@@ -138,6 +184,8 @@ const harmonyPluginCapabilities: Readonly<Partial<Record<IPluginInterfaceType, G
     votingPowerStrategy: 'native-token-adapter',
     compatibleRoles: ['voting', 'spoke'],
     constitutionalCompatibility: compatible,
+    constitutionalStanding: compliantStanding,
+    governanceStatus: 'compliant',
     requiresDeployment: true,
     requiresIndexer: true,
     legacy: true,
@@ -152,6 +200,8 @@ const harmonyPluginCapabilities: Readonly<Partial<Record<IPluginInterfaceType, G
     votingPowerStrategy: 'multisig-membership',
     compatibleRoles: ['voting', 'spoke'],
     constitutionalCompatibility: compatible,
+    constitutionalStanding: compliantStanding,
+    governanceStatus: 'compliant',
     requiresDeployment: true,
     requiresIndexer: true,
     legacy: true,
@@ -166,6 +216,8 @@ const harmonyPluginCapabilities: Readonly<Partial<Record<IPluginInterfaceType, G
     votingPowerStrategy: 'admin-permission',
     compatibleRoles: ['spoke'],
     constitutionalCompatibility: compatible,
+    constitutionalStanding: compliantStanding,
+    governanceStatus: 'compliant',
     requiresDeployment: true,
     requiresIndexer: true,
     legacy: true,
@@ -180,6 +232,8 @@ const harmonyPluginCapabilities: Readonly<Partial<Record<IPluginInterfaceType, G
     votingPowerStrategy: 'harmony-validator-snapshot',
     compatibleRoles: ['voting', 'spoke'],
     constitutionalCompatibility: compatible,
+    constitutionalStanding: compliantStanding,
+    governanceStatus: 'compliant',
     requiresDeployment: true,
     requiresIndexer: true,
     legacy: true,
@@ -194,6 +248,8 @@ const harmonyPluginCapabilities: Readonly<Partial<Record<IPluginInterfaceType, G
     votingPowerStrategy: 'harmony-validator-snapshot',
     compatibleRoles: ['voting', 'spoke'],
     constitutionalCompatibility: compatible,
+    constitutionalStanding: compliantStanding,
+    governanceStatus: 'compliant',
     requiresDeployment: true,
     requiresIndexer: true,
     legacy: true,
@@ -208,6 +264,8 @@ const harmonyPluginCapabilities: Readonly<Partial<Record<IPluginInterfaceType, G
     votingPowerStrategy: 'harmony-delegation-snapshot',
     compatibleRoles: ['voting', 'spoke'],
     constitutionalCompatibility: compatible,
+    constitutionalStanding: compliantStanding,
+    governanceStatus: 'compliant',
     requiresDeployment: true,
     requiresIndexer: true,
     legacy: true,
@@ -226,6 +284,7 @@ const chainCapabilities = ({
   constitutionalConditions,
   localGovernanceModels,
   pluginCapabilities,
+  constitutionalStanding = compliantStanding,
 }: {
   governance: boolean
   voting: boolean
@@ -234,6 +293,7 @@ const chainCapabilities = ({
   constitutionalConditions: boolean
   localGovernanceModels: readonly string[]
   pluginCapabilities: Readonly<Partial<Record<IPluginInterfaceType, GovernancePluginCapability>>>
+  constitutionalStanding?: ConstitutionalStanding
 }) => ({
   governance,
   voting,
@@ -242,6 +302,8 @@ const chainCapabilities = ({
   constitutionalConditions,
   governanceNuclei: ['constitutional', 'local'] as const,
   constitutionalCompatibility: compatible,
+  constitutionalStanding,
+  governanceStatus: governanceStatusFromStanding(constitutionalStanding),
   localGovernanceModels,
   supportedPluginTypes: supportedPluginTypes(pluginCapabilities),
   pluginCapabilities,
@@ -258,6 +320,9 @@ const registry: readonly ChainRegistryEntry[] = [
     adapter: 'evm',
     environment: 'testnet',
     roles: ['execution', 'voting', 'spoke'],
+    governanceStatus: 'compliant',
+    federationMember: true,
+    federationTier: federationTierForRoles(['execution', 'voting', 'spoke']),
     contractConfigFile: 'ethereumSepolia.json',
     nativeCurrency: { symbol: 'ETH', decimals: 18 },
     finality: { confirmationBlocks: 12, reorgWindowBlocks: 96 },
@@ -292,6 +357,9 @@ const registry: readonly ChainRegistryEntry[] = [
     adapter: 'harmony',
     environment: 'mainnet',
     roles: ['voting', 'spoke'],
+    governanceStatus: governanceStatusFromStanding(harmonyObserverStanding),
+    federationMember: true,
+    federationTier: federationTierForRoles(['voting', 'spoke'], true),
     contractConfigFile: 'harmonyMainnet.json',
     legacyHarmonyAdapter: true,
     nativeCurrency: { symbol: 'ONE', decimals: 18 },
@@ -314,6 +382,7 @@ const registry: readonly ChainRegistryEntry[] = [
         'plugin-defined',
       ],
       pluginCapabilities: harmonyPluginCapabilities,
+      constitutionalStanding: harmonyObserverStanding,
     }),
   },
   {
@@ -326,6 +395,9 @@ const registry: readonly ChainRegistryEntry[] = [
     adapter: 'harmony',
     environment: 'testnet',
     roles: ['voting', 'spoke'],
+    governanceStatus: governanceStatusFromStanding(harmonyObserverStanding),
+    federationMember: true,
+    federationTier: federationTierForRoles(['voting', 'spoke'], true),
     contractConfigFile: 'harmonyTestnet.json',
     legacyHarmonyAdapter: true,
     nativeCurrency: { symbol: 'ONE', decimals: 18 },
@@ -348,6 +420,7 @@ const registry: readonly ChainRegistryEntry[] = [
         'plugin-defined',
       ],
       pluginCapabilities: harmonyPluginCapabilities,
+      constitutionalStanding: harmonyObserverStanding,
     }),
   },
   {
@@ -360,6 +433,9 @@ const registry: readonly ChainRegistryEntry[] = [
     adapter: 'evm',
     environment: 'mainnet',
     roles: ['voting', 'spoke'],
+    governanceStatus: 'compliant',
+    federationMember: true,
+    federationTier: federationTierForRoles(['voting', 'spoke']),
     contractConfigFile: 'ethereumMainnet.json',
     nativeCurrency: { symbol: 'ETH', decimals: 18 },
     finality: { confirmationBlocks: 12, reorgWindowBlocks: 96 },
@@ -394,6 +470,9 @@ const registry: readonly ChainRegistryEntry[] = [
     adapter: 'evm',
     environment: 'mainnet',
     roles: ['voting', 'spoke'],
+    governanceStatus: 'compliant',
+    federationMember: true,
+    federationTier: federationTierForRoles(['voting', 'spoke']),
     contractConfigFile: 'baseMainnet.json',
     nativeCurrency: { symbol: 'ETH', decimals: 18 },
     finality: { confirmationBlocks: 30, reorgWindowBlocks: 300 },
@@ -428,6 +507,9 @@ const registry: readonly ChainRegistryEntry[] = [
     adapter: 'evm',
     environment: 'mainnet',
     roles: ['voting', 'spoke'],
+    governanceStatus: 'compliant',
+    federationMember: true,
+    federationTier: federationTierForRoles(['voting', 'spoke']),
     contractConfigFile: 'arbitrumMainnet.json',
     nativeCurrency: { symbol: 'ETH', decimals: 18 },
     finality: { confirmationBlocks: 30, reorgWindowBlocks: 300 },
@@ -462,6 +544,9 @@ const registry: readonly ChainRegistryEntry[] = [
     adapter: 'evm',
     environment: 'mainnet',
     roles: ['voting', 'spoke'],
+    governanceStatus: 'compliant',
+    federationMember: true,
+    federationTier: federationTierForRoles(['voting', 'spoke']),
     contractConfigFile: 'polygonMainnet.json',
     nativeCurrency: { symbol: 'POL', decimals: 18 },
     finality: { confirmationBlocks: 128, reorgWindowBlocks: 512 },

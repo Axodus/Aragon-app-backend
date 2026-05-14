@@ -40,15 +40,38 @@ describe('Controller: Status', () => {
     expect(tokenVoting).to.exist
     expect(harmonyVoting).to.exist
     expect(sepolia?.capabilities.governanceNuclei).to.deep.equal(['constitutional', 'local'])
+    expect(sepolia?.governanceStatus).to.equal('compliant')
+    expect(sepolia?.federationMember).to.equal(true)
+    expect(sepolia?.federationTier).to.equal('root')
+    expect(sepolia?.constitutionalStanding.status).to.equal('compliant')
+    expect(sepolia?.capabilities.constitutionalStanding.status).to.equal('compliant')
     expect(sepolia?.capabilities.constitutionalCompatibility.reasonCodes).to.deep.equal([])
     expect(sepolia?.capabilities.localGovernanceModels).to.include('auto-generated-platform-token')
     expect(tokenVoting?.actions.vote).to.equal(true)
     expect(tokenVoting?.executionModes).to.include('federal')
+    expect(tokenVoting?.constitutionalStanding.status).to.equal('compliant')
     expect(tokenVoting?.constitutionalCompatibility.status).to.equal('compatible')
     expect(sepolia?.indexingStatus.status).to.be.oneOf(['configured', 'notConfigured', 'disabled'])
     if (sepolia?.indexingStatus.status !== 'configured') {
       expect(sepolia?.indexingStatus.reasonCode).to.equal('INDEXER_STATE_NOT_READY')
+      expect(sepolia?.indexingStatus.reasonSeverity).to.equal('warning')
+      expect(sepolia?.guardrailReasons).to.deep.include({
+        reasonCode: 'INDEXER_STATE_NOT_READY',
+        reasonSeverity: 'warning',
+        source: 'indexer readiness',
+        scope: 'Ethereum Sepolia',
+        network: sepolia?.network,
+      })
     }
+    expect(harmony?.governanceStatus).to.equal('under-review')
+    expect(harmony?.federationTier).to.equal('observer')
+    expect(harmony?.guardrailReasons).to.deep.include({
+      reasonCode: 'REMOTE_EXECUTION_GUARDRAIL_ACTIVE',
+      reasonSeverity: 'constitutional',
+      source: 'Constitutional Governance',
+      scope: 'Harmony Mainnet',
+      network: harmony?.network,
+    })
     expect(harmonyVoting?.legacy).to.equal(true)
   })
 })

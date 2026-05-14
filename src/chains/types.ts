@@ -28,6 +28,14 @@ export type GovernanceExecutionMode = 'direct' | 'remote' | 'federal' | 'legacy-
 
 export type ConstitutionalCompatibilityStatus = 'compatible' | 'requires-review' | 'incompatible'
 
+export type ConstitutionalStandingStatus = 'compliant' | 'restricted' | 'sanctioned' | 'suspended' | 'under-review'
+
+export type GovernanceStatus = ConstitutionalStandingStatus
+
+export type FederationTier = 'root' | 'partner' | 'sovereign' | 'restricted' | 'observer'
+
+export type GuardrailReasonSeverity = 'info' | 'warning' | 'critical' | 'constitutional'
+
 export type ConstitutionalGuardrailReasonCode =
   | 'CHAIN_NOT_CONSTITUTIONALLY_ENABLED'
   | 'PLUGIN_CAPABILITY_NOT_REGISTERED'
@@ -42,6 +50,21 @@ export type ConstitutionalGuardrailReasonCode =
 export interface ConstitutionalCompatibility {
   readonly status: ConstitutionalCompatibilityStatus
   readonly reasonCodes: readonly ConstitutionalGuardrailReasonCode[]
+}
+
+export interface ConstitutionalStanding {
+  readonly status: ConstitutionalStandingStatus
+  readonly reasonCodes: readonly ConstitutionalGuardrailReasonCode[]
+  readonly reasonSeverity?: GuardrailReasonSeverity | null
+}
+
+export interface ConstitutionalGuardrailReason {
+  readonly reasonCode: ConstitutionalGuardrailReasonCode
+  readonly reasonSeverity: GuardrailReasonSeverity
+  readonly source: string
+  readonly scope: string
+  readonly network: NetworksEnum
+  readonly pluginType?: IPluginInterfaceType
 }
 
 export type ChainConfigKey =
@@ -93,6 +116,8 @@ export interface ChainCapabilities {
   readonly constitutionalConditions: boolean
   readonly governanceNuclei: readonly GovernanceNucleus[]
   readonly constitutionalCompatibility: ConstitutionalCompatibility
+  readonly constitutionalStanding: ConstitutionalStanding
+  readonly governanceStatus: GovernanceStatus
   readonly localGovernanceModels: readonly string[]
   readonly supportedPluginTypes: readonly IPluginInterfaceType[]
   readonly pluginCapabilities: Readonly<Partial<Record<IPluginInterfaceType, GovernancePluginCapability>>>
@@ -108,6 +133,8 @@ export interface GovernancePluginCapability {
   readonly votingPowerStrategy: VotingPowerStrategy
   readonly compatibleRoles: readonly ChainRole[]
   readonly constitutionalCompatibility: ConstitutionalCompatibility
+  readonly constitutionalStanding: ConstitutionalStanding
+  readonly governanceStatus: GovernanceStatus
   readonly requiresDeployment: boolean
   readonly requiresIndexer: boolean
   readonly legacy?: boolean
@@ -125,6 +152,9 @@ export interface ChainRegistryEntry {
   readonly roles: readonly ChainRole[]
   readonly contractConfigFile?: string
   readonly legacyHarmonyAdapter?: boolean
+  readonly governanceStatus: GovernanceStatus
+  readonly federationMember: boolean
+  readonly federationTier: FederationTier
   readonly nativeCurrency: {
     readonly symbol: string
     readonly decimals: number
