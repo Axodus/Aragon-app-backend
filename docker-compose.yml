@@ -58,6 +58,13 @@ services:
       # Bootstrap mode exposes public/static endpoints such as /registry/chains
       # without requiring MongoDB/RabbitMQ. Set false when running the full indexer stack.
       SERVICES_ARAGON_API_SKIP_CONNECTIONS: ${SERVICES_ARAGON_API_SKIP_CONNECTIONS:-true}
+      MONGO_DB_URI: ${MONGO_DB_URI:-}
+      MONGO_DB_NAME: ${MONGO_DB_NAME:-db-aragon}
+      MONGO_DB_DEBUGGER: ${MONGO_DB_DEBUGGER:-false}
+      MONGO_DB_SYNC_MODELS: ${MONGO_DB_SYNC_MODELS:-false}
+      MONGO_DB_RETRY_CONNECTION_RETRY: ${MONGO_DB_RETRY_CONNECTION_RETRY:-60}
+      MONGO_DB_RETRY_CONNECTION_TIMEOUT: ${MONGO_DB_RETRY_CONNECTION_TIMEOUT:-5000}
+      MONGO_DB_RETRY_CONNECTION_DELAY: ${MONGO_DB_RETRY_CONNECTION_DELAY:-1000}
       SUPPORTED_NETWORKS: ${SUPPORTED_NETWORKS:-ethereum-sepolia,ethereum-mainnet,base-mainnet,arbitrum-mainnet,polygon-mainnet,harmony-mainnet}
     command: >
       bash -c "if [ \"$$SERVICES_ARAGON_API_SKIP_CONNECTIONS\" = \"true\" ];
