@@ -1,4 +1,4 @@
-import { Models } from '@dbModels'
+import { ModelProxy, Models } from '@dbModels'
 import {
   ErrorKeyEnum,
   type IProposalsResponse,
@@ -17,6 +17,7 @@ import config from '@config'
 import logger from '@logger'
 import utils from '@helpers/utils'
 import { PluginSlug as PluginSlugHelper } from '@helpers/pluginSlug'
+import mongoose from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
 
 const llo = logger.logMeta.bind(null, { service: 'ProposalController' })
@@ -42,6 +43,24 @@ const createProposalReceiptMatches = (
   if (filters.status && receipt?.status !== filters.status) return false
   if (filters.daoId && receipt?.observedState?.dao?.id !== filters.daoId) return false
   return true
+}
+
+const getCreateProposalRequestModel = async () => {
+  if (Models.CreateProposalRequest) {
+    return Models.CreateProposalRequest
+  }
+
+  if (mongoose.connection.readyState !== 1) {
+    return null
+  }
+
+  try {
+    await ModelProxy.setMongoModels()
+  } catch (error) {
+    logger.warn('Failed to initialize createProposal request model', llo({ error }))
+  }
+
+  return Models.CreateProposalRequest ?? null
 }
 
 const ProposalController = {
@@ -218,7 +237,7 @@ const ProposalController = {
       request,
     }
 
-    const createProposalRequestModel = Models.CreateProposalRequest
+    const createProposalRequestModel = await getCreateProposalRequestModel()
 
     if (createProposalRequestModel?.create) {
       try {
@@ -249,7 +268,7 @@ const ProposalController = {
   },
 
   getCreateProposalRequest: async (id: string) => {
-    const createProposalRequestModel = Models.CreateProposalRequest
+    const createProposalRequestModel = await getCreateProposalRequestModel()
 
     if (createProposalRequestModel?.findByEntityId) {
       try {
@@ -271,7 +290,7 @@ const ProposalController = {
     daoId?: string
     limit?: number
   }) => {
-    const createProposalRequestModel = Models.CreateProposalRequest
+    const createProposalRequestModel = await getCreateProposalRequestModel()
 
     if (createProposalRequestModel?.listRecent) {
       try {
