@@ -438,6 +438,234 @@ describe('RouterV2: Proposal', () => {
     })
   })
 
+  describe('createProposal', () => {
+    const createProposalBody = {
+      submissionMode: 'backend',
+      dao: {
+        id: 'ethereum-sepolia-0x0eB63a3565942D16C1c1211bD78F1B3Dcfe1A254',
+        address: '0x0eB63a3565942D16C1c1211bD78F1B3Dcfe1A254',
+        name: 'Axodus Executive DAO',
+        governanceStatus: 'compliant',
+        federationTier: 'root',
+      },
+      chain: {
+        network: NetworksEnum.ethereumSepolia,
+        chainId: 11155111,
+        name: 'Ethereum Sepolia',
+        role: 'execution',
+      },
+      creator: {
+        walletAddress: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+      },
+      plugin: {
+        id: 'token-voting',
+        address: '0x0eB63a3565942D16C1c1211bD78F1B3Dcfe1A254',
+        interfaceType: 'token-voting',
+        label: 'Token Voting',
+      },
+      proposal: {
+        title: 'Review treasury policy',
+        summary: 'Route the treasury policy proposal through backend review.',
+        actionType: 'treasury-review',
+        votingStart: null,
+        votingEnd: null,
+        rationale: null,
+      },
+      guardrails: {
+        frontendBoundary: 'UI-generated proposal request preview only.',
+        reasonCodes: [
+          {
+            reasonCode: 'TREASURY_POLICY_REQUIRES_REVIEW',
+            reasonSeverity: 'constitutional',
+            source: 'treasury policy',
+            message: 'Treasury-sensitive proposal drafts require backend review.',
+          },
+        ],
+        requiresBackendValidation: true,
+        requiresIndexerReconciliation: true,
+        noOnchainSubmission: true,
+      },
+    }
+
+    it('Should accept a backend createProposal request for non-on-chain review', async () => {
+      const stubCtrl = sandbox.stub(ProposalController, 'createProposalRequest').resolves({
+        id: 'backend-create-test',
+        status: 'backend-review-queued',
+      } as any)
+
+      const ctx: any = {
+        request: {
+          body: createProposalBody,
+        },
+      }
+
+      await ProposalRouter.createProposal(ctx)
+
+      expect(ctx.status).to.equal(202)
+      expect(ctx.body).to.deep.eq({
+        id: 'backend-create-test',
+        status: 'backend-review-queued',
+      })
+      expect(stubCtrl.calledOnce).to.be.true
+      expect(stubCtrl.args[0]?.[0].creator.walletAddress).to.equal(getAddress(createProposalBody.creator.walletAddress))
+      expect(stubCtrl.args[0]?.[0].guardrails.reasonCodes[0]).to.include({
+        reasonCode: 'TREASURY_POLICY_REQUIRES_REVIEW',
+        reasonSeverity: 'constitutional',
+      })
+    })
+
+    it('Should return reason metadata when createProposal validation fails', async () => {
+      const ctx: any = {
+        request: {
+          body: {
+            ...createProposalBody,
+            proposal: {
+              ...createProposalBody.proposal,
+              title: '',
+            },
+          },
+        },
+      }
+
+      await ProposalRouter.createProposal(ctx)
+
+      expect(ctx.status).to.equal(400)
+      expect(ctx.body.reasonCode).to.equal('CREATE_PROPOSAL_VALIDATION_FAILED')
+      expect(ctx.body.reasonSeverity).to.equal('warning')
+      expect(ctx.body.source).to.equal('backend submission boundary')
+      expect(ctx.body.details.errors[0]).to.include('"proposal.title"')
+    })
+
+    it('Should block on-chain createProposal requests at the backend boundary', async () => {
+      const ctx: any = {
+        request: {
+          body: {
+            ...createProposalBody,
+            submissionMode: 'onchain',
+            guardrails: {
+              ...createProposalBody.guardrails,
+              noOnchainSubmission: false,
+            },
+          },
+        },
+      }
+
+      await ProposalRouter.createProposal(ctx)
+
+      expect(ctx.status).to.equal(409)
+      expect(ctx.body.reasonCode).to.equal('REMOTE_EXECUTION_GUARDRAIL_ACTIVE')
+      expect(ctx.body.reasonSeverity).to.equal('critical')
+    })
+
+    it('Should require a connected wallet before backend createProposal submission', async () => {
+      const ctx: any = {
+        request: {
+          body: {
+            ...createProposalBody,
+            creator: {
+              walletAddress: null,
+            },
+          },
+        },
+      }
+
+      await ProposalRouter.createProposal(ctx)
+
+      expect(ctx.status).to.equal(409)
+      expect(ctx.body.reasonCode).to.equal('WALLET_NOT_CONNECTED')
+      expect(ctx.body.source).to.equal('wallet or DAO permission state')
+    })
+
+    it('Should read observed createProposal request state by id', async () => {
+      sandbox.stub(ProposalController, 'getCreateProposalRequest').resolves({
+        id: 'backend-create-test',
+        status: 'backend-review-queued',
+      } as any)
+
+      const ctx: any = {
+        params: {
+          id: 'backend-create-test',
+        },
+      }
+
+      await ProposalRouter.getCreateProposalRequest(ctx)
+
+      expect(ctx.body).to.deep.eq({
+        id: 'backend-create-test',
+        status: 'backend-review-queued',
+      })
+    })
+
+    it('Should return reason metadata when observed createProposal request is missing', async () => {
+      sandbox.stub(ProposalController, 'getCreateProposalRequest').resolves(null)
+
+      const ctx: any = {
+        params: {
+          id: 'backend-create-missing',
+        },
+      }
+
+      await ProposalRouter.getCreateProposalRequest(ctx)
+
+      expect(ctx.status).to.equal(404)
+      expect(ctx.body.reasonCode).to.equal('CREATE_PROPOSAL_REQUEST_NOT_FOUND')
+    })
+
+    it('Should list observed createProposal review requests', async () => {
+      const stubCtrl = sandbox.stub(ProposalController, 'listCreateProposalRequests').resolves({
+        items: [
+          {
+            id: 'backend-create-test',
+            status: 'backend-review-queued',
+          },
+        ],
+        count: 1,
+        source: 'CreateProposalRequest',
+      } as any)
+
+      const ctx: any = {
+        query: {
+          network: NetworksEnum.ethereumSepolia,
+          status: 'backend-review-queued',
+          limit: '5',
+        },
+      }
+
+      await ProposalRouter.listCreateProposalRequests(ctx)
+
+      expect(stubCtrl.calledOnce).to.be.true
+      expect(stubCtrl.args[0]?.[0]).to.deep.eq({
+        network: NetworksEnum.ethereumSepolia,
+        status: 'backend-review-queued',
+        limit: 5,
+      })
+      expect(ctx.body).to.deep.eq({
+        items: [
+          {
+            id: 'backend-create-test',
+            status: 'backend-review-queued',
+          },
+        ],
+        count: 1,
+        source: 'CreateProposalRequest',
+      })
+    })
+
+    it('Should return reason metadata when createProposal list query validation fails', async () => {
+      const ctx: any = {
+        query: {
+          network: 'unsupported-network',
+        },
+      }
+
+      await ProposalRouter.listCreateProposalRequests(ctx)
+
+      expect(ctx.status).to.equal(400)
+      expect(ctx.body.reasonCode).to.equal('CREATE_PROPOSAL_VALIDATION_FAILED')
+      expect(ctx.body.reasonSeverity).to.equal('warning')
+    })
+  })
+
   describe('canCreateProposal', () => {
     it('Should check if a member can create a proposal', async () => {
       const queryParams = {
