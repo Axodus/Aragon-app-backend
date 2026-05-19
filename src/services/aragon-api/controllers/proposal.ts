@@ -31,17 +31,55 @@ const createProposalReason = (reasonCode: string, reasonSeverity: string, source
   message,
 })
 
+const createProposalStorage = (
+  mode: 'mongo' | 'memory-fallback',
+  source: 'CreateProposalRequest' | 'memory-fallback',
+  reasonCode?: string,
+) => ({
+  mode,
+  source,
+  persisted: mode === 'mongo',
+  reasonCode,
+  reasonSeverity: reasonCode ? 'warning' : 'info',
+  message:
+    mode === 'mongo'
+      ? 'Create proposal review receipt is persisted in Mongo for backend observability.'
+      : 'Create proposal review receipt is stored in memory for this API process only.',
+})
+
+const withCreateProposalStorage = (
+  receipt: any,
+  mode: 'mongo' | 'memory-fallback',
+  source: 'CreateProposalRequest' | 'memory-fallback',
+  reasonCode?: string,
+) => ({
+  ...receipt,
+  storageMode: mode,
+  source,
+  storage: createProposalStorage(mode, source, reasonCode),
+  indexerReconciliation: {
+    ...receipt.indexerReconciliation,
+    source,
+    storageMode: mode,
+    observedRequestId: receipt.id,
+  },
+})
+
 const createProposalReceiptMatches = (
   receipt: any,
   filters: {
     network?: string
     status?: string
     daoId?: string
+    daoAddress?: string
+    chainId?: number
   },
 ) => {
   if (filters.network && receipt?.observedState?.chain?.network !== filters.network) return false
   if (filters.status && receipt?.status !== filters.status) return false
   if (filters.daoId && receipt?.observedState?.dao?.id !== filters.daoId) return false
+  if (filters.daoAddress && receipt?.observedState?.dao?.address !== filters.daoAddress) return false
+  if (filters.chainId && receipt?.observedState?.chain?.chainId !== filters.chainId) return false
   return true
 }
 
@@ -224,6 +262,9 @@ const ProposalController = {
         status: 'pending',
         reasonCode: 'INDEXER_STATE_NOT_READY',
         reasonSeverity: 'info',
+        reconciliationMode: 'review-request-only',
+        source: 'backend-review',
+        observedRequestId: receiptId,
         message: 'Proposal submission is waiting for indexer reconciliation.',
       },
       observedState: {
@@ -241,9 +282,11 @@ const ProposalController = {
 
     if (createProposalRequestModel?.create) {
       try {
+        const persistedReceipt = withCreateProposalStorage(receipt, 'mongo', 'CreateProposalRequest')
         await createProposalRequestModel.create({
           id: receiptId,
           network: request.chain.network,
+          chainId: request.chain?.chainId ?? null,
           status: receipt.status,
           submissionMode: receipt.submissionMode,
           daoId: request.dao?.id ?? null,
@@ -254,17 +297,30 @@ const ProposalController = {
           title: request.proposal.title,
           actionType: request.proposal.actionType,
           request,
-          receipt,
+          receipt: persistedReceipt,
         })
+        return persistedReceipt
       } catch (error) {
         logger.warn('Failed to persist createProposal request; using in-memory fallback', llo({ error, receiptId }))
-        createProposalReceipts.set(receiptId, receipt)
+        const fallbackReceipt = withCreateProposalStorage(
+          receipt,
+          'memory-fallback',
+          'memory-fallback',
+          'CREATE_PROPOSAL_PERSISTENCE_FALLBACK',
+        )
+        createProposalReceipts.set(receiptId, fallbackReceipt)
+        return fallbackReceipt
       }
     } else {
-      createProposalReceipts.set(receiptId, receipt)
+      const fallbackReceipt = withCreateProposalStorage(
+        receipt,
+        'memory-fallback',
+        'memory-fallback',
+        'CREATE_PROPOSAL_PERSISTENCE_FALLBACK',
+      )
+      createProposalReceipts.set(receiptId, fallbackReceipt)
+      return fallbackReceipt
     }
-
-    return receipt
   },
 
   getCreateProposalRequest: async (id: string) => {
@@ -274,7 +330,7 @@ const ProposalController = {
       try {
         const storedRequest = await createProposalRequestModel.findByEntityId(id)
         if (storedRequest?.receipt) {
-          return storedRequest.receipt
+          return withCreateProposalStorage(storedRequest.receipt, 'mongo', 'CreateProposalRequest')
         }
       } catch (error) {
         logger.warn('Failed to read persisted createProposal request; using in-memory fallback', llo({ error, id }))
@@ -288,6 +344,8 @@ const ProposalController = {
     network?: string
     status?: string
     daoId?: string
+    daoAddress?: string
+    chainId?: number
     limit?: number
   }) => {
     const createProposalRequestModel = await getCreateProposalRequestModel()
@@ -296,9 +354,14 @@ const ProposalController = {
       try {
         const storedRequests = await createProposalRequestModel.listRecent(filters)
         return {
-          items: storedRequests.map((request: any) => request.receipt).filter(Boolean),
+          items: storedRequests
+            .map((request: any) =>
+              request.receipt ? withCreateProposalStorage(request.receipt, 'mongo', 'CreateProposalRequest') : null,
+            )
+            .filter(Boolean),
           count: storedRequests.length,
           source: 'CreateProposalRequest',
+          storageMode: 'mongo',
         }
       } catch (error) {
         logger.warn(
@@ -318,6 +381,7 @@ const ProposalController = {
       items,
       count: items.length,
       source: 'memory-fallback',
+      storageMode: 'memory-fallback',
     }
   },
 

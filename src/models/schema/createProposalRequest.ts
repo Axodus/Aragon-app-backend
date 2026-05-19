@@ -22,12 +22,16 @@ const customName = ICollectionNames.CreateProposalRequest
 @index({ network: 1, createdAt: -1 })
 @index({ status: 1, createdAt: -1 })
 @index({ daoId: 1, createdAt: -1 })
+@index({ daoAddress: 1, createdAt: -1 })
 export default class CreateProposalRequest extends Model {
   @prop({ type: () => String, required: true, unique: true })
   public id!: string
 
   @prop({ type: () => String, enum: NetworksEnum, required: true })
   public network!: NetworksEnum
+
+  @prop({ type: () => Number, default: null })
+  public chainId!: number | null
 
   @prop({ type: () => String, required: true })
   public status!: string
@@ -82,16 +86,20 @@ export default class CreateProposalRequest extends Model {
   static async listRecent(
     params: {
       network?: NetworksEnum
+      chainId?: number
       status?: string
       daoId?: string
+      daoAddress?: string
       limit?: number
     } = {},
   ) {
     const query: Record<string, any> = {}
 
     if (params.network) query.network = params.network
+    if (params.chainId) query.chainId = params.chainId
     if (params.status) query.status = params.status
     if (params.daoId) query.daoId = params.daoId
+    if (params.daoAddress) query.daoAddress = params.daoAddress
 
     const limit = Math.min(Math.max(params.limit ?? 20, 1), 100)
 
@@ -99,7 +107,7 @@ export default class CreateProposalRequest extends Model {
       .sort({ createdAt: -1 })
       .limit(limit)
       .select(
-        'id network status submissionMode daoId pluginId creatorAddress title actionType receipt createdAt updatedAt',
+        'id network chainId status submissionMode daoId daoAddress pluginId creatorAddress title actionType receipt createdAt updatedAt',
       )
       .exec()
   }

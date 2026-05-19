@@ -2,6 +2,9 @@ import type {
   ChainRegistryEntry,
   ChainRole,
   ConstitutionalCompatibility,
+  ConstitutionalCondition,
+  ConstitutionalExecutionAuthority,
+  ConstitutionalGovernanceLayer,
   ConstitutionalStanding,
   FederationTier,
   GovernancePluginCapability,
@@ -32,6 +35,232 @@ const federationTierForRoles = (roles: readonly ChainRole[], legacyHarmonyAdapte
   if (roles.includes('execution')) return 'root'
   if (legacyHarmonyAdapter) return 'observer'
   return 'partner'
+}
+
+const executionAuthorityForRoles = (
+  roles: readonly ChainRole[],
+  remoteExecution: boolean,
+  legacyHarmonyAdapter?: boolean,
+): ConstitutionalExecutionAuthority => {
+  if (roles.includes('execution')) return 'constitutional-root'
+  if (legacyHarmonyAdapter) return 'legacy-voting-adapter'
+  if (remoteExecution) return 'federated-spoke'
+  return 'not-authorized'
+}
+
+const constitutionalLayer = ({
+  roles,
+  federationTier,
+  federationMember,
+  governance,
+  voting,
+  treasury,
+  remoteExecution,
+  constitutionalConditions,
+  constitutionalStanding,
+  legacyHarmonyAdapter = false,
+}: {
+  roles: readonly ChainRole[]
+  federationTier: FederationTier
+  federationMember: boolean
+  governance: boolean
+  voting: boolean
+  treasury: boolean
+  remoteExecution: boolean
+  constitutionalConditions: boolean
+  constitutionalStanding: ConstitutionalStanding
+  legacyHarmonyAdapter?: boolean
+}): ConstitutionalGovernanceLayer => {
+  const executionChainAuthorized = roles.includes('execution')
+  const executionReasonCodes = executionChainAuthorized ? [] : ['EXECUTION_CHAIN_NOT_AUTHORIZED' as const]
+  const legacyReasonCodes = legacyHarmonyAdapter ? ['REMOTE_EXECUTION_GUARDRAIL_ACTIVE' as const] : []
+  const standingReasonCodes = constitutionalStanding.reasonCodes
+  const conditionReasonCodes = Array.from(
+    new Set([...executionReasonCodes, ...legacyReasonCodes, ...standingReasonCodes]),
+  )
+  const conditionSeverity =
+    conditionReasonCodes.length > 0 ? (constitutionalStanding.reasonSeverity ?? 'constitutional') : null
+
+  const executionModes = [
+    ...(executionChainAuthorized ? (['direct', 'federal'] as const) : []),
+    ...(remoteExecution ? (['remote'] as const) : []),
+    ...(legacyHarmonyAdapter ? (['legacy-adapter'] as const) : []),
+  ]
+
+  const executionChainCondition: ConstitutionalCondition = {
+    key: 'execution-chain-authorized',
+    label: 'Execution chain authorization',
+    status: executionChainAuthorized ? 'satisfied' : 'restricted',
+    source: 'Constitutional Governance',
+    reasonCodes: executionReasonCodes,
+    reasonSeverity: executionReasonCodes.length > 0 ? 'constitutional' : null,
+  }
+
+  return {
+    capabilities: [
+      {
+        key: 'federal-standards',
+        label: 'Federal standards',
+        enabled: governance,
+        source: 'Constitutional Governance',
+        reasonCodes: governance ? [] : ['CHAIN_NOT_CONSTITUTIONALLY_ENABLED'],
+        reasonSeverity: governance ? null : 'constitutional',
+      },
+      {
+        key: 'chain-capabilities',
+        label: 'Chain capabilities',
+        enabled: governance || voting || treasury || remoteExecution,
+        source: 'Constitutional Governance',
+        reasonCodes: [],
+        reasonSeverity: null,
+      },
+      {
+        key: 'plugin-capabilities',
+        label: 'Plugin capabilities',
+        enabled: governance,
+        source: 'Constitutional Governance',
+        reasonCodes: governance ? [] : ['PLUGIN_CAPABILITY_NOT_REGISTERED'],
+        reasonSeverity: governance ? null : 'warning',
+      },
+      {
+        key: 'constitutional-conditions',
+        label: 'Constitutional conditions',
+        enabled: constitutionalConditions,
+        source: 'Constitutional Governance',
+        reasonCodes: constitutionalConditions ? [] : conditionReasonCodes,
+        reasonSeverity: constitutionalConditions ? null : conditionSeverity,
+      },
+      {
+        key: 'ecosystem-guardrails',
+        label: 'Ecosystem guardrails',
+        enabled: true,
+        source: 'Constitutional Governance',
+        reasonCodes: standingReasonCodes,
+        reasonSeverity: constitutionalStanding.reasonSeverity ?? null,
+      },
+      {
+        key: 'treasury-constraints',
+        label: 'Treasury constraints',
+        enabled: treasury,
+        source: 'Constitutional Governance',
+        reasonCodes: treasury ? ['TREASURY_POLICY_REQUIRES_REVIEW'] : [],
+        reasonSeverity: treasury ? 'warning' : null,
+      },
+      {
+        key: 'federation-requirements',
+        label: 'Federation requirements',
+        enabled: federationMember,
+        source: 'Constitutional Governance',
+        reasonCodes: federationMember ? [] : ['LOCAL_GOVERNANCE_MODEL_INCOMPATIBLE'],
+        reasonSeverity: federationMember ? null : 'constitutional',
+      },
+      {
+        key: 'cross-chain-legitimacy',
+        label: 'Cross-chain legitimacy',
+        enabled: voting || remoteExecution,
+        source: 'Constitutional Governance',
+        reasonCodes: legacyReasonCodes,
+        reasonSeverity: legacyReasonCodes.length > 0 ? 'constitutional' : null,
+      },
+      {
+        key: 'agent-execution-boundaries',
+        label: 'Agent execution boundaries',
+        enabled: true,
+        source: 'Constitutional Governance',
+        reasonCodes: ['AGENT_PERMISSION_SCOPE_EXCEEDED'],
+        reasonSeverity: 'info',
+      },
+      {
+        key: 'transparent-reason-codes',
+        label: 'Transparent reason codes',
+        enabled: true,
+        source: 'Constitutional Governance',
+        reasonCodes: [],
+        reasonSeverity: null,
+      },
+    ],
+    conditions: [
+      {
+        key: 'chain-constitutionally-enabled',
+        label: 'Chain constitutionally enabled',
+        status: governance ? 'satisfied' : 'restricted',
+        source: 'Constitutional Governance',
+        reasonCodes: governance ? [] : ['CHAIN_NOT_CONSTITUTIONALLY_ENABLED'],
+        reasonSeverity: governance ? null : 'constitutional',
+      },
+      executionChainCondition,
+      {
+        key: 'plugin-capability-registered',
+        label: 'Plugin capability registered',
+        status: governance ? 'satisfied' : 'requires-review',
+        source: 'Constitutional Governance',
+        reasonCodes: governance ? [] : ['PLUGIN_CAPABILITY_NOT_REGISTERED'],
+        reasonSeverity: governance ? null : 'warning',
+      },
+      {
+        key: 'local-governance-standing-required',
+        label: 'Local governance standing required',
+        status: constitutionalStanding.status === 'compliant' ? 'satisfied' : 'requires-review',
+        source: 'Constitutional Governance',
+        reasonCodes: standingReasonCodes,
+        reasonSeverity: constitutionalStanding.reasonSeverity ?? null,
+      },
+      {
+        key: 'treasury-policy-review-required',
+        label: 'Treasury policy review required',
+        status: treasury ? 'requires-review' : 'not-applicable',
+        source: 'Constitutional Governance',
+        reasonCodes: treasury ? ['TREASURY_POLICY_REQUIRES_REVIEW'] : [],
+        reasonSeverity: treasury ? 'warning' : null,
+      },
+      {
+        key: 'agent-permission-scope-required',
+        label: 'Agent permission scope required',
+        status: 'requires-review',
+        source: 'Constitutional Governance',
+        reasonCodes: ['AGENT_PERMISSION_SCOPE_EXCEEDED'],
+        reasonSeverity: 'info',
+      },
+    ],
+    authorityModel: {
+      authoritySources: [
+        '$Neurons',
+        'federation-registry',
+        'constitutional-condition-registry',
+        'treasury-policy-registry',
+        'guardrail-registry',
+      ],
+      constitutionalAsset: '$Neurons',
+      localAuthorityPreserved: true,
+      localAuthorityBoundary:
+        'Local governance controls local operations only while constitutional standing remains observable and valid.',
+      treasuryAuthorityBoundary:
+        'Treasury-sensitive actions require policy review and transparent reason metadata before execution.',
+      agentAuthorityBoundary:
+        'AI and agent execution is bounded by explicit permission scopes and cannot become hidden governance authority.',
+    },
+    federationModel: {
+      federationMember,
+      federationTier,
+      federationRoles: roles,
+      membershipSource: 'federation-registry',
+      localAutonomy: 'constitutionally-bounded',
+      requirements: [
+        'chain-constitutionally-enabled',
+        'plugin-capability-registered',
+        'local-governance-standing-required',
+      ],
+    },
+    executionModel: {
+      executionAuthority: executionAuthorityForRoles(roles, remoteExecution, legacyHarmonyAdapter),
+      executionChainAuthorized,
+      executionModes,
+      remoteExecutionGuardrail: remoteExecution && !executionChainAuthorized,
+      treasuryReviewRequired: treasury,
+      reasonCodes: conditionReasonCodes,
+      reasonSeverity: conditionSeverity,
+    },
+  }
 }
 
 const evmPluginCapabilities: Readonly<Partial<Record<IPluginInterfaceType, GovernancePluginCapability>>> = {
@@ -285,6 +514,10 @@ const chainCapabilities = ({
   localGovernanceModels,
   pluginCapabilities,
   constitutionalStanding = compliantStanding,
+  federationMember,
+  federationTier,
+  roles,
+  legacyHarmonyAdapter,
 }: {
   governance: boolean
   voting: boolean
@@ -294,6 +527,10 @@ const chainCapabilities = ({
   localGovernanceModels: readonly string[]
   pluginCapabilities: Readonly<Partial<Record<IPluginInterfaceType, GovernancePluginCapability>>>
   constitutionalStanding?: ConstitutionalStanding
+  federationMember: boolean
+  federationTier: FederationTier
+  roles: readonly ChainRole[]
+  legacyHarmonyAdapter?: boolean
 }) => ({
   governance,
   voting,
@@ -305,6 +542,18 @@ const chainCapabilities = ({
   constitutionalStanding,
   governanceStatus: governanceStatusFromStanding(constitutionalStanding),
   localGovernanceModels,
+  constitutionalLayer: constitutionalLayer({
+    roles,
+    federationTier,
+    federationMember,
+    governance,
+    voting,
+    treasury,
+    remoteExecution,
+    constitutionalConditions,
+    constitutionalStanding,
+    legacyHarmonyAdapter,
+  }),
   supportedPluginTypes: supportedPluginTypes(pluginCapabilities),
   pluginCapabilities,
 })
@@ -345,6 +594,9 @@ const registry: readonly ChainRegistryEntry[] = [
         'plugin-defined',
       ],
       pluginCapabilities: evmPluginCapabilities,
+      federationMember: true,
+      federationTier: federationTierForRoles(['execution', 'voting', 'spoke']),
+      roles: ['execution', 'voting', 'spoke'],
     }),
   },
   {
@@ -383,6 +635,10 @@ const registry: readonly ChainRegistryEntry[] = [
       ],
       pluginCapabilities: harmonyPluginCapabilities,
       constitutionalStanding: harmonyObserverStanding,
+      federationMember: true,
+      federationTier: federationTierForRoles(['voting', 'spoke'], true),
+      roles: ['voting', 'spoke'],
+      legacyHarmonyAdapter: true,
     }),
   },
   {
@@ -421,6 +677,10 @@ const registry: readonly ChainRegistryEntry[] = [
       ],
       pluginCapabilities: harmonyPluginCapabilities,
       constitutionalStanding: harmonyObserverStanding,
+      federationMember: true,
+      federationTier: federationTierForRoles(['voting', 'spoke'], true),
+      roles: ['voting', 'spoke'],
+      legacyHarmonyAdapter: true,
     }),
   },
   {
@@ -458,6 +718,9 @@ const registry: readonly ChainRegistryEntry[] = [
         'plugin-defined',
       ],
       pluginCapabilities: evmPluginCapabilities,
+      federationMember: true,
+      federationTier: federationTierForRoles(['voting', 'spoke']),
+      roles: ['voting', 'spoke'],
     }),
   },
   {
@@ -495,6 +758,9 @@ const registry: readonly ChainRegistryEntry[] = [
         'plugin-defined',
       ],
       pluginCapabilities: evmPluginCapabilities,
+      federationMember: true,
+      federationTier: federationTierForRoles(['voting', 'spoke']),
+      roles: ['voting', 'spoke'],
     }),
   },
   {
@@ -532,6 +798,9 @@ const registry: readonly ChainRegistryEntry[] = [
         'plugin-defined',
       ],
       pluginCapabilities: evmPluginCapabilities,
+      federationMember: true,
+      federationTier: federationTierForRoles(['voting', 'spoke']),
+      roles: ['voting', 'spoke'],
     }),
   },
   {
@@ -569,6 +838,9 @@ const registry: readonly ChainRegistryEntry[] = [
         'plugin-defined',
       ],
       pluginCapabilities: evmPluginCapabilities,
+      federationMember: true,
+      federationTier: federationTierForRoles(['voting', 'spoke']),
+      roles: ['voting', 'spoke'],
     }),
   },
 ]

@@ -410,6 +410,84 @@ describe('Controller: Proposal', () => {
     })
   })
 
+  describe('createProposalRequest', () => {
+    const createProposalRequestBody = () => ({
+      submissionMode: 'backend',
+      dao: {
+        id: `${rawProposal.network}-${rawProposal.daoAddress}`,
+        address: rawProposal.daoAddress,
+        name: 'Axodus Executive DAO',
+      },
+      chain: {
+        network: rawProposal.network,
+        chainId: 11155111,
+        name: 'Ethereum Sepolia',
+      },
+      creator: {
+        walletAddress: rawMember.address,
+      },
+      plugin: {
+        id: 'token-voting',
+        address: rawProposal.pluginAddress,
+        interfaceType: 'tokenVoting',
+        createProposalAdapter: {
+          family: 'evm-voting',
+          status: 'observed',
+          expectedBackendAdapter: 'evm-token-voting-create-proposal',
+          executionIntent: 'requires-backend-action-decoding',
+        },
+      },
+      proposal: {
+        title: 'Create proposal review',
+        summary: 'Review backend createProposal request state.',
+        actionType: 'signaling',
+      },
+      guardrails: {
+        reasonCodes: [],
+      },
+      governanceContext: {
+        source: 'registry-observed-state',
+      },
+      adapterPayload: {
+        adapterFamily: 'evm-voting',
+      },
+    })
+
+    it('should persist createProposal review receipts with storage metadata', async () => {
+      const createStub = sandbox.stub().resolves({ id: 'stored-create-proposal' })
+      sandbox.stub(Models, 'CreateProposalRequest').value({
+        create: createStub,
+      })
+
+      const receipt = await ProposalController.createProposalRequest(createProposalRequestBody())
+
+      expect(receipt.status).to.eq('backend-review-queued')
+      expect(receipt.storageMode).to.eq('mongo')
+      expect(receipt.source).to.eq('CreateProposalRequest')
+      expect(receipt.storage.persisted).to.eq(true)
+      expect(receipt.indexerReconciliation.storageMode).to.eq('mongo')
+      expect(receipt.indexerReconciliation.observedRequestId).to.eq(receipt.id)
+      expect(createStub.calledOnce).to.be.true
+      expect(createStub.args[0]?.[0].receipt.storageMode).to.eq('mongo')
+      expect(createStub.args[0]?.[0].chainId).to.eq(11155111)
+    })
+
+    it('should return memory fallback storage metadata when persistence fails', async () => {
+      sandbox.stub(Models, 'CreateProposalRequest').value({
+        create: sandbox.stub().rejects(new Error('mongo unavailable')),
+      })
+
+      const receipt = await ProposalController.createProposalRequest(createProposalRequestBody())
+
+      expect(receipt.status).to.eq('backend-review-queued')
+      expect(receipt.storageMode).to.eq('memory-fallback')
+      expect(receipt.source).to.eq('memory-fallback')
+      expect(receipt.storage.persisted).to.eq(false)
+      expect(receipt.storage.reasonCode).to.eq('CREATE_PROPOSAL_PERSISTENCE_FALLBACK')
+      expect(receipt.indexerReconciliation.storageMode).to.eq('memory-fallback')
+    })
+  })
+
   describe('getProposalDecodedActions', () => {
     it('should getProposalDecodedActions', async () => {
       const proposalDbId = await Models.Proposal.getEntityId({

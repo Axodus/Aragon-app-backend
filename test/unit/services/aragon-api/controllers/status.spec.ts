@@ -44,8 +44,17 @@ describe('Controller: Status', () => {
     expect(sepolia?.federationMember).to.equal(true)
     expect(sepolia?.federationTier).to.equal('root')
     expect(sepolia?.constitutionalStanding.status).to.equal('compliant')
+    expect(sepolia?.constitutionalLayer.authorityModel.constitutionalAsset).to.equal('$Neurons')
+    expect(sepolia?.constitutionalLayer.federationModel.federationTier).to.equal('root')
+    expect(sepolia?.constitutionalLayer.executionModel.executionAuthority).to.equal('constitutional-root')
+    expect(sepolia?.constitutionalLayer.conditions.map(condition => condition.key)).to.include(
+      'treasury-policy-review-required',
+    )
     expect(sepolia?.capabilities.constitutionalStanding.status).to.equal('compliant')
     expect(sepolia?.capabilities.constitutionalCompatibility.reasonCodes).to.deep.equal([])
+    expect(sepolia?.capabilities.constitutionalLayer.capabilities.map(capability => capability.key)).to.include(
+      'transparent-reason-codes',
+    )
     expect(sepolia?.capabilities.localGovernanceModels).to.include('auto-generated-platform-token')
     expect(tokenVoting?.actions.vote).to.equal(true)
     expect(tokenVoting?.executionModes).to.include('federal')
@@ -65,6 +74,8 @@ describe('Controller: Status', () => {
     }
     expect(harmony?.governanceStatus).to.equal('under-review')
     expect(harmony?.federationTier).to.equal('observer')
+    expect(harmony?.constitutionalLayer.executionModel.executionAuthority).to.equal('legacy-voting-adapter')
+    expect(harmony?.constitutionalLayer.executionModel.reasonCodes).to.include('EXECUTION_CHAIN_NOT_AUTHORIZED')
     expect(harmony?.guardrailReasons).to.deep.include({
       reasonCode: 'REMOTE_EXECUTION_GUARDRAIL_ACTIVE',
       reasonSeverity: 'constitutional',

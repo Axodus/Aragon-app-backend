@@ -48,8 +48,10 @@ const ProposalSchema = {
     network: Joi.string()
       .valid(...Object.values(NetworksEnum))
       .optional(),
+    chainId: Joi.number().integer().optional(),
     status: Joi.string().optional(),
     daoId: Joi.string().optional(),
+    daoAddress: ValidationSchema.joiAddress.optional(),
     limit: Joi.number().integer().min(1).max(100).optional().default(20),
   }).unknown(false),
 
@@ -72,6 +74,11 @@ const ProposalSchema = {
       chainId: Joi.number().allow(null).optional(),
       name: Joi.string().allow(null).optional(),
       role: Joi.string().allow(null).optional(),
+      governanceStatus: Joi.string().allow(null).optional(),
+      federationMember: Joi.boolean().allow(null).optional(),
+      federationTier: Joi.string().allow(null).optional(),
+      constitutionalStanding: Joi.object().unknown(true).allow(null).optional(),
+      constitutionalLayer: Joi.object().unknown(true).allow(null).optional(),
     })
       .required()
       .unknown(false),
@@ -85,6 +92,14 @@ const ProposalSchema = {
       address: ValidationSchema.joiAddress.allow(null).optional(),
       interfaceType: Joi.string().allow(null).optional(),
       label: Joi.string().allow(null).optional(),
+      createProposalAdapter: Joi.object({
+        family: Joi.string().allow(null).optional(),
+        status: Joi.string().allow(null).optional(),
+        expectedBackendAdapter: Joi.string().allow(null).optional(),
+        executionIntent: Joi.string().allow(null).optional(),
+      })
+        .unknown(false)
+        .optional(),
     })
       .required()
       .unknown(false),
@@ -116,6 +131,8 @@ const ProposalSchema = {
     })
       .required()
       .unknown(false),
+    governanceContext: Joi.object().unknown(true).allow(null).optional(),
+    adapterPayload: Joi.object().unknown(true).allow(null).optional(),
   }).unknown(false),
 }
 

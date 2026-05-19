@@ -453,6 +453,21 @@ describe('RouterV2: Proposal', () => {
         chainId: 11155111,
         name: 'Ethereum Sepolia',
         role: 'execution',
+        governanceStatus: 'compliant',
+        federationMember: true,
+        federationTier: 'root',
+        constitutionalStanding: {
+          status: 'compliant',
+          reasonCodes: [],
+          reasonSeverity: null,
+        },
+        constitutionalLayer: {
+          executionModel: {
+            executionAuthority: 'constitutional-root',
+            executionChainAuthorized: true,
+            reasonCodes: [],
+          },
+        },
       },
       creator: {
         walletAddress: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
@@ -462,6 +477,12 @@ describe('RouterV2: Proposal', () => {
         address: '0x0eB63a3565942D16C1c1211bD78F1B3Dcfe1A254',
         interfaceType: 'token-voting',
         label: 'Token Voting',
+        createProposalAdapter: {
+          family: 'evm-voting',
+          status: 'observed',
+          expectedBackendAdapter: 'evm-token-voting-create-proposal',
+          executionIntent: 'requires-backend-action-decoding',
+        },
       },
       proposal: {
         title: 'Review treasury policy',
@@ -484,6 +505,18 @@ describe('RouterV2: Proposal', () => {
         requiresBackendValidation: true,
         requiresIndexerReconciliation: true,
         noOnchainSubmission: true,
+      },
+      governanceContext: {
+        source: 'registry-observed-state',
+        executionModel: {
+          executionAuthority: 'constitutional-root',
+          executionChainAuthorized: true,
+        },
+      },
+      adapterPayload: {
+        adapterFamily: 'evm-voting',
+        requestKind: 'proposal-metadata',
+        expectedBackendAdapter: 'evm-token-voting-create-proposal',
       },
     }
 
@@ -621,12 +654,15 @@ describe('RouterV2: Proposal', () => {
         ],
         count: 1,
         source: 'CreateProposalRequest',
+        storageMode: 'mongo',
       } as any)
 
       const ctx: any = {
         query: {
           network: NetworksEnum.ethereumSepolia,
+          chainId: '11155111',
           status: 'backend-review-queued',
+          daoAddress: createProposalBody.dao.address,
           limit: '5',
         },
       }
@@ -636,7 +672,9 @@ describe('RouterV2: Proposal', () => {
       expect(stubCtrl.calledOnce).to.be.true
       expect(stubCtrl.args[0]?.[0]).to.deep.eq({
         network: NetworksEnum.ethereumSepolia,
+        chainId: 11155111,
         status: 'backend-review-queued',
+        daoAddress: getAddress(createProposalBody.dao.address),
         limit: 5,
       })
       expect(ctx.body).to.deep.eq({
@@ -648,6 +686,7 @@ describe('RouterV2: Proposal', () => {
         ],
         count: 1,
         source: 'CreateProposalRequest',
+        storageMode: 'mongo',
       })
     })
 
