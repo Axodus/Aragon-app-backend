@@ -190,6 +190,13 @@ const receiptsByTenant: Record<string, any[]> = {
   ],
 }
 
+const tenantBoundary =
+  'Tenant records are an observable governance source contract. Enforcement, sanctions and execution authority must come from indexed registries, contracts and backend guardrails.'
+
+function resolveTenantSource(tenantRecords: any[]) {
+  return tenantRecords.some(tenant => tenant.source === 'DaoRegistry') ? 'DaoRegistry' : 'DaoTenantFallback'
+}
+
 function resolveTenantType(dao: any) {
   const name = `${dao.name ?? ''} ${dao.ens ?? ''} ${dao.subdomain ?? ''}`.toLowerCase()
   if (name.includes('community')) return 'community'
@@ -322,42 +329,75 @@ async function getTenantRecords() {
 
 async function findTenant(tenantId: string) {
   const tenantRecords = await getTenantRecords()
-  return tenantRecords.find(tenant => tenant.id === tenantId || tenant.daoId === tenantId) ?? null
+  const tenant = tenantRecords.find(tenant => tenant.id === tenantId || tenant.daoId === tenantId) ?? null
+
+  return {
+    tenant,
+    tenantRecords,
+  }
 }
 
 const GovernanceTenantController = {
   listTenants: async () => {
     const tenantRecords = await getTenantRecords()
-    const source = tenantRecords.some(tenant => tenant.source === 'DaoRegistry') ? 'DaoRegistry' : 'DaoTenantFallback'
+    const source = resolveTenantSource(tenantRecords)
 
     return {
       data: tenantRecords,
       metadata: {
         totalRecords: tenantRecords.length,
         source,
-        boundary:
-          'Tenant records are an observable governance source contract. Enforcement, sanctions and execution authority must come from indexed registries, contracts and backend guardrails.',
+        boundary: tenantBoundary,
       },
     }
   },
 
-  getTenant: async (tenantId: string) => findTenant(tenantId),
+  getTenant: async (tenantId: string) => {
+    const { tenant, tenantRecords } = await findTenant(tenantId)
 
-  getTenantOperations: async (tenantId: string) => ({
-    data: operationsByTenant[(await findTenant(tenantId))?.id ?? tenantId] ?? [],
-    metadata: {
-      tenantId,
-      source: 'DaoTenantFallback',
-    },
-  }),
+    if (!tenant) return null
 
-  getTenantReceipts: async (tenantId: string) => ({
-    data: receiptsByTenant[(await findTenant(tenantId))?.id ?? tenantId] ?? [],
-    metadata: {
-      tenantId,
-      source: 'DaoTenantFallback',
-    },
-  }),
+    return {
+      data: tenant,
+      metadata: {
+        tenantId,
+        resolvedTenantId: tenant.id,
+        daoId: tenant.daoId,
+        source: tenant.source ?? resolveTenantSource(tenantRecords),
+        boundary: tenantBoundary,
+      },
+    }
+  },
+
+  getTenantOperations: async (tenantId: string) => {
+    const { tenant } = await findTenant(tenantId)
+    const resolvedTenantId = tenant?.id ?? tenantId
+
+    return {
+      data: operationsByTenant[resolvedTenantId] ?? [],
+      metadata: {
+        tenantId,
+        resolvedTenantId,
+        source: tenant?.source ?? 'DaoTenantFallback',
+        boundary: tenantBoundary,
+      },
+    }
+  },
+
+  getTenantReceipts: async (tenantId: string) => {
+    const { tenant } = await findTenant(tenantId)
+    const resolvedTenantId = tenant?.id ?? tenantId
+
+    return {
+      data: receiptsByTenant[resolvedTenantId] ?? [],
+      metadata: {
+        tenantId,
+        resolvedTenantId,
+        source: tenant?.source ?? 'DaoTenantFallback',
+        boundary: tenantBoundary,
+      },
+    }
+  },
 }
 
 export default GovernanceTenantController
