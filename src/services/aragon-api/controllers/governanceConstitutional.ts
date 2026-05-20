@@ -138,8 +138,18 @@ const federationModel = {
   },
   tiers: [
     { id: 'root', label: 'Root', executionAuthority: 'constitutional-root', localAutonomy: 'constitutional' },
-    { id: 'partner', label: 'Partner', executionAuthority: 'bounded-federated-tenant', localAutonomy: 'bounded-by-constitution' },
-    { id: 'sovereign', label: 'Sovereign', executionAuthority: 'reviewed-federated-tenant', localAutonomy: 'expanded-with-guardrails' },
+    {
+      id: 'partner',
+      label: 'Partner',
+      executionAuthority: 'bounded-federated-tenant',
+      localAutonomy: 'bounded-by-constitution',
+    },
+    {
+      id: 'sovereign',
+      label: 'Sovereign',
+      executionAuthority: 'reviewed-federated-tenant',
+      localAutonomy: 'expanded-with-guardrails',
+    },
     { id: 'restricted', label: 'Restricted', executionAuthority: 'guarded-or-paused', localAutonomy: 'restricted' },
     { id: 'observer', label: 'Observer', executionAuthority: 'observe-only', localAutonomy: 'signaling-only' },
   ],
@@ -159,6 +169,95 @@ const federationModel = {
       'federation registry',
       'Local governance models outside constitutional boundaries require review before federation authority is granted.',
     ),
+  ],
+}
+
+const authorityModel = {
+  constitutionalAuthority: {
+    source: '$Neurons',
+    layer: 'Constitutional Governance',
+    authorityModel: 'constitutional-root',
+    responsibilities: [
+      'federal standards',
+      'chain capabilities',
+      'plugin capabilities',
+      'constitutional conditions',
+      'ecosystem guardrails',
+      'treasury constraints',
+      'DAO federation requirements',
+      'cross-chain legitimacy',
+      'agent execution boundaries',
+    ],
+  },
+  localAuthority: {
+    source: 'federated DAO tenant',
+    layer: 'Local Governance',
+    authorityModel: 'bounded-local-autonomy',
+    responsibilities: [
+      'treasury strategy',
+      'DAO operations',
+      'local proposals',
+      'member permissions',
+      'local plugins',
+      'local economic policies',
+    ],
+  },
+  boundaries: [
+    {
+      id: 'local-autonomy-boundary',
+      status: 'active',
+      reasonCode: 'LOCAL_GOVERNANCE_MODEL_INCOMPATIBLE',
+      reasonSeverity: 'constitutional',
+      message: 'Local autonomy is valid only inside Axodus constitutional guardrails.',
+    },
+    {
+      id: 'agent-permission-boundary',
+      status: 'active',
+      reasonCode: 'AGENT_PERMISSION_SCOPE_EXCEEDED',
+      reasonSeverity: 'constitutional',
+      message: 'Agent execution must remain inside scoped constitutional authority.',
+    },
+  ],
+}
+
+const executionModel = {
+  canonicalExecutionChain: {
+    network: 'ethereum-sepolia',
+    chainId: 11155111,
+    status: 'poc',
+    executionAuthority: 'constitutional-root',
+  },
+  votingChains: ['ethereum', 'base', 'arbitrum', 'polygon', 'harmony-mainnet', 'harmony-testnet'],
+  validationFlow: [
+    'proposal',
+    'plugin validation',
+    'constitutional conditions',
+    'risk conditions',
+    'capability validation',
+    'treasury conditions',
+    'execution authorization',
+    'execution receipt',
+  ],
+  guardrails: [
+    {
+      reasonCode: 'EXECUTION_CHAIN_NOT_AUTHORIZED',
+      reasonSeverity: 'constitutional',
+      source: 'Constitutional Governance',
+      message: 'Voting and spoke chains do not imply Axodus constitutional execution authority.',
+    },
+    {
+      reasonCode: 'REMOTE_EXECUTION_GUARDRAIL_ACTIVE',
+      reasonSeverity: 'constitutional',
+      source: 'Constitutional Governance',
+      message:
+        'Remote execution remains guarded until chain capability and receipt reconciliation are production-ready.',
+    },
+    {
+      reasonCode: 'INDEXER_STATE_NOT_READY',
+      reasonSeverity: 'warning',
+      source: 'indexer readiness',
+      message: 'Execution observability is degraded until indexer reconciliation is ready.',
+    },
   ],
 }
 
@@ -184,6 +283,16 @@ const GovernanceConstitutionalController = {
   getFederationModel: async () => ({
     data: federationModel,
     metadata: sourceMetadata('FederationModelBootstrap'),
+  }),
+
+  getAuthorityModel: async () => ({
+    data: authorityModel,
+    metadata: sourceMetadata('ConstitutionalAuthorityModelBootstrap'),
+  }),
+
+  getExecutionModel: async () => ({
+    data: executionModel,
+    metadata: sourceMetadata('ConstitutionalExecutionModelBootstrap'),
   }),
 }
 

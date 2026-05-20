@@ -22,6 +22,14 @@ const GovernanceRouter = {
     ctx.body = await GovernanceConstitutionalController.getFederationModel()
   },
 
+  getAuthorityModel: async function (ctx: RouterContext) {
+    ctx.body = await GovernanceConstitutionalController.getAuthorityModel()
+  },
+
+  getExecutionModel: async function (ctx: RouterContext) {
+    ctx.body = await GovernanceConstitutionalController.getExecutionModel()
+  },
+
   listTenants: async function (ctx: RouterContext) {
     ctx.body = await GovernanceTenantController.listTenants()
   },
@@ -52,6 +60,8 @@ const GovernanceRouter = {
     router.get('/capabilities', GovernanceRouter.listCapabilities)
     router.get('/conditions', GovernanceRouter.listConditions)
     router.get('/federation', GovernanceRouter.getFederationModel)
+    router.get('/authority-model', GovernanceRouter.getAuthorityModel)
+    router.get('/execution-model', GovernanceRouter.getExecutionModel)
     router.get('/tenants', GovernanceRouter.listTenants)
     router.get('/tenants/:tenantId', GovernanceRouter.getTenant)
     router.get('/tenants/:tenantId/operations', GovernanceRouter.getTenantOperations)

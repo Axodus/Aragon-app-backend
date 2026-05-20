@@ -31,4 +31,31 @@ describe('Controller: GovernanceConstitutional', () => {
     expect(response.data.localAutonomyBoundary).to.include('constitutional model')
     expect(response.data.reasonCodes[0].reasonCode).to.equal('LOCAL_GOVERNANCE_MODEL_INCOMPATIBLE')
   })
+
+  it('returns the constitutional authority model with local autonomy boundaries', async () => {
+    const response = await GovernanceConstitutionalController.getAuthorityModel()
+
+    expect(response.metadata.source).to.equal('ConstitutionalAuthorityModelBootstrap')
+    expect(response.data.constitutionalAuthority.source).to.equal('$Neurons')
+    expect(response.data.constitutionalAuthority.responsibilities).to.include('ecosystem guardrails')
+    expect(response.data.localAuthority.authorityModel).to.equal('bounded-local-autonomy')
+    expect(response.data.boundaries.map(boundary => boundary.reasonCode)).to.include.members([
+      'LOCAL_GOVERNANCE_MODEL_INCOMPATIBLE',
+      'AGENT_PERMISSION_SCOPE_EXCEEDED',
+    ])
+  })
+
+  it('returns the constitutional execution model with guarded voting-chain boundaries', async () => {
+    const response = await GovernanceConstitutionalController.getExecutionModel()
+
+    expect(response.metadata.source).to.equal('ConstitutionalExecutionModelBootstrap')
+    expect(response.data.canonicalExecutionChain.network).to.equal('ethereum-sepolia')
+    expect(response.data.validationFlow).to.include.members(['capability validation', 'execution receipt'])
+    expect(response.data.votingChains).to.include('harmony-mainnet')
+    expect(response.data.guardrails.map(guardrail => guardrail.reasonCode)).to.include.members([
+      'EXECUTION_CHAIN_NOT_AUTHORIZED',
+      'REMOTE_EXECUTION_GUARDRAIL_ACTIVE',
+      'INDEXER_STATE_NOT_READY',
+    ])
+  })
 })
