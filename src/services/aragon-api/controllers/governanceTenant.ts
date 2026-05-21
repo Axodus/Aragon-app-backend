@@ -1,5 +1,6 @@
 import { Models } from '@dbModels'
 import logger from '@logger'
+import mongoose from 'mongoose'
 
 const llo = logger.logMeta.bind(null, { service: 'GovernanceTenantController' })
 
@@ -298,6 +299,7 @@ function tenantFromIndexedDao(dao: any) {
 }
 
 async function getIndexedTenantRecords() {
+  if (mongoose.connection.readyState !== 1) return []
   if (!Models.Dao || typeof Models.Dao.findWithPagination !== 'function') return []
 
   try {

@@ -19,6 +19,7 @@ import utils from '@helpers/utils'
 import { PluginSlug as PluginSlugHelper } from '@helpers/pluginSlug'
 import mongoose from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
+import GovernanceRuntimeValidator from '@services/governance-runtime/runtimeValidator'
 
 const llo = logger.logMeta.bind(null, { service: 'ProposalController' })
 
@@ -233,8 +234,42 @@ const ProposalController = {
   createProposalRequest: async (request: any) => {
     const submittedAt = new Date().toISOString()
     const receiptId = `backend-create-${uuidv4()}`
+    const tenantId = request.dao?.id ?? request.dao?.address ?? null
+    const runtimeDecision = tenantId
+      ? await GovernanceRuntimeValidator.validate({
+          tenantId,
+          capability: 'proposal.create',
+          action: request.proposal?.actionType,
+          source: 'CreateProposalRequest',
+          resource: request.plugin?.id ?? request.plugin?.address ?? undefined,
+          metadata: {
+            network: request.chain?.network,
+            chainId: request.chain?.chainId,
+            title: request.proposal?.title,
+          },
+        })
+      : {
+          tenantId: null,
+          capability: 'proposal.create',
+          normalizedCapability: 'tenant-local-proposal-management',
+          allowed: false,
+          decision: 'denied',
+          reasonCode: 'DAO_TENANT_NOT_FOUND',
+          reasonSeverity: 'critical',
+          source: 'governance runtime',
+          timestamp: submittedAt,
+          reasons: [
+            createProposalReason(
+              'DAO_TENANT_NOT_FOUND',
+              'critical',
+              'governance runtime',
+              'Create proposal request denied because no DAO tenant identity was provided.',
+            ),
+          ],
+        }
     const reasonCodes = [
       ...(request.guardrails?.reasonCodes ?? []),
+      ...(runtimeDecision?.reasons ?? []),
       createProposalReason(
         'CREATE_PROPOSAL_BACKEND_REVIEW_REQUIRED',
         'info',
@@ -248,18 +283,21 @@ const ProposalController = {
         'Proposal creation is waiting for indexer reconciliation after a future on-chain submission adapter is connected.',
       ),
     ]
+    const runtimeBlocked = runtimeDecision ? !runtimeDecision.allowed : false
 
     const receipt = {
       id: receiptId,
       proposalDraftId: request.proposal?.draftId ?? null,
-      status: 'backend-review-queued',
+      status: runtimeBlocked ? 'governance-runtime-blocked' : 'backend-review-queued',
       submissionMode: 'backend',
       submittedAt,
-      message:
-        'Create proposal request accepted by the Governance API for non-on-chain review. No wallet prompt or transaction was submitted.',
+      message: runtimeBlocked
+        ? 'Create proposal request blocked by Governance runtime validation. No review queue, wallet prompt or transaction was submitted.'
+        : 'Create proposal request accepted by the Governance API for non-on-chain review. No wallet prompt or transaction was submitted.',
       reasonCodes,
+      runtimeValidation: runtimeDecision,
       indexerReconciliation: {
-        status: 'pending',
+        status: runtimeBlocked ? 'blocked' : 'pending',
         reasonCode: 'INDEXER_STATE_NOT_READY',
         reasonSeverity: 'info',
         reconciliationMode: 'review-request-only',
@@ -273,7 +311,7 @@ const ProposalController = {
         plugin: request.plugin,
         proposal: request.proposal,
         governanceBoundary:
-          'Backend records observable create-proposal request state only. Constitutional validity, permissions, sanctions and execution remain sourced from registries, contracts, guardrails and indexers.',
+          'Backend records create-proposal request state after Governance runtime validation. Constitutional validity, permissions, sanctions and execution remain sourced from registries, contracts, guardrails and indexers.',
       },
       request,
     }
