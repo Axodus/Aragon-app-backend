@@ -8,6 +8,9 @@ import GovernanceRuntimeValidator, {
   type TreasuryOperationInput,
 } from '@services/governance-runtime/runtimeValidator'
 import GovernanceExecutorService from '@services/governance-executor/governanceExecutorService'
+import GovernanceExecutionReceiptService from '@services/governance-execution-receipt/governanceExecutionReceiptService'
+import GovernanceExecutionValidatorService from '@services/governance-proposal/governanceExecutionValidatorService'
+import GovernanceProposalService from '@services/governance-proposal/governanceProposalService'
 
 const notFoundReason = {
   reasonCode: 'DAO_TENANT_NOT_FOUND',
@@ -95,6 +98,67 @@ const GovernanceRouter = {
 
   getTenantReceipts: async function (ctx: RouterContext) {
     ctx.body = await GovernanceTenantController.getTenantReceipts(ctx.params.tenantId)
+  },
+
+  listProposals: async function (ctx: RouterContext) {
+    ctx.body = await GovernanceProposalService.listProposals()
+  },
+
+  getGovernanceProposal: async function (ctx: RouterContext) {
+    const response = await GovernanceProposalService.getProposal(ctx.params.proposalId)
+
+    if (!response.data) {
+      ctx.status = 404
+    }
+
+    ctx.body = response
+  },
+
+  getGovernanceProposalExecutor: async function (ctx: RouterContext) {
+    const response = await GovernanceProposalService.getProposalExecutor(ctx.params.proposalId)
+
+    if (!response.data) {
+      ctx.status = 404
+    }
+
+    ctx.body = response
+  },
+
+  getGovernanceProposalExecutionReceipt: async function (ctx: RouterContext) {
+    const response = await GovernanceProposalService.getProposalExecutionReceipt(ctx.params.proposalId)
+
+    if (!response.data) {
+      ctx.status = 404
+    }
+
+    ctx.body = response
+  },
+
+  validateGovernanceProposalExecution: async function (ctx: RouterContext) {
+    const transition = typeof ctx.query.transition === 'string' ? ctx.query.transition : undefined
+    ctx.body = await GovernanceExecutionValidatorService.validateProposalExecution(ctx.params.proposalId, transition)
+  },
+
+  listDaoGovernanceProposals: async function (ctx: RouterContext) {
+    ctx.body = await GovernanceProposalService.listDaoProposals(ctx.params.daoId)
+  },
+
+  listTenantGovernanceProposals: async function (ctx: RouterContext) {
+    ctx.body = await GovernanceProposalService.listTenantProposals(ctx.params.tenantId)
+  },
+
+  listExecutionReceipts: async function (ctx: RouterContext) {
+    ctx.body = await GovernanceExecutionReceiptService.listExecutionReceipts()
+  },
+
+  getExecutionReceipt: async function (ctx: RouterContext) {
+    const response = await GovernanceExecutionReceiptService.getExecutionReceipt(ctx.params.executionReceiptId)
+
+    if (!response.data) {
+      ctx.status = 404
+    }
+
+    ctx.body = response
   },
 
   getTenantRuntime: async function (ctx: RouterContext) {
@@ -268,11 +332,20 @@ const GovernanceRouter = {
     router.get('/executors', GovernanceRouter.listExecutors)
     router.get('/executors/:executorId', GovernanceRouter.getExecutor)
     router.get('/dao/:daoId/executor', GovernanceRouter.getDaoExecutor)
+    router.get('/dao/:daoId/proposals', GovernanceRouter.listDaoGovernanceProposals)
     router.get('/tenants', GovernanceRouter.listTenants)
-    router.get('/tenants/:tenantId', GovernanceRouter.getTenant)
     router.get('/tenants/:tenantId/executor', GovernanceRouter.getTenantExecutor)
+    router.get('/tenants/:tenantId/proposals', GovernanceRouter.listTenantGovernanceProposals)
     router.get('/tenants/:tenantId/operations', GovernanceRouter.getTenantOperations)
     router.get('/tenants/:tenantId/receipts', GovernanceRouter.getTenantReceipts)
+    router.get('/tenants/:tenantId', GovernanceRouter.getTenant)
+    router.get('/proposals', GovernanceRouter.listProposals)
+    router.get('/proposals/:proposalId/executor', GovernanceRouter.getGovernanceProposalExecutor)
+    router.get('/proposals/:proposalId/execution-receipt', GovernanceRouter.getGovernanceProposalExecutionReceipt)
+    router.get('/proposals/:proposalId/execution-validation', GovernanceRouter.validateGovernanceProposalExecution)
+    router.get('/proposals/:proposalId', GovernanceRouter.getGovernanceProposal)
+    router.get('/execution-receipts', GovernanceRouter.listExecutionReceipts)
+    router.get('/execution-receipts/:executionReceiptId', GovernanceRouter.getExecutionReceipt)
     router.get('/runtime/tenant/:tenantId', GovernanceRouter.getTenantRuntime)
     router.get('/runtime/capabilities/:tenantId', GovernanceRouter.listTenantRuntimeCapabilities)
     router.post('/runtime/validate', GovernanceRouter.validateRuntime)
