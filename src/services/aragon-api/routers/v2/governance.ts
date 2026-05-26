@@ -7,6 +7,7 @@ import GovernanceRuntimeValidator, {
   type RuntimeValidationInput,
   type TreasuryOperationInput,
 } from '@services/governance-runtime/runtimeValidator'
+import GovernanceExecutorService from '@services/governance-executor/governanceExecutorService'
 
 const notFoundReason = {
   reasonCode: 'DAO_TENANT_NOT_FOUND',
@@ -38,6 +39,42 @@ const GovernanceRouter = {
 
   listTenants: async function (ctx: RouterContext) {
     ctx.body = await GovernanceTenantController.listTenants()
+  },
+
+  listExecutors: async function (ctx: RouterContext) {
+    ctx.body = await GovernanceExecutorService.listExecutors()
+  },
+
+  getExecutor: async function (ctx: RouterContext) {
+    const response = await GovernanceExecutorService.getExecutor(ctx.params.executorId)
+
+    if (!response.data) {
+      ctx.status = 404
+    }
+
+    ctx.body = response
+  },
+
+  getDaoExecutor: async function (ctx: RouterContext) {
+    const proposalType = typeof ctx.query.proposalType === 'string' ? ctx.query.proposalType : undefined
+    const response = await GovernanceExecutorService.resolveDaoExecutor(ctx.params.daoId, proposalType)
+
+    if (!(response.data as any)?.executor) {
+      ctx.status = 404
+    }
+
+    ctx.body = response
+  },
+
+  getTenantExecutor: async function (ctx: RouterContext) {
+    const proposalType = typeof ctx.query.proposalType === 'string' ? ctx.query.proposalType : undefined
+    const response = await GovernanceExecutorService.resolveTenantExecutor(ctx.params.tenantId, proposalType)
+
+    if (!(response.data as any)?.executor) {
+      ctx.status = 404
+    }
+
+    ctx.body = response
   },
 
   getTenant: async function (ctx: RouterContext) {
@@ -228,8 +265,12 @@ const GovernanceRouter = {
     router.get('/federation', GovernanceRouter.getFederationModel)
     router.get('/authority-model', GovernanceRouter.getAuthorityModel)
     router.get('/execution-model', GovernanceRouter.getExecutionModel)
+    router.get('/executors', GovernanceRouter.listExecutors)
+    router.get('/executors/:executorId', GovernanceRouter.getExecutor)
+    router.get('/dao/:daoId/executor', GovernanceRouter.getDaoExecutor)
     router.get('/tenants', GovernanceRouter.listTenants)
     router.get('/tenants/:tenantId', GovernanceRouter.getTenant)
+    router.get('/tenants/:tenantId/executor', GovernanceRouter.getTenantExecutor)
     router.get('/tenants/:tenantId/operations', GovernanceRouter.getTenantOperations)
     router.get('/tenants/:tenantId/receipts', GovernanceRouter.getTenantReceipts)
     router.get('/runtime/tenant/:tenantId', GovernanceRouter.getTenantRuntime)
