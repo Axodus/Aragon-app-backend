@@ -37,9 +37,9 @@
     "format:check": "prettier --check \"src/**/*.{ts,json}\" \"test/**/*.{ts,json}\" \"postman/**/*.json\" \"*.json\"",
     "format:fix": "prettier --write \"src/**/*.{ts,json}\" \"test/**/*.{ts,json}\" \"postman/**/*.json\" \"*.json\"",
     "test:dotonly": "dot-only-hunter test",
-    "test:manual": "ts-node -r tsconfig-paths/register test/test.config.ts --manual",
-    "test:unit": "ts-node -r tsconfig-paths/register test/test.config.ts --unit",
-    "test:unit-dep": "ts-node -r tsconfig-paths/register test/test.config.ts --unit-dep",
+    "test:manual": "TS_NODE_TRANSPILE_ONLY=true ts-node -r tsconfig-paths/register test/test.config.ts --manual",
+    "test:unit": "TS_NODE_TRANSPILE_ONLY=true ts-node -r tsconfig-paths/register test/test.config.ts --unit",
+    "test:unit-dep": "TS_NODE_TRANSPILE_ONLY=true ts-node -r tsconfig-paths/register test/test.config.ts --unit-dep",
     "test:unit:coverage": "rm -rf coverage .nyc_output && nyc --debug --no-clean --temp-dir=.nyc_output/ yarn test:unit",
     "test:coverage:check": "nyc check-coverage --temp-dir=.nyc_output/ --statements 98 --branches 90 --functions 98 --lines 98",
     "docker:test:unit-dep": "docker compose up -d --build unit-dep",
@@ -51,7 +51,9 @@
     "wait:db": "bash scripts/waitUp.sh mongo1 27017 && bash scripts/waitUp.sh mongo2 27017 && bash scripts/waitUp.sh mongo3 27017",
     "wait:rabbitmq:local": "bash scripts/waitUp.sh localhost 5672",
     "wait:db:local": "bash scripts/waitUp.sh localhost 27017 && bash scripts/waitUp.sh localhost 27018 && bash scripts/waitUp.sh localhost 27019",
-    "prepare": "husky"
+    "prepare": "husky",
+    "typecheck": "./node_modules/.bin/tsc --noEmit",
+    "validate": "yarn typecheck && yarn test:unit"
   },
   "repository": {
     "type": "git",

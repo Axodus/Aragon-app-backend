@@ -5,6 +5,18 @@ import './sinon-mongoose'
 import { ModelProxy } from '@dbModels'
 import config from '@config'
 
+const mockDbLog = (phase: string, metadata: Record<string, unknown> = {}) => {
+  const safeMetadata = {
+    dbName: config.MONGO_DB.NAME,
+    mongomsVersion: process.env.MONGOMS_VERSION || '7.0.5',
+    mongomsSystemBinary: process.env.MONGOMS_SYSTEM_BINARY ? '[configured]' : '[not configured]',
+    mongomsRuntimeDownload: process.env.MONGOMS_RUNTIME_DOWNLOAD,
+    ...metadata,
+  }
+
+  console.log(`[MockDB] ${phase}`, safeMetadata) // eslint-disable-line no-console
+}
+
 const MockDB = {
   replSet: null as typeof MongoMemoryReplSet | null,
   mongoUri: null as string | null,
@@ -16,17 +28,21 @@ const MockDB = {
   },
 
   connect: async () => {
+    mockDbLog('connect:start')
     await MockDB._connectMongoDB()
+    mockDbLog('syncIndexes:start')
     await MockDB.syncIndexesForAllModels()
+    mockDbLog('syncIndexes:complete')
     // Sanity check: verify critical model statics exist
     await MockDB._verifyModelStatics()
+    mockDbLog('connect:complete')
   },
 
   _verifyModelStatics: async () => {
     const { Models } = require('@dbModels')
     const criticalStatics = ['create', 'findByAddress', 'findAllByTokenAddress', 'findOne']
     const missingStatics: string[] = []
-    
+
     if (!Models.Plugin) {
       console.error(`[MockDB] CRITICAL: Models.Plugin is undefined!`)
       return
@@ -62,7 +78,8 @@ const MockDB = {
 
   async disconnect() {
     await mongoose.disconnect()
-    await MockDB.replSet.stop()
+    await MockDB.replSet?.stop()
+    MockDB.replSet = null
 
     console.log('Mongoose successfully disconnected') // eslint-disable-line no-console
   },
@@ -72,7 +89,9 @@ const MockDB = {
     // available on newer Linux distros (e.g. Ubuntu 22.04+). Default to a newer
     // MongoDB version, but allow overriding via env for reproducibility.
     const mongoMemoryServerVersion = process.env.MONGOMS_VERSION || '7.0.5'
+    const mongoMemoryLaunchTimeoutMs = Number(process.env.MONGOMS_LAUNCH_TIMEOUT_MS || 60000)
 
+    mockDbLog('replSet:create', { storageEngine: 'wiredTiger', launchTimeoutMs: mongoMemoryLaunchTimeoutMs })
     MockDB.replSet = new MongoMemoryReplSet({
       binary: {
         version: mongoMemoryServerVersion,
@@ -80,6 +99,7 @@ const MockDB = {
       instanceOpts: [
         {
           storageEngine: 'wiredTiger',
+          launchTimeout: mongoMemoryLaunchTimeoutMs,
         },
       ],
       replSet: {
@@ -89,11 +109,17 @@ const MockDB = {
       },
     })
 
+    mockDbLog('replSet:start')
     await MockDB.replSet.start()
+    mockDbLog('replSet:started')
     const uri = MockDB.replSet.getUri()
 
+    mockDbLog('mongoose:connect:start')
     await mongoose.connect(uri, MockDB.mongoOptions)
+    mockDbLog('mongoose:connect:complete')
+    mockDbLog('models:set:start')
     await ModelProxy.setMongoModels()
+    mockDbLog('models:set:complete')
     mongoose.set('debug', config.MONGO_DB.DEBUGGER)
     MockDB.mongoUri = uri
     return uri
@@ -113,12 +139,14 @@ const MockDB = {
 
   _disconnectMongoDB: async () => {
     await mongoose.disconnect()
-    await MockDB.replSet.stop()
+    await MockDB.replSet?.stop()
+    MockDB.replSet = null
     console.log('Mongoose successfully disconnected') // eslint-disable-line no-console
   },
 
   syncIndexesForAllModels: async () => {
     const modelNames = Object.keys(mongoose.models)
+    mockDbLog('syncIndexes:model-count', { modelCount: modelNames.length })
     await Promise.all(
       modelNames.map(async name => {
         try {

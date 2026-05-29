@@ -39,6 +39,8 @@ describe('Module: mongo', () => {
     // Restore original readyState descriptor if it was modified
     if (originalReadyState) {
       Object.defineProperty(mongoose.connection, 'readyState', originalReadyState)
+    } else {
+      delete (mongoose.connection as unknown as Record<string, unknown>).readyState
     }
 
     // Clean up mongoose

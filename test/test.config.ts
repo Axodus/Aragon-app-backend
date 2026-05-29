@@ -1,5 +1,6 @@
 import './environment'
 import * as path from 'path'
+import * as fs from 'fs'
 import * as chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import { glob } from 'glob'
@@ -31,9 +32,43 @@ if (argv.includes('--unit-dep')) {
   process.exit(1)
 }
 
+const argValue = (name: string) => {
+  const index = argv.indexOf(name)
+  if (index >= 0) return argv[index + 1]
+
+  const prefix = `${name}=`
+  return argv.find(value => value.startsWith(prefix))?.slice(prefix.length)
+}
+
+const grepMatchesFile = (file: string, grep?: string) => {
+  if (!grep) return true
+
+  try {
+    return new RegExp(grep).test(fs.readFileSync(file, 'utf8'))
+  } catch {
+    return fs.readFileSync(file, 'utf8').includes(grep)
+  }
+}
+
+const testLog = (phase: string, metadata: Record<string, unknown> = {}) => {
+  const safeMetadata = {
+    testFolder,
+    nodeEnv: process.env.NODE_ENV,
+    mongoDbName: process.env.MONGO_DB_NAME,
+    mongomsVersion: process.env.MONGOMS_VERSION,
+    mongomsSystemBinary: process.env.MONGOMS_SYSTEM_BINARY ? '[configured]' : '[not configured]',
+    mongomsRuntimeDownload: process.env.MONGOMS_RUNTIME_DOWNLOAD,
+    ...metadata,
+  }
+
+  console.log(`[test-runner] ${phase}`, safeMetadata) // eslint-disable-line no-console
+}
+const verboseDiagnostics = process.env.TEST_DIAGNOSTICS === 'verbose'
+
 async function runTests() {
   const defaultTimeoutMs = testFolder === 'unit' ? 180000 : 60000
   const timeoutMs = Number(process.env.MOCHA_TIMEOUT_MS || defaultTimeoutMs)
+  const grep = argValue('--grep')
 
   const mocha = new Mocha({
     ui: 'bdd',
@@ -41,19 +76,25 @@ async function runTests() {
     color: true,
     diff: true,
     fullTrace: true,
+    grep,
   })
 
   // MockDB setup
-  console.log('Using MockDB...') // eslint-disable-line no-console
+  testLog('configured', { timeoutMs, grep: grep ?? '[none]' })
   mocha.suite.beforeAll(async () => {
     switch (testFolder) {
       case 'unit':
+        testLog('MockDB connect:start')
         await MockDB.connect()
+        testLog('MockDB connect:complete')
         await utils.wait(500)
         break
       case 'unit-dep':
+        testLog('MongoDB connect:start')
         await MongoDB.connect()
+        testLog('Provider connect:start')
         await ProviderModule.connectToAllNetworks()
+        testLog('unit-dep connect:complete')
         break
       default:
         break
@@ -69,7 +110,9 @@ async function runTests() {
     reapplyCustomStatics()
     switch (testFolder) {
       case 'unit':
+        if (verboseDiagnostics) testLog('MockDB drop:start')
         await MockDB.drop()
+        if (verboseDiagnostics) testLog('MockDB drop:complete')
         break
       case 'unit-dep':
         await MongoDB.drop()
@@ -91,9 +134,14 @@ async function runTests() {
   mocha.suite.afterAll(async () => {
     switch (testFolder) {
       case 'unit':
+        testLog('MockDB disconnect:start')
+        await MockDB.disconnect()
+        testLog('MockDB disconnect:complete')
         break
       case 'unit-dep':
+        testLog('Provider disconnect:start')
         await ProviderModule.closeAllNetworks()
+        testLog('Provider disconnect:complete')
         break
       default:
         break
@@ -104,7 +152,10 @@ async function runTests() {
   const pattern = path.join(__dirname, testFolder, '**', '*.ts')
 
   try {
-    const files = await glob(pattern)
+    testLog('test discovery:start', { pattern })
+    const discoveredFiles = await glob(pattern)
+    const files = discoveredFiles.filter(file => grepMatchesFile(file, grep))
+    testLog('test discovery:complete', { fileCount: files.length, discoveredFileCount: discoveredFiles.length })
     files.forEach(file => mocha.addFile(file))
 
     mocha.run(failures => {
