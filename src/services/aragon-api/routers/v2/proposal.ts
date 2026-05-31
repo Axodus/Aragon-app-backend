@@ -14,6 +14,132 @@ import PaginationSchema from '@api/routers/schema/pagination'
 import Utils from '@helpers/utils'
 
 const ProposalRouter = {
+  createProposalValidationError: (ctx: RouterContext, error: any) => {
+    ctx.status = 400
+    ctx.body = {
+      message: 'createProposal request validation failed.',
+      reasonCode: 'CREATE_PROPOSAL_VALIDATION_FAILED',
+      reasonSeverity: 'warning',
+      source: 'backend submission boundary',
+      details: {
+        errors: error.details?.map((detail: any) => detail.message) ?? [],
+      },
+    }
+  },
+
+  createProposalGuardrailError: (
+    ctx: RouterContext,
+    reasonCode: string,
+    reasonSeverity: string,
+    source: string,
+    message: string,
+    details: Record<string, any> = {},
+  ) => {
+    ctx.status = 409
+    ctx.body = {
+      message,
+      reasonCode,
+      reasonSeverity,
+      source,
+      details,
+    }
+  },
+
+  createProposal: async function (ctx: RouterContext) {
+    const validation = ProposalSchema.createProposalRequest.validate((ctx.request as any).body, {
+      abortEarly: false,
+      stripUnknown: true,
+    })
+
+    if (validation.error) {
+      ProposalRouter.createProposalValidationError(ctx, validation.error)
+      return
+    }
+
+    const request = validation.value
+
+    if (request.submissionMode === 'onchain' || request.guardrails.noOnchainSubmission === false) {
+      ProposalRouter.createProposalGuardrailError(
+        ctx,
+        'REMOTE_EXECUTION_GUARDRAIL_ACTIVE',
+        'critical',
+        'backend submission boundary',
+        'The createProposal endpoint only accepts non-on-chain review submissions in this phase.',
+        { submissionMode: request.submissionMode, noOnchainSubmission: request.guardrails.noOnchainSubmission },
+      )
+      return
+    }
+
+    if (!request.creator.walletAddress) {
+      ProposalRouter.createProposalGuardrailError(
+        ctx,
+        'WALLET_NOT_CONNECTED',
+        'warning',
+        'wallet or DAO permission state',
+        'A connected wallet is required before backend createProposal submission.',
+      )
+      return
+    }
+
+    if (!request.chain.network) {
+      ProposalRouter.createProposalGuardrailError(
+        ctx,
+        'EXECUTION_CHAIN_NOT_AUTHORIZED',
+        'critical',
+        'chain capability',
+        'A target governance network is required before backend createProposal submission.',
+      )
+      return
+    }
+
+    if (!request.plugin.id && !request.plugin.address && !request.plugin.interfaceType) {
+      ProposalRouter.createProposalGuardrailError(
+        ctx,
+        'PLUGIN_CAPABILITY_NOT_REGISTERED',
+        'warning',
+        'plugin capability',
+        'A registered or observed governance plugin is required before backend createProposal submission.',
+      )
+      return
+    }
+
+    ctx.status = 202
+    ctx.body = await ProposalController.createProposalRequest(request)
+  },
+
+  listCreateProposalRequests: async function (ctx: RouterContext) {
+    const validation = ProposalSchema.listCreateProposalRequests.validate(ctx.query, {
+      abortEarly: false,
+      stripUnknown: true,
+    })
+
+    if (validation.error) {
+      ProposalRouter.createProposalValidationError(ctx, validation.error)
+      return
+    }
+
+    ctx.body = await ProposalController.listCreateProposalRequests(validation.value)
+  },
+
+  getCreateProposalRequest: async function (ctx: RouterContext) {
+    const receipt = await ProposalController.getCreateProposalRequest(ctx.params.id)
+
+    if (!receipt) {
+      ProposalRouter.createProposalGuardrailError(
+        ctx,
+        'CREATE_PROPOSAL_REQUEST_NOT_FOUND',
+        'info',
+        'backend submission boundary',
+        'No observed createProposal request exists for the provided id.',
+        { id: ctx.params.id },
+      )
+      ctx.status = 404
+      return
+    }
+
+    ctx.body = receipt
+  },
+
   getWithPagination: async function (ctx: RouterContext) {
     const result = await ValidationSchema.validateRoute(ctx, {
       paginationSort: 'incrementalId',
@@ -125,6 +251,24 @@ const ProposalRouter = {
      * @apiDescription Check if the user is allowed to create the proposal
      */
     router.get('/can-create-proposal', ProposalRouter.canCreateProposal)
+
+    /**
+     * @api {get} /proposal/create
+     * @apiDescription List observed non-on-chain createProposal review requests.
+     */
+    router.get('/create', ProposalRouter.listCreateProposalRequests)
+
+    /**
+     * @api {post} /proposal/create
+     * @apiDescription Accept a non-on-chain Axodus createProposal request for backend review.
+     */
+    router.post('/create', ProposalRouter.createProposal)
+
+    /**
+     * @api {get} /proposal/create/:id
+     * @apiDescription Read observed non-on-chain createProposal request state.
+     */
+    router.get('/create/:id', ProposalRouter.getCreateProposalRequest)
 
     /**
      * @api {get} /:id Get Proposal by Id

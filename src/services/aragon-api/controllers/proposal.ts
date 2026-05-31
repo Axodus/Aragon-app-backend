@@ -1,4 +1,4 @@
-import { Models } from '@dbModels'
+import { ModelProxy, Models } from '@dbModels'
 import {
   ErrorKeyEnum,
   type IProposalsResponse,
@@ -17,8 +17,90 @@ import config from '@config'
 import logger from '@logger'
 import utils from '@helpers/utils'
 import { PluginSlug as PluginSlugHelper } from '@helpers/pluginSlug'
+import mongoose from 'mongoose'
+import { v4 as uuidv4 } from 'uuid'
+import GovernanceRuntimeValidator from '@services/governance-runtime/runtimeValidator'
 
 const llo = logger.logMeta.bind(null, { service: 'ProposalController' })
+
+const createProposalReceipts = new Map<string, any>()
+
+const createProposalReason = (reasonCode: string, reasonSeverity: string, source: string, message: string) => ({
+  reasonCode,
+  reasonSeverity,
+  source,
+  message,
+})
+
+const createProposalStorage = (
+  mode: 'mongo' | 'memory-fallback',
+  source: 'CreateProposalRequest' | 'memory-fallback',
+  reasonCode?: string,
+) => ({
+  mode,
+  source,
+  persisted: mode === 'mongo',
+  reasonCode,
+  reasonSeverity: reasonCode ? 'warning' : 'info',
+  message:
+    mode === 'mongo'
+      ? 'Create proposal review receipt is persisted in Mongo for backend observability.'
+      : 'Create proposal review receipt is stored in memory for this API process only.',
+})
+
+const withCreateProposalStorage = (
+  receipt: any,
+  mode: 'mongo' | 'memory-fallback',
+  source: 'CreateProposalRequest' | 'memory-fallback',
+  reasonCode?: string,
+) => ({
+  ...receipt,
+  storageMode: mode,
+  source,
+  storage: createProposalStorage(mode, source, reasonCode),
+  indexerReconciliation: {
+    ...receipt.indexerReconciliation,
+    source,
+    storageMode: mode,
+    observedRequestId: receipt.id,
+  },
+})
+
+const createProposalReceiptMatches = (
+  receipt: any,
+  filters: {
+    network?: string
+    status?: string
+    daoId?: string
+    daoAddress?: string
+    chainId?: number
+  },
+) => {
+  if (filters.network && receipt?.observedState?.chain?.network !== filters.network) return false
+  if (filters.status && receipt?.status !== filters.status) return false
+  if (filters.daoId && receipt?.observedState?.dao?.id !== filters.daoId) return false
+  if (filters.daoAddress && receipt?.observedState?.dao?.address !== filters.daoAddress) return false
+  if (filters.chainId && receipt?.observedState?.chain?.chainId !== filters.chainId) return false
+  return true
+}
+
+const getCreateProposalRequestModel = async () => {
+  if (Models.CreateProposalRequest) {
+    return Models.CreateProposalRequest
+  }
+
+  if (mongoose.connection.readyState !== 1) {
+    return null
+  }
+
+  try {
+    await ModelProxy.setMongoModels()
+  } catch (error) {
+    logger.warn('Failed to initialize createProposal request model', llo({ error }))
+  }
+
+  return Models.CreateProposalRequest ?? null
+}
 
 const ProposalController = {
   getProposalBySlug: async (fullSlug: string, pairParams: IPairParams = {}): Promise<IProposalsResponse> => {
@@ -48,10 +130,10 @@ const ProposalController = {
       for (const p of installedPlugins) {
         const candidates = new Set<string>()
 
-        const processKeyCandidate = normalizeKey((p as any).processKey)
+        const processKeyCandidate = normalizeKey(p.processKey)
         if (processKeyCandidate) candidates.add(processKeyCandidate)
 
-        const defaultSlugCandidate = normalizeKey(PluginSlugHelper._defaultSlug(p as any) as any)
+        const defaultSlugCandidate = normalizeKey(PluginSlugHelper._defaultSlug(p))
         if (defaultSlugCandidate) candidates.add(defaultSlugCandidate)
 
         if (candidates.has(requested)) {
@@ -98,7 +180,7 @@ const ProposalController = {
 
         try {
           await Models.Proposal.updateOne(
-            { _id: (proposal as any)._id, id: { $in: [null, undefined] } },
+            { _id: proposal._id, id: { $in: [null, undefined] } },
             { $set: { id: proposalId } },
           )
         } catch (error) {
@@ -146,6 +228,198 @@ const ProposalController = {
     } catch (error) {
       logger.warn('Error while checking if user can create proposal', llo({ error, ...params }))
       return false
+    }
+  },
+
+  createProposalRequest: async (request: any) => {
+    const submittedAt = new Date().toISOString()
+    const receiptId = `backend-create-${uuidv4()}`
+    const tenantId = request.dao?.id ?? request.dao?.address ?? null
+    const runtimeDecision = tenantId
+      ? await GovernanceRuntimeValidator.validate({
+          tenantId,
+          capability: 'proposal.create',
+          action: request.proposal?.actionType,
+          source: 'CreateProposalRequest',
+          resource: request.plugin?.id ?? request.plugin?.address ?? undefined,
+          metadata: {
+            network: request.chain?.network,
+            chainId: request.chain?.chainId,
+            title: request.proposal?.title,
+          },
+        })
+      : {
+          tenantId: null,
+          capability: 'proposal.create',
+          normalizedCapability: 'tenant-local-proposal-management',
+          allowed: false,
+          decision: 'denied',
+          reasonCode: 'DAO_TENANT_NOT_FOUND',
+          reasonSeverity: 'critical',
+          source: 'governance runtime',
+          timestamp: submittedAt,
+          reasons: [
+            createProposalReason(
+              'DAO_TENANT_NOT_FOUND',
+              'critical',
+              'governance runtime',
+              'Create proposal request denied because no DAO tenant identity was provided.',
+            ),
+          ],
+        }
+    const reasonCodes = [
+      ...(request.guardrails?.reasonCodes ?? []),
+      ...(runtimeDecision?.reasons ?? []),
+      createProposalReason(
+        'CREATE_PROPOSAL_BACKEND_REVIEW_REQUIRED',
+        'info',
+        'backend submission boundary',
+        'Create proposal request was accepted for backend review without wallet prompt or on-chain transaction.',
+      ),
+      createProposalReason(
+        'INDEXER_STATE_NOT_READY',
+        'info',
+        'indexer readiness',
+        'Proposal creation is waiting for indexer reconciliation after a future on-chain submission adapter is connected.',
+      ),
+    ]
+    const runtimeBlocked = runtimeDecision ? !runtimeDecision.allowed : false
+
+    const receipt = {
+      id: receiptId,
+      proposalDraftId: request.proposal?.draftId ?? null,
+      status: runtimeBlocked ? 'governance-runtime-blocked' : 'backend-review-queued',
+      submissionMode: 'backend',
+      submittedAt,
+      message: runtimeBlocked
+        ? 'Create proposal request blocked by Governance runtime validation. No review queue, wallet prompt or transaction was submitted.'
+        : 'Create proposal request accepted by the Governance API for non-on-chain review. No wallet prompt or transaction was submitted.',
+      reasonCodes,
+      runtimeValidation: runtimeDecision,
+      indexerReconciliation: {
+        status: runtimeBlocked ? 'blocked' : 'pending',
+        reasonCode: 'INDEXER_STATE_NOT_READY',
+        reasonSeverity: 'info',
+        reconciliationMode: 'review-request-only',
+        source: 'backend-review',
+        observedRequestId: receiptId,
+        message: 'Proposal submission is waiting for indexer reconciliation.',
+      },
+      observedState: {
+        dao: request.dao,
+        chain: request.chain,
+        plugin: request.plugin,
+        proposal: request.proposal,
+        governanceBoundary:
+          'Backend records create-proposal request state after Governance runtime validation. Constitutional validity, permissions, sanctions and execution remain sourced from registries, contracts, guardrails and indexers.',
+      },
+      request,
+    }
+
+    const createProposalRequestModel = await getCreateProposalRequestModel()
+
+    if (createProposalRequestModel?.create) {
+      try {
+        const persistedReceipt = withCreateProposalStorage(receipt, 'mongo', 'CreateProposalRequest')
+        await createProposalRequestModel.create({
+          id: receiptId,
+          network: request.chain.network,
+          chainId: request.chain?.chainId ?? null,
+          status: receipt.status,
+          submissionMode: receipt.submissionMode,
+          daoId: request.dao?.id ?? null,
+          daoAddress: request.dao?.address ?? null,
+          pluginId: request.plugin?.id ?? null,
+          pluginAddress: request.plugin?.address ?? null,
+          creatorAddress: request.creator?.walletAddress ?? null,
+          title: request.proposal.title,
+          actionType: request.proposal.actionType,
+          request,
+          receipt: persistedReceipt,
+        })
+        return persistedReceipt
+      } catch (error) {
+        logger.warn('Failed to persist createProposal request; using in-memory fallback', llo({ error, receiptId }))
+        const fallbackReceipt = withCreateProposalStorage(
+          receipt,
+          'memory-fallback',
+          'memory-fallback',
+          'CREATE_PROPOSAL_PERSISTENCE_FALLBACK',
+        )
+        createProposalReceipts.set(receiptId, fallbackReceipt)
+        return fallbackReceipt
+      }
+    } else {
+      const fallbackReceipt = withCreateProposalStorage(
+        receipt,
+        'memory-fallback',
+        'memory-fallback',
+        'CREATE_PROPOSAL_PERSISTENCE_FALLBACK',
+      )
+      createProposalReceipts.set(receiptId, fallbackReceipt)
+      return fallbackReceipt
+    }
+  },
+
+  getCreateProposalRequest: async (id: string) => {
+    const createProposalRequestModel = await getCreateProposalRequestModel()
+
+    if (createProposalRequestModel?.findByEntityId) {
+      try {
+        const storedRequest = await createProposalRequestModel.findByEntityId(id)
+        if (storedRequest?.receipt) {
+          return withCreateProposalStorage(storedRequest.receipt, 'mongo', 'CreateProposalRequest')
+        }
+      } catch (error) {
+        logger.warn('Failed to read persisted createProposal request; using in-memory fallback', llo({ error, id }))
+      }
+    }
+
+    return createProposalReceipts.get(id) ?? null
+  },
+
+  listCreateProposalRequests: async (filters: {
+    network?: string
+    status?: string
+    daoId?: string
+    daoAddress?: string
+    chainId?: number
+    limit?: number
+  }) => {
+    const createProposalRequestModel = await getCreateProposalRequestModel()
+
+    if (createProposalRequestModel?.listRecent) {
+      try {
+        const storedRequests = await createProposalRequestModel.listRecent(filters)
+        return {
+          items: storedRequests
+            .map((request: any) =>
+              request.receipt ? withCreateProposalStorage(request.receipt, 'mongo', 'CreateProposalRequest') : null,
+            )
+            .filter(Boolean),
+          count: storedRequests.length,
+          source: 'CreateProposalRequest',
+          storageMode: 'mongo',
+        }
+      } catch (error) {
+        logger.warn(
+          'Failed to list persisted createProposal requests; using in-memory fallback',
+          llo({ error, filters }),
+        )
+      }
+    }
+
+    const limit = Math.min(Math.max(filters.limit ?? 20, 1), 100)
+    const items = Array.from(createProposalReceipts.values())
+      .filter(receipt => createProposalReceiptMatches(receipt, filters))
+      .slice(-limit)
+      .reverse()
+
+    return {
+      items,
+      count: items.length,
+      source: 'memory-fallback',
+      storageMode: 'memory-fallback',
     }
   },
 

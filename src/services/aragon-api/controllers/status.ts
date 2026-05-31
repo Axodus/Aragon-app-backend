@@ -135,6 +135,7 @@ const StatusController = {
         federationMember: chain.federationMember,
         federationTier: chain.federationTier,
         constitutionalStanding: chain.capabilities.constitutionalStanding,
+        constitutionalLayer: chain.capabilities.constitutionalLayer,
         legacyHarmonyAdapter: chain.legacyHarmonyAdapter ?? false,
         finality: chain.finality,
         nativeCurrency: chain.nativeCurrency,

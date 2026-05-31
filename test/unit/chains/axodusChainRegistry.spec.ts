@@ -29,11 +29,28 @@ describe('Chains:AxodusChainRegistry', () => {
     expect(sepolia?.federationTier).to.equal('root')
     expect(sepolia?.capabilities.constitutionalStanding.status).to.equal('compliant')
     expect(sepolia?.capabilities.constitutionalCompatibility.status).to.equal('compatible')
+    expect(sepolia?.capabilities.constitutionalLayer.authorityModel.constitutionalAsset).to.equal('$Neurons')
+    expect(sepolia?.capabilities.constitutionalLayer.executionModel.executionAuthority).to.equal('constitutional-root')
+    expect(sepolia?.capabilities.constitutionalLayer.executionModel.executionChainAuthorized).to.equal(true)
+    expect(sepolia?.capabilities.constitutionalLayer.federationModel.localAutonomy).to.equal('constitutionally-bounded')
+    expect(sepolia?.capabilities.constitutionalLayer.capabilities.map(capability => capability.key)).to.include(
+      'constitutional-conditions',
+    )
+    expect(sepolia?.capabilities.constitutionalLayer.conditions.map(condition => condition.key)).to.include(
+      'execution-chain-authorized',
+    )
     expect(sepolia?.capabilities.localGovernanceModels).to.include('$Neurons')
     expect(sepolia?.capabilities.localGovernanceModels).to.include('plugin-defined')
     expect(harmony?.legacyHarmonyAdapter).to.equal(true)
     expect(harmony?.governanceStatus).to.equal('under-review')
     expect(harmony?.federationTier).to.equal('observer')
+    expect(harmony?.capabilities.constitutionalLayer.executionModel.executionAuthority).to.equal(
+      'legacy-voting-adapter',
+    )
+    expect(harmony?.capabilities.constitutionalLayer.executionModel.executionChainAuthorized).to.equal(false)
+    expect(harmony?.capabilities.constitutionalLayer.executionModel.reasonCodes).to.include(
+      'EXECUTION_CHAIN_NOT_AUTHORIZED',
+    )
     expect(harmony?.capabilities.constitutionalStanding.reasonCodes).to.deep.equal([
       'REMOTE_EXECUTION_GUARDRAIL_ACTIVE',
     ])

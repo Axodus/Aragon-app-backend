@@ -68,13 +68,13 @@ describe('Helpers:Utils', () => {
       })
     })
 
-    it('should throw an error if the slug has multiple dashes', () => {
+    it('should parse slugs with dashes before the numeric index', () => {
       const fullSlug = 'pluginType-123-456'
       const result = Utils.splitSlug(fullSlug)
 
       expect(result).to.deep.equal({
-        slug: undefined,
-        index: undefined,
+        slug: 'plugintype-123',
+        index: 456,
       })
     })
   })

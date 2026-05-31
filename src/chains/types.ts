@@ -36,6 +36,41 @@ export type FederationTier = 'root' | 'partner' | 'sovereign' | 'restricted' | '
 
 export type GuardrailReasonSeverity = 'info' | 'warning' | 'critical' | 'constitutional'
 
+export type ConstitutionalCapabilityKey =
+  | 'federal-standards'
+  | 'chain-capabilities'
+  | 'plugin-capabilities'
+  | 'constitutional-conditions'
+  | 'ecosystem-guardrails'
+  | 'treasury-constraints'
+  | 'federation-requirements'
+  | 'cross-chain-legitimacy'
+  | 'agent-execution-boundaries'
+  | 'transparent-reason-codes'
+
+export type ConstitutionalConditionKey =
+  | 'chain-constitutionally-enabled'
+  | 'execution-chain-authorized'
+  | 'plugin-capability-registered'
+  | 'local-governance-standing-required'
+  | 'treasury-policy-review-required'
+  | 'agent-permission-scope-required'
+
+export type ConstitutionalConditionStatus = 'satisfied' | 'requires-review' | 'restricted' | 'not-applicable'
+
+export type ConstitutionalAuthoritySource =
+  | '$Neurons'
+  | 'federation-registry'
+  | 'constitutional-condition-registry'
+  | 'treasury-policy-registry'
+  | 'guardrail-registry'
+
+export type ConstitutionalExecutionAuthority =
+  | 'constitutional-root'
+  | 'federated-spoke'
+  | 'legacy-voting-adapter'
+  | 'not-authorized'
+
 export type ConstitutionalGuardrailReasonCode =
   | 'CHAIN_NOT_CONSTITUTIONALLY_ENABLED'
   | 'PLUGIN_CAPABILITY_NOT_REGISTERED'
@@ -65,6 +100,60 @@ export interface ConstitutionalGuardrailReason {
   readonly scope: string
   readonly network: NetworksEnum
   readonly pluginType?: IPluginInterfaceType
+}
+
+export interface ConstitutionalCapability {
+  readonly key: ConstitutionalCapabilityKey
+  readonly label: string
+  readonly enabled: boolean
+  readonly source: 'Constitutional Governance'
+  readonly reasonCodes: readonly ConstitutionalGuardrailReasonCode[]
+  readonly reasonSeverity?: GuardrailReasonSeverity | null
+}
+
+export interface ConstitutionalCondition {
+  readonly key: ConstitutionalConditionKey
+  readonly label: string
+  readonly status: ConstitutionalConditionStatus
+  readonly source: 'Constitutional Governance'
+  readonly reasonCodes: readonly ConstitutionalGuardrailReasonCode[]
+  readonly reasonSeverity?: GuardrailReasonSeverity | null
+}
+
+export interface ConstitutionalAuthorityModel {
+  readonly authoritySources: readonly ConstitutionalAuthoritySource[]
+  readonly constitutionalAsset: '$Neurons'
+  readonly localAuthorityPreserved: boolean
+  readonly localAuthorityBoundary: string
+  readonly treasuryAuthorityBoundary: string
+  readonly agentAuthorityBoundary: string
+}
+
+export interface ConstitutionalFederationModel {
+  readonly federationMember: boolean
+  readonly federationTier: FederationTier
+  readonly federationRoles: readonly ChainRole[]
+  readonly membershipSource: 'federation-registry'
+  readonly localAutonomy: 'constitutionally-bounded'
+  readonly requirements: readonly ConstitutionalConditionKey[]
+}
+
+export interface ConstitutionalExecutionModel {
+  readonly executionAuthority: ConstitutionalExecutionAuthority
+  readonly executionChainAuthorized: boolean
+  readonly executionModes: readonly GovernanceExecutionMode[]
+  readonly remoteExecutionGuardrail: boolean
+  readonly treasuryReviewRequired: boolean
+  readonly reasonCodes: readonly ConstitutionalGuardrailReasonCode[]
+  readonly reasonSeverity?: GuardrailReasonSeverity | null
+}
+
+export interface ConstitutionalGovernanceLayer {
+  readonly capabilities: readonly ConstitutionalCapability[]
+  readonly conditions: readonly ConstitutionalCondition[]
+  readonly authorityModel: ConstitutionalAuthorityModel
+  readonly federationModel: ConstitutionalFederationModel
+  readonly executionModel: ConstitutionalExecutionModel
 }
 
 export type ChainConfigKey =
@@ -119,6 +208,7 @@ export interface ChainCapabilities {
   readonly constitutionalStanding: ConstitutionalStanding
   readonly governanceStatus: GovernanceStatus
   readonly localGovernanceModels: readonly string[]
+  readonly constitutionalLayer: ConstitutionalGovernanceLayer
   readonly supportedPluginTypes: readonly IPluginInterfaceType[]
   readonly pluginCapabilities: Readonly<Partial<Record<IPluginInterfaceType, GovernancePluginCapability>>>
 }

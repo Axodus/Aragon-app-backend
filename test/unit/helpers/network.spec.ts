@@ -30,7 +30,7 @@ describe('Helpers: Network', () => {
     const activeNetworks = NetworkHelper.supportedNetworks()
 
     expect(activeNetworks.length).to.equal(networkCount)
-    expect(activeNetworks).to.deep.equal([
+    expect(activeNetworks).to.have.deep.members([
       { networkName: NetworksEnum.ethereumMainnet, provider: fakeProviders[NetworksEnum.ethereumMainnet] },
       { networkName: NetworksEnum.ethereumSepolia, provider: fakeProviders[NetworksEnum.ethereumSepolia] },
     ])
@@ -65,7 +65,7 @@ describe('Helpers: Network', () => {
       expect(polyBlockTime).to.equal(2)
     })
 
-    it('should use network configuration correctly', () => {
+    it('should use registry network configuration for known networks', () => {
       const mockConfig = {
         ETHEREUM_MAINNET: {
           INTERVAL_BLOCK_TIME: 15,
@@ -77,7 +77,7 @@ describe('Helpers: Network', () => {
       const blockTime = NetworkHelper.getAverageBlockTime(NetworksEnum.ethereumMainnet)
 
       expect(blockTime).to.equal(15)
-      expect(networkToAragonStub.calledWith(NetworksEnum.ethereumMainnet)).to.be.true
+      expect(networkToAragonStub.called).to.be.false
     })
   })
 })
