@@ -16,12 +16,14 @@ describe('MigrationService', () => {
   let MigrationServiceMocked: any
   let globStub: SinonStub
   let fsExistsSyncStub: SinonStub
+  let mongoSyncIndexesStub: SinonStub
 
   beforeEach(async () => {
     sandbox = sinon.createSandbox()
     loggerInfoStub = sandbox.stub(logger, 'info')
     loggerErrorStub = sandbox.stub(logger, 'error')
     loggerWarnStub = sandbox.stub(logger, 'warn')
+    mongoSyncIndexesStub = sandbox.stub(MongoDB, 'syncIndexes').resolves()
 
     // Create stubs for modules
     globStub = sandbox.stub()
@@ -59,6 +61,7 @@ describe('MigrationService', () => {
       expect(loggerInfoStub.calledWith('Starting Migration Service')).to.be.true
       expect(loggerInfoStub.calledWith('Migration Service completed')).to.be.true
       expect(executeMigrationStub.calledOnceWith('20240101000000-test-migration')).to.be.true
+      expect(mongoSyncIndexesStub.calledOnce).to.be.true
     })
 
     it('should handle no pending migrations', async () => {
@@ -362,12 +365,11 @@ describe('MigrationService', () => {
       } as any)
 
       const executeMigrationStub = sandbox.stub(MigrationServiceMocked as any, 'executeMigration').resolves()
-      const syncIndexesStub = sandbox.stub(MongoDB, 'syncIndexes').resolves()
 
       await MigrationServiceMocked.start()
 
       expect(executeMigrationStub.calledOnceWith('20240101000000-test-migration')).to.be.true
-      expect(syncIndexesStub.calledOnce).to.be.true
+      expect(mongoSyncIndexesStub.calledOnce).to.be.true
     })
   })
 
