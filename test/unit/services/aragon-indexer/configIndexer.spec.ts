@@ -67,10 +67,11 @@ describe('ConfigIndexer', () => {
   })
 
   describe('Event uniqueness', () => {
-    it('should have unique event names', () => {
+    it('should only duplicate event names for known multi-plugin events', () => {
       const eventNames = ConfigIndexer.map(config => config.event)
-      const uniqueEventNames = new Set(eventNames)
-      expect(uniqueEventNames.size).to.equal(eventNames.length)
+      const duplicateEventNames = eventNames.filter((eventName, index) => eventNames.indexOf(eventName) !== index)
+
+      expect(duplicateEventNames).to.have.members(['ProposalCreated', 'VoteCast'])
     })
 
     it('should have unique topic hashes', () => {

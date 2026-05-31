@@ -414,7 +414,7 @@ describe('Controller: Proposal', () => {
     const createProposalRequestBody = () => ({
       submissionMode: 'backend',
       dao: {
-        id: `${rawProposal.network}-${rawProposal.daoAddress}`,
+        id: 'tenant-executive-dao',
         address: rawProposal.daoAddress,
         name: 'Axodus Executive DAO',
       },

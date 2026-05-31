@@ -177,6 +177,11 @@ describe('Service: GovernanceRuntimeValidator', () => {
         allowedStrategies: ['stablecoin-liquidity'],
         blockedStrategies: ['unverified-bridge'],
         allowedChains: [11155111],
+        riskControls: {
+          highRiskBlocked: true,
+          requiresMultisigAboveUsd: 4000,
+          requiresConstitutionalReviewAboveUsd: 6000,
+        },
       },
     })
 

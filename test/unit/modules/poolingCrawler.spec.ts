@@ -31,7 +31,7 @@ describe('Module: PoolingCrawler', () => {
       const crawlStub = sandbox.stub().resolves()
       const mockCrawler = { crawl: crawlStub }
 
-      PoolingCrawler.instances.set(`${NetworksEnum.ethereumMainnet}-main`, mockCrawler as any)
+      PoolingCrawler.instances.set(`${NetworksEnum.ethereumMainnet}-main-noaddr`, mockCrawler as any)
 
       await PoolingCrawler.start({
         logService: 'test-service' as any,
@@ -52,7 +52,7 @@ describe('Module: PoolingCrawler', () => {
       })
 
       expect(PoolingCrawler.instances.size).to.equal(1)
-      expect(PoolingCrawler.instances.has(`${NetworksEnum.ethereumMainnet}-main`)).to.be.true
+      expect(PoolingCrawler.instances.has(`${NetworksEnum.ethereumMainnet}-main-noaddr`)).to.be.true
       expect(BlockchainLogCrawlerStub.calledOnce).to.be.true
     })
 
@@ -64,7 +64,7 @@ describe('Module: PoolingCrawler', () => {
         network: NetworksEnum.ethereumMainnet,
       })
 
-      const crawlerInstance = PoolingCrawler.instances.get(`${NetworksEnum.ethereumMainnet}-main`)
+      const crawlerInstance = PoolingCrawler.instances.get(`${NetworksEnum.ethereumMainnet}-main-noaddr`)
       expect(crawlerInstance).to.exist
 
       expect(crawlerInstance).to.have.property('crawlParams')

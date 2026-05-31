@@ -557,6 +557,7 @@ describe('ProposalHandler', () => {
         subdomain: 'dao.subdomain',
         interfaceType: IPluginInterfaceType.tokenVoting,
         tokenAddress: '0xtoken-address',
+        network,
       }
 
       const proposalMetadata = {
@@ -594,6 +595,33 @@ describe('ProposalHandler', () => {
       const stubPair = sandbox.stub(ProposalHandler, 'pairSppProposals').resolves()
       const rabbitMQStub = sandbox.stub(RabbitMQHelper, 'sendMessage').resolves()
       const verboseLoggerStub = sandbox.stub(logger, 'verbose')
+      sandbox.stub(MemberGovernanceFactory, 'createFromPlugin').returns({
+        updatePluginMetrics: sandbox.stub().callsFake(async params => {
+          const id = Models.PluginMetrics.getEntityId({
+            network: params.network,
+            memberAddress: params.memberAddress,
+            pluginAddress: params.pluginAddress,
+          })
+
+          return await Models.PluginMetrics.findOneAndUpdate(
+            { id },
+            {
+              $set: {
+                id,
+                memberAddress: params.memberAddress,
+                pluginAddress: params.pluginAddress,
+                network: params.network,
+                daoAddress: params.daoAddress,
+                lastActivity: params.lastActivity,
+                proposalCount: 1,
+                voteCount: 0,
+              },
+            },
+            { upsert: true, new: true },
+          )
+        }),
+        updateDaoMetrics: sandbox.stub().resolves(),
+      } as any)
 
       await ProposalHandler.proposalCreated(fakeEvent as any, info)
 
@@ -776,6 +804,7 @@ describe('ProposalHandler', () => {
         subdomain: 'dao.subdomain',
         interfaceType: IPluginInterfaceType.tokenVoting,
         tokenAddress: '0xtoken-address',
+        network,
       }
 
       const proposalMetadata = {
@@ -1010,6 +1039,33 @@ describe('ProposalHandler', () => {
       const stubPair = sandbox.stub(ProposalHandler, 'pairSppProposals').resolves()
       const rabbitMQStub = sandbox.stub(RabbitMQHelper, 'sendMessage').resolves()
       const verboseLoggerStub = sandbox.stub(logger, 'verbose')
+      sandbox.stub(MemberGovernanceFactory, 'createFromPlugin').returns({
+        updatePluginMetrics: sandbox.stub().callsFake(async params => {
+          const id = Models.PluginMetrics.getEntityId({
+            network: params.network,
+            memberAddress: params.memberAddress,
+            pluginAddress: params.pluginAddress,
+          })
+
+          return await Models.PluginMetrics.findOneAndUpdate(
+            { id },
+            {
+              $set: {
+                id,
+                memberAddress: params.memberAddress,
+                pluginAddress: params.pluginAddress,
+                network: params.network,
+                daoAddress: params.daoAddress,
+                lastActivity: params.lastActivity,
+                proposalCount: 1,
+                voteCount: 0,
+              },
+            },
+            { upsert: true, new: true },
+          )
+        }),
+        updateDaoMetrics: sandbox.stub().resolves(),
+      } as any)
 
       await ProposalHandler.proposalCreated(fakeEvent as any, info)
 

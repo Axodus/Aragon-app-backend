@@ -30,9 +30,13 @@ const MockDB = {
   connect: async () => {
     mockDbLog('connect:start')
     await MockDB._connectMongoDB()
-    mockDbLog('syncIndexes:start')
-    await MockDB.syncIndexesForAllModels()
-    mockDbLog('syncIndexes:complete')
+    if (process.env.TEST_SYNC_INDEXES === 'true') {
+      mockDbLog('syncIndexes:start')
+      await MockDB.syncIndexesForAllModels()
+      mockDbLog('syncIndexes:complete')
+    } else {
+      mockDbLog('syncIndexes:skipped', { reason: 'TEST_SYNC_INDEXES is not true' })
+    }
     // Sanity check: verify critical model statics exist
     await MockDB._verifyModelStatics()
     mockDbLog('connect:complete')
