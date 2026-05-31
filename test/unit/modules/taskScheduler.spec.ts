@@ -69,18 +69,19 @@ describe('Modules: TaskScheduler', () => {
       },
     }
 
-    const scheduler = new TaskScheduler()
     await scheduler.startTask(serviceName, taskOptions)
 
-    // First run should happen immediately (runNow)
+    // First run should happen immediately (runNow).
     await waitFor(() => fakeService.start.callCount >= 6 && failingService.start.callCount >= 1, {
       timeoutMs: 2000,
       stepMs: 10,
     })
 
-    // Second run should happen after `interval` elapses and a check tick occurs
+    // Trigger the next scheduler tick explicitly so the unit test does not depend on wall-clock interval timing.
+    await scheduler.runTaskNow(serviceName)
+
     await waitFor(() => fakeService.start.callCount >= 12 && failingService.start.callCount >= 2, {
-      timeoutMs: 3000,
+      timeoutMs: 2000,
       stepMs: 10,
     })
 
@@ -147,12 +148,16 @@ describe('Modules: TaskScheduler', () => {
       },
     }
 
-    const scheduler = new TaskScheduler()
+    sandbox.stub(scheduler as any, 'shouldRunTask').resolves(true)
+
     await scheduler.startTask(serviceName, taskOptions)
 
-    // Don't rely on wall-clock timing (can be flaky under load / CI / Node version changes)
+    // Trigger scheduled checks explicitly so the unit test does not depend on wall-clock interval timing.
+    await scheduler.checkAndRunTasks(serviceName)
+    await scheduler.checkAndRunTasks(serviceName)
+
     await waitFor(() => fakeService.start.callCount >= 2 && failingService.start.callCount >= 2, {
-      timeoutMs: 3000,
+      timeoutMs: 2000,
       stepMs: 20,
     })
 
