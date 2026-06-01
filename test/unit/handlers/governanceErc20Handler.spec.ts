@@ -1,11 +1,11 @@
 import '@test/environment'
 import * as sinon from 'sinon'
-import { SinonSandbox } from 'sinon'
+import { type SinonSandbox } from 'sinon'
 import { ITokenType, NetworksEnum, IPluginInterfaceType, IPluginStatus } from '@types'
 import { beforeEach } from 'mocha'
 import { GovernanceErc20Handler } from '@handlers/governanceErc20Handler'
 import utils from '@helpers/utils'
-import { LogDescription } from 'ethers'
+import { type LogDescription } from 'ethers'
 import config from '@config'
 import { Erc20Governance } from '@src/governance/erc20Governance'
 import { Models } from '@dbModels'
@@ -799,7 +799,7 @@ describe('GovernanceErc20Handler', () => {
 
       await GovernanceErc20Handler.delegateVotesChangedBatch(events)
 
-      expect(loggerWarnStub.calledOnce).to.be.true
+      expect(loggerWarnStub.called).to.be.true
       expect(loggerWarnStub.calledWith('Batch transaction failed, falling back to individual processing' as any)).to.be
         .true
       // Since no plugins exist, it will complete successfully without errors
@@ -849,7 +849,7 @@ describe('GovernanceErc20Handler', () => {
 
       await GovernanceErc20Handler.delegateVotesChangedBatch(events)
 
-      expect(loggerWarnStub.calledOnce).to.be.true
+      expect(loggerWarnStub.called).to.be.true
 
       // Verify success log
       expect(loggerInfoStub.calledWith('All members processed successfully via fallback' as any)).to.be.true
@@ -934,9 +934,8 @@ describe('GovernanceErc20Handler', () => {
       await GovernanceErc20Handler.delegateVotesChangedBatch(events)
 
       // Verify that the warning was logged about fallback
-      expect(loggerWarnStub.calledOnce).to.be.true
-      const warnCall = loggerWarnStub.getCall(0)
-      expect(warnCall.args[0]).to.equal('Batch transaction failed, falling back to individual processing')
+      expect(loggerWarnStub.calledWith('Batch transaction failed, falling back to individual processing' as any)).to.be
+        .true
 
       // Verify individual error was logged for member2
       const errorCalls = loggerErrorStub.getCalls()
