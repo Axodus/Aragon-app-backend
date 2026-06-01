@@ -2,6 +2,12 @@ import type { GovernanceQueryContext } from './governance-query-context'
 import { governanceQueryError } from './governance-query-errors'
 import type { GovernanceQueryError } from './governance-query-errors'
 import type { GovernanceReadModelQuery, QueryPagination } from './governance-query-inputs'
+import {
+  hasGovernanceQueryRole,
+  validateGovernanceQueryActor,
+  validateGovernanceQueryRoles,
+} from './governance-query-authorization'
+import type { GovernanceQueryRole } from './governance-query-authorization'
 
 export const DEFAULT_QUERY_LIMIT = 25
 export const MAX_QUERY_LIMIT = 100
@@ -21,8 +27,8 @@ const forbiddenQueryFields = [
   'onChainWrite',
 ]
 
-export const hasElevatedGovernanceRole = (context: GovernanceQueryContext, allowedRoles: string[]) =>
-  context.roles.some(role => allowedRoles.includes(role))
+export const hasElevatedGovernanceRole = (context: GovernanceQueryContext, allowedRoles: GovernanceQueryRole[]) =>
+  allowedRoles.some(role => hasGovernanceQueryRole(context, role))
 
 export const validateQueryContext = (
   context: GovernanceQueryContext | null | undefined,
@@ -39,7 +45,7 @@ export const validateQueryContext = (
     return governanceQueryError('INVALID_QUERY', 'Governance query context roles must be an array')
   }
 
-  return null
+  return validateGovernanceQueryRoles(context) ?? validateGovernanceQueryActor(context)
 }
 
 export const validateTenantScope = (

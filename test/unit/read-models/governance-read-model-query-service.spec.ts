@@ -91,8 +91,9 @@ describe('ReadModels:GovernanceReadModelQueryService', () => {
   })
 
   it('returns timeline, decision history, emergency actions and tenant summary read models', async () => {
-    const timeline = await service.getGovernanceTimeline(context, { tenantId, proposalId: 'proposal-1' })
-    const decisions = await service.listDecisionHistory(context, { tenantId, proposalId: 'proposal-1' })
+    const reviewerContext = { ...context, roles: ['governance:reviewer'] }
+    const timeline = await service.getGovernanceTimeline(reviewerContext, { tenantId, proposalId: 'proposal-1' })
+    const decisions = await service.listDecisionHistory(reviewerContext, { tenantId, proposalId: 'proposal-1' })
     const emergencies = await service.listEmergencyActions(context, { tenantId })
     const summary = await service.getTenantGovernanceSummary(context, { tenantId })
 
@@ -114,7 +115,7 @@ describe('ReadModels:GovernanceReadModelQueryService', () => {
     )
 
     expect(denied.ok).to.equal(false)
-    if (!denied.ok) expect(denied.error.code).to.equal('RESTRICTED_FIELD')
+    if (!denied.ok) expect(denied.error.code).to.equal('UNAUTHORIZED')
     expect(allowed.ok).to.equal(true)
     if (!allowed.ok) return
     expect(allowed.value.items[0].evidenceReferenceCount).to.equal(1)
@@ -133,7 +134,7 @@ describe('ReadModels:GovernanceReadModelQueryService', () => {
     )
 
     expect(denied.ok).to.equal(false)
-    if (!denied.ok) expect(denied.error.code).to.equal('RESTRICTED_FIELD')
+    if (!denied.ok) expect(denied.error.code).to.equal('UNAUTHORIZED')
     expect(self.ok).to.equal(true)
     if (self.ok) expect(self.value.actorId).to.equal('actor-reviewer')
     expect(auditor.ok).to.equal(true)
