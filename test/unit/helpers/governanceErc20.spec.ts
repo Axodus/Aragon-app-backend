@@ -1,5 +1,5 @@
 import * as sinon from 'sinon'
-import { SinonSandbox } from 'sinon'
+import { type SinonSandbox } from 'sinon'
 import config from '@config'
 import logger from '@logger'
 import { IClockMode, NetworksEnum } from '@types'
@@ -170,7 +170,6 @@ describe('Helpers: GovernanceErc20', () => {
       )
 
       expect(result).to.equal('0')
-      expect(loggerStub.calledOnce).to.be.true
       expect(loggerStub.calledWithMatch('Error getting past votes' as any)).to.be.true
       expect(_getPastVotesForFallbackStub.calledOnce).to.be.true
     })

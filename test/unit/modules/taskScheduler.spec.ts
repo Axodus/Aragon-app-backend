@@ -61,7 +61,7 @@ describe('Modules: TaskScheduler', () => {
     const taskOptions = {
       fn: () => [...logFastTasks],
       interval: 50,
-      checkInterval: 20,
+      checkInterval: 60_000,
       runNow: true,
       stopOnError: false,
       onError: (error: any) => {
@@ -140,7 +140,7 @@ describe('Modules: TaskScheduler', () => {
     const taskOptions = {
       fn: () => [...logFastTasks],
       interval: 100,
-      checkInterval: 30,
+      checkInterval: 60_000,
       runNow: false,
       stopOnError: false,
       onError: (error: any) => {
@@ -149,6 +149,8 @@ describe('Modules: TaskScheduler', () => {
     }
 
     sandbox.stub(scheduler as any, 'shouldRunTask').resolves(true)
+    sandbox.stub(scheduler as any, 'acquireLock').resolves(true)
+    sandbox.stub(scheduler as any, 'releaseLock').resolves()
 
     await scheduler.startTask(serviceName, taskOptions)
 

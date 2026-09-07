@@ -385,6 +385,16 @@ describe('Helpers: EvmExplorerClient', () => {
 
     it('should return null when BlockScout API key is not configured', async () => {
       const networkToAragonStub = sandbox.stub(utils, 'networkToAragon').returns('ETHEREUM_MAINNET')
+      const axiosStub = sandbox.stub(axios, 'get').resolves({
+        data: {
+          status: '0',
+          message: 'NOTOK',
+          result: '',
+        },
+      })
+      sandbox.stub(BottleneckModule, 'getBlockScoutLimiter').returns({
+        schedule: sandbox.stub().callsFake(async fn => fn()),
+      } as any)
 
       sandbox.stub(config, 'NODES').value({
         ETHEREUM_MAINNET: {
@@ -397,6 +407,7 @@ describe('Helpers: EvmExplorerClient', () => {
 
       // Called twice: first for `getsourcecode`, then again for fallback `getabi`.
       expect(networkToAragonStub.calledTwice).to.be.true
+      expect(axiosStub.calledTwice).to.be.true
       expect(result).to.be.null
     })
 
@@ -1062,7 +1073,11 @@ describe('Helpers: EvmExplorerClient', () => {
     })
 
     it('should return empty array for unsupported explorer type', async () => {
-      const result = await evmExplorerClient.getTokenBalances('unsupported' as unknown as EvmExplorerType, address, network)
+      const result = await evmExplorerClient.getTokenBalances(
+        'unsupported' as unknown as EvmExplorerType,
+        address,
+        network,
+      )
 
       expect(result).to.deep.equal([])
     })
@@ -1456,7 +1471,11 @@ describe('Helpers: EvmExplorerClient', () => {
     })
 
     it('should return undefined for unsupported explorer type', async () => {
-      const result = await evmExplorerClient.fetchTokenInfo('unsupported' as unknown as EvmExplorerType, address, network)
+      const result = await evmExplorerClient.fetchTokenInfo(
+        'unsupported' as unknown as EvmExplorerType,
+        address,
+        network,
+      )
 
       expect(result).to.be.undefined
     })
